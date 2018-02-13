@@ -11,6 +11,7 @@ struct DragType {
     static let string = NSPasteboard.PasteboardType.string
     static let contents = NSPasteboard.PasteboardType.fileContents
     static let filenames = NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")
+    static let fileURLs = NSPasteboard.PasteboardType(rawValue: kUTTypeFileURL as String)
 }
 
 public extension MetalView {
@@ -18,7 +19,7 @@ public extension MetalView {
     //! Returns a list of supported drag and drop types
     func acceptedTypes() -> [NSPasteboard.PasteboardType] {
     
-        return [DragType.filenames, DragType.string, DragType.contents]
+        return [DragType.fileURLs, DragType.filenames, DragType.string, DragType.contents]
     }
     
     //! Register supported drag and drop types
@@ -49,6 +50,11 @@ public extension MetalView {
         case DragType.filenames:
             
             print ("Dragged in filename")
+            return NSDragOperation.copy
+            
+        case DragType.fileURLs:
+            
+            print ("Dragged in fileURL")
             return NSDragOperation.copy
             
         default:
@@ -99,6 +105,68 @@ public extension MetalView {
             
             controller.c64.load(fromSnapshot: snapshot)
             return true
+            
+        case DragType.fileURLs:
+            
+            let paths = pasteBoard.propertyList(forType: DragType.fileURLs) as! [URL]
+            let path = paths[0]
+            
+            track("Processing dragged in file \(path)")
+            
+            // Is it a snapshot from a different version?
+            if SnapshotProxy.isUsupportedSnapshotFile(path.path) {
+                document.showSnapshotVersionAlert()
+                return false
+            }
+            
+            // Is it a snapshop with a matching version number?
+            if let snapshot = SnapshotProxy(file: path.path) {
+                controller.c64.load(fromSnapshot: snapshot)
+                document.fileURL = nil // Make document 'Untitled'
+                return true
+            }
+            
+            // Is it an archive?
+            document.attachment = ArchiveProxy(file: path.path)
+            if document.attachment != nil {
+                
+                track("Successfully read archive.")
+                controller.showMountDialog()
+                return true
+            }
+            
+            // Is it a band tape?
+            document.attachment = TAPProxy(file: path.path)
+            if document.attachment != nil {
+                track("Successfully read tape.")
+                controller.showMountDialog()
+                return true
+            }
+            
+            // Is it a cartridge?
+            document.attachment = CRTProxy(file: path.path)
+            if document.attachment != nil {
+                track("Successfully read cartridge.")
+                controller.showMountDialog()
+                return true
+            }
+            
+            // We haven't found any known file format. We could attach an archive
+            // of type FileArchive which would copy the file's raw data in memory
+            // at the location where normal programs start.
+            /*
+             document.attachedArchive = FileArchiveProxy.makeFileArchive(withFile: path)
+             if document.attachedArchive != nil {
+             track("Successfully read archive.")
+             controller.showMountDialog()
+             return true
+             }
+             */
+            
+            // However, it seems better to reject the drag operation.
+            track("Unsupported file type dragged in.")
+            return false
+
             
         case DragType.filenames:
             

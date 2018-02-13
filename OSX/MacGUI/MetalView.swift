@@ -11,30 +11,25 @@ import Foundation
 import Metal
 import MetalKit
 
-struct Sizeof {
-    static let float = 4
-    static let matrix4x4 = 16 * 4
-}
-
 struct C64Texture {
     static let orig = NSSize.init(width: 512, height: 512)
     static let upscaled = NSSize.init(width: 2048, height: 2048)
 }
 
-struct C64Upscaler {
-    static let none = 1
-    static let epx = 2
-    static let xbr = 3
+@objc enum C64Upscaler: Int {
+    case none = 1
+    case epx = 2
+    case xbr = 3
 }
 
-struct C64Filter {
-    static let none = 1
-    static let smooth = 2
-    static let blur = 3
-    static let saturation = 4
-    static let grayscale = 5
-    static let sepia = 6
-    static let crt = 7
+@objc enum C64Filter: Int {
+    case none = 1
+    case smooth = 2
+    case blur = 3
+    case saturation = 4
+    case grayscale = 5
+    case sepia = 6
+    case crt = 7
 }
 
 public class MetalView: MTKView {

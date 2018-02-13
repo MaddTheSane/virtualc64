@@ -84,9 +84,9 @@
 - (float)eyeZ { return [metalScreen eyeZ]; }
 - (void)setEyeZ:(float)z { [metalScreen setEyeZ:z]; }
 - (long)videoUpscaler { return [metalScreen videoUpscaler]; }
-- (void)setVideoUpscaler:(long)val { [metalScreen setVideoUpscaler:val]; }
+- (void)setVideoUpscaler:(long)val { [metalScreen setVideoUpscaler:C64Upscaler(val)]; }
 - (long)videoFilter { return [metalScreen videoFilter]; }
-- (void)setVideoFilter:(long)val { [metalScreen setVideoFilter:val]; }
+- (void)setVideoFilter:(long)val { [metalScreen setVideoFilter:C64Filter(val)]; }
 - (BOOL)fullscreenKeepAspectRatio { return [metalScreen fullscreenKeepAspectRatio]; }
 - (void)setFullscreenKeepAspectRatio:(BOOL)val { [metalScreen setFullscreenKeepAspectRatio:val]; }
 
