@@ -342,18 +342,12 @@ typedef unsigned long MacKeyFingerprint;
 - (void)rotateBack;
 - (void)shrink;
 - (void)expand;
-- (float)eyeX;
-- (void)setEyeX:(float)x;
-- (float)eyeY;
-- (void)setEyeY:(float)y;
-- (float)eyeZ;
-- (void)setEyeZ:(float)z;
-- (long)videoUpscaler;
-- (void)setVideoUpscaler:(long)val;
-- (long)videoFilter;
-- (void)setVideoFilter:(long)val;
-- (BOOL)fullscreenKeepAspectRatio;
-- (void)setFullscreenKeepAspectRatio:(BOOL)val;
+@property float eyeX;
+@property float eyeY;
+@property float eyeZ;
+@property long videoUpscaler;
+@property long videoFilter;
+@property BOOL fullscreenKeepAspectRatio;
 
 // KeyboardController API
 - (void)simulateUserPressingKey:(C64KeyFingerprint)key;
@@ -362,8 +356,7 @@ typedef unsigned long MacKeyFingerprint;
 - (void)simulateUserTypingText:(NSString *)text;
 - (void)simulateUserTypingText:(NSString *)text withInitialDelay:(useconds_t)delay;
 - (void)simulateUserTypingTextAndPressPlay:(NSString *)text;
-- (BOOL)getDisconnectEmulationKeys;
-- (void)setDisconnectEmulationKeys:(BOOL)b;
+@property (getter=getDisconnectEmulationKeys) BOOL disconnectEmulationKeys;
 
 
 // Refresh

@@ -131,13 +131,13 @@ extension MyController {
         
         track()
         let defaults = UserDefaults.standard
-        setEyeX(defaults.float(forKey: VC64Keys.eyeX))
-        setEyeY(defaults.float(forKey: VC64Keys.eyeY))
-        setEyeZ(defaults.float(forKey: VC64Keys.eyeZ))
+        eyeX = defaults.float(forKey: VC64Keys.eyeX)
+        eyeY = defaults.float(forKey: VC64Keys.eyeY)
+        eyeZ = defaults.float(forKey: VC64Keys.eyeZ)
 		c64.vic.colorScheme = defaults.integer(forKey: VC64Keys.colorScheme)
-        setVideoUpscaler(defaults.integer(forKey: VC64Keys.videoUpscaler))
-        setVideoFilter(defaults.integer(forKey: VC64Keys.videoFilter))
-        setFullscreenKeepAspectRatio(defaults.bool(forKey: VC64Keys.aspectRatio))
+        videoUpscaler = defaults.integer(forKey: VC64Keys.videoUpscaler)
+        videoFilter = defaults.integer(forKey: VC64Keys.videoFilter)
+        fullscreenKeepAspectRatio = defaults.bool(forKey: VC64Keys.aspectRatio)
         if let data = defaults.data(forKey: VC64Keys.joyKeyMap1) {
             if let keymap = try? JSONDecoder().decode(KeyMap.self, from: data) {
                gamePadManager.gamePads[0]?.keymap = keymap
@@ -183,20 +183,20 @@ extension MyController {
      
         track()
         let defaults = UserDefaults.standard
-        defaults.set(eyeX(), forKey: VC64Keys.eyeX)
-        defaults.set(eyeY(), forKey: VC64Keys.eyeY)
-        defaults.set(eyeZ(), forKey: VC64Keys.eyeZ)
+        defaults.set(eyeX, forKey: VC64Keys.eyeX)
+        defaults.set(eyeY, forKey: VC64Keys.eyeY)
+        defaults.set(eyeZ, forKey: VC64Keys.eyeZ)
         defaults.set(c64.vic.colorScheme, forKey: VC64Keys.colorScheme)
-        defaults.set(videoUpscaler(), forKey: VC64Keys.videoUpscaler)
-        defaults.set(videoFilter(), forKey: VC64Keys.videoFilter)
-        defaults.set(fullscreenKeepAspectRatio(), forKey: VC64Keys.aspectRatio)
+        defaults.set(videoUpscaler, forKey: VC64Keys.videoUpscaler)
+        defaults.set(videoFilter, forKey: VC64Keys.videoFilter)
+        defaults.set(fullscreenKeepAspectRatio, forKey: VC64Keys.aspectRatio)
         if let keymap = try? JSONEncoder().encode(gamePadManager.gamePads[0]?.keymap) {
             defaults.set(keymap, forKey: VC64Keys.joyKeyMap1)
         }
         if let keymap = try? JSONEncoder().encode(gamePadManager.gamePads[1]?.keymap) {
             defaults.set(keymap, forKey: VC64Keys.joyKeyMap2)
         }
-        defaults.set(getDisconnectEmulationKeys(), forKey: VC64Keys.disconnectKeys)
+        defaults.set(getDisconnectEmulationKeys, forKey: VC64Keys.disconnectKeys)
     }
     
     /// Saves the user defaults for all properties that are set in the hardware dialog

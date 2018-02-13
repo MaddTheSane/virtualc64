@@ -49,40 +49,37 @@ public extension MetalView {
             currentAlpha != targetAlpha
     }
     
-    @objc public func eyeX() -> Float {
-        
-        return currentEyeX
+    @objc public var eyeX: Float {
+        get {
+            return currentEyeX
+        }
+        set(newX) {
+            currentEyeX = newX
+            targetEyeX = newX
+            self.buildMatrices3D()
+        }
     }
     
-    @objc public func setEyeX(_ newX: Float) {
-        
-        currentEyeX = newX
-        targetEyeX = newX
-        self.buildMatrices3D()
+    @objc public var eyeY: Float {
+        get {
+            return currentEyeY
+        }
+        set(newY) {
+            currentEyeY = newY
+            targetEyeY = newY
+            self.buildMatrices3D()
+        }
     }
     
-    @objc public func eyeY() -> Float {
-        
-        return currentEyeY
-    }
-    
-    @objc public func setEyeY(_ newY: Float) {
-    
-        currentEyeY = newY
-        targetEyeY = newY
-        self.buildMatrices3D()
-    }
-    
-    @objc public func eyeZ() -> Float {
-        
-        return currentEyeZ
-    }
-    
-    @objc public func setEyeZ(_ newZ: Float) {
-    
-        currentEyeZ = newZ
-        targetEyeZ = newZ
-        self.buildMatrices3D()
+    @objc public var eyeZ: Float {
+        get {
+            return currentEyeZ
+        }
+        set(newZ) {
+            currentEyeZ = newZ
+            targetEyeZ = newZ
+            self.buildMatrices3D()
+        }
     }
     
     @objc public func updateAngles() {
