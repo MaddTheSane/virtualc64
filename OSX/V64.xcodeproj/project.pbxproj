@@ -11,9 +11,6 @@
 		023024000DC902A700F8818A /* AudioDevice.mm in Sources */ = {isa = PBXBuildFile; fileRef = 023023FF0DC902A700F8818A /* AudioDevice.mm */; };
 		025229EF0AF27E740024DAB3 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 025229EE0AF27E740024DAB3 /* CoreAudio.framework */; };
 		389E77800C7A3B6F00BEAFA6 /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 389E777E0C7A3B6F00BEAFA6 /* Joystick.cpp */; };
-		38AF838C0C7BA24A00F6DBCE /* joystick1_32.png in Resources */ = {isa = PBXBuildFile; fileRef = 38AF83890C7BA24A00F6DBCE /* joystick1_32.png */; };
-		38AF838D0C7BA24A00F6DBCE /* joystick2_32.png in Resources */ = {isa = PBXBuildFile; fileRef = 38AF838A0C7BA24A00F6DBCE /* joystick2_32.png */; };
-		38AF838E0C7BA24A00F6DBCE /* none32.png in Resources */ = {isa = PBXBuildFile; fileRef = 38AF838B0C7BA24A00F6DBCE /* none32.png */; };
 		5000471212DCE8890098D890 /* MyControllerCpuPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5000471112DCE8890098D890 /* MyControllerCpuPanel.mm */; };
 		5000472812DCE9AB0098D890 /* MyControllerMemoryPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5000472612DCE9AB0098D890 /* MyControllerMemoryPanel.mm */; };
 		5000473412DCEA6B0098D890 /* MyControllerCiaPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5000473312DCEA6B0098D890 /* MyControllerCiaPanel.mm */; };
@@ -23,8 +20,6 @@
 		500B6CA50B905CEC002C36EC /* TOD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 500B6CA40B905CEC002C36EC /* TOD.cpp */; };
 		500EC05110E4DCC4005A19A3 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 500EC05010E4DCC4005A19A3 /* Message.cpp */; };
 		500FC6790D17D2190044131D /* VIA6522.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 500FC6780D17D2190044131D /* VIA6522.cpp */; };
-		500FF3911BD7F4DF0038245B /* rom.png in Resources */ = {isa = PBXBuildFile; fileRef = 500FF38F1BD7F4DF0038245B /* rom.png */; };
-		500FF3921BD7F4DF0038245B /* rom_light.png in Resources */ = {isa = PBXBuildFile; fileRef = 500FF3901BD7F4DF0038245B /* rom_light.png */; };
 		50133B97200D4EED00167227 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50133B96200D4EED00167227 /* MetalView.swift */; };
 		50137EB11BCA83B000147283 /* ModelIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50137EB01BCA83B000147283 /* ModelIO.framework */; };
 		5014D684200CD62C00044217 /* MetalSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5014D683200CD62C00044217 /* MetalSetup.swift */; };
@@ -45,24 +40,11 @@
 		5018AF66202EDD2000B4C886 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5018AF65202EDD2000B4C886 /* UserDefaults.swift */; };
 		5018E48112240F7100F0820E /* Container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5018E48012240F7100F0820E /* Container.cpp */; };
 		5020434C1EE71B47006C3FD3 /* (null) in Resources */ = {isa = PBXBuildFile; };
-		5020434E1EE71BB8006C3FD3 /* runstop.png in Resources */ = {isa = PBXBuildFile; fileRef = 5020434D1EE71BB8006C3FD3 /* runstop.png */; };
 		5020F28C0BBABE3C0093C396 /* IEC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5020F28B0BBABE3C0093C396 /* IEC.cpp */; };
 		5022FB771EED87B800415BBD /* TimeTravelTouchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5022FB761EED87B800415BBD /* TimeTravelTouchBar.swift */; };
 		50265F57202D00940041C315 /* TapeMountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50265F56202D00940041C315 /* TapeMountController.swift */; };
-		50271DEA1A7E1CFE00C04290 /* LEDnewRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 50271DE91A7E1CFE00C04290 /* LEDnewRed.png */; };
-		50271DEC1A7E458F00C04290 /* LEDnewGreen.png in Resources */ = {isa = PBXBuildFile; fileRef = 50271DEB1A7E458F00C04290 /* LEDnewGreen.png */; };
-		50271DEE1A7E459800C04290 /* LEDnewGray.png in Resources */ = {isa = PBXBuildFile; fileRef = 50271DED1A7E459800C04290 /* LEDnewGray.png */; };
-		50287EEB0A7CA86900292533 /* stepOut32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50287EEA0A7CA86900292533 /* stepOut32.png */; };
-		502F57F21B93441400D1077E /* LEDgreen.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57F11B93441400D1077E /* LEDgreen.png */; };
-		502F57F41B93441A00D1077E /* LEDred.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57F31B93441A00D1077E /* LEDred.png */; };
-		502F57F61B93442100D1077E /* LEDgray.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57F51B93442100D1077E /* LEDgray.png */; };
-		502F57F81B93445300D1077E /* LEDyellow.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57F71B93445300D1077E /* LEDyellow.png */; };
-		502F57FA1B93457200D1077E /* fast.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57F91B93457200D1077E /* fast.png */; };
-		502F57FC1B93457700D1077E /* slow.png in Resources */ = {isa = PBXBuildFile; fileRef = 502F57FB1B93457700D1077E /* slow.png */; };
 		5031D59A200B47B70088C802 /* ImageUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5031D599200B47B70088C802 /* ImageUtilities.swift */; };
 		5031D59C200B81D20088C802 /* Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5031D59B200B81D20088C802 /* Animation.swift */; };
-		5039A31415BE89940038ACBC /* drive48.png in Resources */ = {isa = PBXBuildFile; fileRef = 5039A31315BE89940038ACBC /* drive48.png */; };
-		5039A32015BE97500038ACBC /* diskette.png in Resources */ = {isa = PBXBuildFile; fileRef = 5039A31F15BE97500038ACBC /* diskette.png */; };
 		503A5AD712227C0300EAA95E /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 503A5AD612227C0300EAA95E /* dsa_pub.pem */; };
 		503DAC622011DDFC0015EFF5 /* MyControllerToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503DAC612011DDFC0015EFF5 /* MyControllerToolbar.swift */; };
 		50412B0D2028F31800CC90A1 /* DiskMountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50412B0C2028F31800CC90A1 /* DiskMountController.swift */; };
@@ -70,15 +52,6 @@
 		504606341BE4B99100463FD7 /* G64Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 504606321BE4B99100463FD7 /* G64Archive.cpp */; };
 		5046C413202344F3000D9B1C /* ArchiveMountDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5046C412202344F3000D9B1C /* ArchiveMountDialog.xib */; };
 		5046C415202349EE000D9B1C /* ArchiveMountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5046C414202349EE000D9B1C /* ArchiveMountController.swift */; };
-		50471FE60A7B679A00A8DB94 /* stepInto32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50471FE50A7B679A00A8DB94 /* stepInto32.png */; };
-		50471FE80A7B67A100A8DB94 /* stepOver32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50471FE70A7B67A100A8DB94 /* stepOver32.png */; };
-		50471FEC0A7B67AE00A8DB94 /* restart32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50471FEB0A7B67AE00A8DB94 /* restart32.png */; };
-		504A22AB1BF71FD500B29BEB /* clock_blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22A51BF71FD500B29BEB /* clock_blue.png */; };
-		504A22AC1BF71FD500B29BEB /* clock_green.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22A61BF71FD500B29BEB /* clock_green.png */; };
-		504A22AD1BF71FD500B29BEB /* clock_yellow.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22A71BF71FD500B29BEB /* clock_yellow.png */; };
-		504A22AE1BF71FD500B29BEB /* clock_red.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22A81BF71FD500B29BEB /* clock_red.png */; };
-		504A22AF1BF71FD500B29BEB /* pin_red.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22A91BF71FD500B29BEB /* pin_red.png */; };
-		504A22B01BF71FD500B29BEB /* pin_black.png in Resources */ = {isa = PBXBuildFile; fileRef = 504A22AA1BF71FD500B29BEB /* pin_black.png */; };
 		5051A1521B88438800CBFB5A /* 1541_track_change_0.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 5051A1511B88438800CBFB5A /* 1541_track_change_0.aiff */; };
 		5051A15B1B885E1B00CBFB5A /* 1541_door_closed_2.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 5051A1591B885E1B00CBFB5A /* 1541_door_closed_2.aiff */; };
 		5051A15C1B885E1B00CBFB5A /* 1541_door_open_1.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 5051A15A1B885E1B00CBFB5A /* 1541_door_open_1.aiff */; };
@@ -89,7 +62,6 @@
 		5052AD0C202A57C4005FDD88 /* TapeMountDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5052AD0B202A57C4005FDD88 /* TapeMountDialog.xib */; };
 		5052AD0E202A5C1B005FDD88 /* CartridgeMountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5052AD0D202A5C1B005FDD88 /* CartridgeMountController.swift */; };
 		5054BF1120133BA2003D86D4 /* Cartridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5054BF0F20133BA2003D86D4 /* Cartridge.cpp */; };
-		505529BC2033014B006004B3 /* rom_medium.png in Resources */ = {isa = PBXBuildFile; fileRef = 505529BB2033014B006004B3 /* rom_medium.png */; };
 		5055A83F1BC7996900399A20 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5055A83E1BC7996900399A20 /* MetalKit.framework */; };
 		505739E51C01FC5700B80646 /* NIBArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505739E31C01FC5700B80646 /* NIBArchive.cpp */; };
 		5058B1801A6AD2D900A99F1C /* ExpansionPort.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5058B17E1A6AD2D900A99F1C /* ExpansionPort.cpp */; };
@@ -111,26 +83,19 @@
 		5077743012DE490300D72088 /* MemTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5077742F12DE490300D72088 /* MemTableView.mm */; };
 		5077743312DE490B00D72088 /* CpuTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5077743212DE490B00D72088 /* CpuTableView.mm */; };
 		507CFDB02013E765007FED87 /* MyControllerCartridges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507CFDAF2013E765007FED87 /* MyControllerCartridges.swift */; };
-		5080F3591EE74784001313D4 /* commodore.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080F3581EE74784001313D4 /* commodore.png */; };
 		5081AB631EF29E6400D6F616 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5081AB621EF29E6400D6F616 /* AudioEngine.swift */; };
-		5087FD591BDA16C400570F0D /* metal.png in Resources */ = {isa = PBXBuildFile; fileRef = 5087FD581BDA16C400570F0D /* metal.png */; };
 		5088A6D612E0676200378033 /* MyControllerDebugPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5088A6D512E0676200378033 /* MyControllerDebugPanel.mm */; };
 		5088E6881C3515DB006A80E5 /* VC64Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5088E6861C3515DB006A80E5 /* VC64Object.cpp */; };
 		5092A5B1200BC4B70037754D /* DragAndDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5092A5B0200BC4B70037754D /* DragAndDrop.swift */; };
-		5094197D0E426C13008D6F71 /* cartridge.png in Resources */ = {isa = PBXBuildFile; fileRef = 5094197C0E426C13008D6F71 /* cartridge.png */; };
 		509A26072027AA1100D28827 /* DiskMountDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 509A26062027AA1100D28827 /* DiskMountDialog.xib */; };
 		509AEA0C0C324AB0001FC9FD /* PRGArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 509AEA0B0C324AB0001FC9FD /* PRGArchive.cpp */; };
 		509AEAFF0C325EFB001FC9FD /* P00Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 509AEAFE0C325EFB001FC9FD /* P00Archive.cpp */; };
-		509DF2480A9F681900AE0859 /* keyboard32.png in Resources */ = {isa = PBXBuildFile; fileRef = 509DF2470A9F681900AE0859 /* keyboard32.png */; };
 		50A0E0210A8F33120067714C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50A0E0200A8F33120067714C /* IOKit.framework */; };
 		50A0E0250A8F332A0067714C /* System.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50A0E0240A8F332A0067714C /* System.framework */; };
-		50A3E08A0E66F7BC00D3564D /* play32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50A3E0890E66F7BC00D3564D /* play32.png */; };
-		50A3E08C0E66F7C400D3564D /* pause32.png in Resources */ = {isa = PBXBuildFile; fileRef = 50A3E08B0E66F7C400D3564D /* pause32.png */; };
 		50A519411B8DA230006771E2 /* drive_click.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 50A519401B8DA230006771E2 /* drive_click.aiff */; };
 		50A519431B8DA360006771E2 /* drive_snatch_uae.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 50A519421B8DA360006771E2 /* drive_snatch_uae.aiff */; };
 		50A52A190C2FD43700A1377F /* D64Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50A52A180C2FD43700A1377F /* D64Archive.cpp */; };
 		50A8F8F30E47171300ACE17D /* RomDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50A8F8F20E47171300ACE17D /* RomDialog.mm */; };
-		50A8F9EA0E472BA800ACE17D /* romMissing.png in Resources */ = {isa = PBXBuildFile; fileRef = 50A8F9E90E472BA800ACE17D /* romMissing.png */; };
 		50AFEDBC0C3A7A78007749E7 /* Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50AFEDBB0C3A7A78007749E7 /* Archive.cpp */; };
 		50B1032F121E7C4C003E7729 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50B1032E121E7C4C003E7729 /* GLUT.framework */; };
 		50B1644C202DD52500447D3E /* ExportDiskController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B1644B202DD52500447D3E /* ExportDiskController.swift */; };
@@ -143,33 +108,9 @@
 		50BF77D220309A2A006E000F /* WindowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BF77D120309A2A006E000F /* WindowDelegate.swift */; };
 		50C72DE41BC7BC8800F1863B /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C72DE31BC7BC8800F1863B /* Metal.framework */; };
 		50C72DE61BC7F42100F1863B /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 50C72DE51BC7F42100F1863B /* Shaders.metal */; };
-		50C8924F1BEFB11700231B96 /* cntrlEject.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C8924E1BEFB11700231B96 /* cntrlEject.png */; };
-		50C892511BEFB31200231B96 /* tape.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892501BEFB31200231B96 /* tape.png */; };
-		50C892531BEFB48600231B96 /* cntrlPause.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892521BEFB48600231B96 /* cntrlPause.png */; };
-		50C892591BEFB64500231B96 /* cntrlPlay.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892541BEFB64500231B96 /* cntrlPlay.png */; };
-		50C8925A1BEFB64500231B96 /* cntrlRewind.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892551BEFB64500231B96 /* cntrlRewind.png */; };
-		50C8925B1BEFB64500231B96 /* cntrlStart.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892561BEFB64500231B96 /* cntrlStart.png */; };
-		50C8925C1BEFB64500231B96 /* cntrlStop.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892571BEFB64500231B96 /* cntrlStop.png */; };
-		50C8925D1BEFB64500231B96 /* ctrlEnd.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C892581BEFB64500231B96 /* ctrlEnd.png */; };
 		50C9B3C51F879A3900EA35C6 /* GamePadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C9B3C41F879A3900EA35C6 /* GamePadManager.swift */; };
-		50C9CB1C1B8213EC0054EE86 /* tb_motherboard.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB1B1B8213EC0054EE86 /* tb_motherboard.png */; };
-		50C9CB201B826C960054EE86 /* joystick.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB1F1B826C960054EE86 /* joystick.png */; };
-		50C9CB241B826CD50054EE86 /* expansion.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB231B826CD50054EE86 /* expansion.png */; };
-		50C9CB2D1B826FF20054EE86 /* graphics.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB2B1B826FF20054EE86 /* graphics.png */; };
 		50C9CB321B8272DA0054EE86 /* HardwareDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50C9CB311B8272DA0054EE86 /* HardwareDialog.mm */; };
-		50C9CB371B83561E0054EE86 /* pref_vic.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB361B83561E0054EE86 /* pref_vic.png */; };
-		50C9CB391B8356280054EE86 /* pref_sid.png in Resources */ = {isa = PBXBuildFile; fileRef = 50C9CB381B8356280054EE86 /* pref_sid.png */; };
 		50CA0D520A9076FD00A5A08D /* OldSID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50CA0D510A9076FD00A5A08D /* OldSID.cpp */; };
-		50CCB1BA1B8499C6008D8C30 /* tb_motherboard2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1B91B8499C6008D8C30 /* tb_motherboard2.png */; };
-		50CCB1BC1B8499DE008D8C30 /* tb_setup.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1BB1B8499DE008D8C30 /* tb_setup.png */; };
-		50CCB1C51B84A185008D8C30 /* tb_inspect.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1C31B84A185008D8C30 /* tb_inspect.png */; };
-		50CCB1C61B84A185008D8C30 /* tb_inspect2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1C41B84A185008D8C30 /* tb_inspect2.png */; };
-		50CCB1C81B84A191008D8C30 /* tb_pacman.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1C71B84A191008D8C30 /* tb_pacman.png */; };
-		50CCB1CC1B84A19F008D8C30 /* tb_timetravel2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1CA1B84A19F008D8C30 /* tb_timetravel2.png */; };
-		50CCB1D01B84A5DD008D8C30 /* tb_virtualmachine.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1CF1B84A5DD008D8C30 /* tb_virtualmachine.png */; };
-		50CCB1D21B84AC10008D8C30 /* none.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1D11B84AC10008D8C30 /* none.png */; };
-		50CCB1D41B84ACA8008D8C30 /* keyboard.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CCB1D31B84ACA8008D8C30 /* keyboard.png */; };
-		50CE89DA13A268E000A2FDCE /* VirtualC64Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50CE89D913A268E000A2FDCE /* VirtualC64Icon.icns */; };
 		50D1072E2019D6C3006E6428 /* MyControllerMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D1072D2019D6C3006E6428 /* MyControllerMenu.swift */; };
 		50D1417E1417A34B0024FC74 /* envelope.cc in Sources */ = {isa = PBXBuildFile; fileRef = 50D141651417A34B0024FC74 /* envelope.cc */; };
 		50D1417F1417A34B0024FC74 /* extfilt.cc in Sources */ = {isa = PBXBuildFile; fileRef = 50D141671417A34B0024FC74 /* extfilt.cc */; };
@@ -188,22 +129,9 @@
 		50D1418C1417A34B0024FC74 /* wave8580_PS_.cc in Sources */ = {isa = PBXBuildFile; fileRef = 50D1417C1417A34B0024FC74 /* wave8580_PS_.cc */; };
 		50D1418D1417A34B0024FC74 /* wave8580_PST.cc in Sources */ = {isa = PBXBuildFile; fileRef = 50D1417D1417A34B0024FC74 /* wave8580_PST.cc */; };
 		50D500520C2ED13F0022CA3A /* T64Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D500510C2ED13F0022CA3A /* T64Archive.cpp */; };
-		50D6954812E3759500D9C738 /* IconCRT.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50D6954312E3759500D9C738 /* IconCRT.icns */; };
-		50D6954912E3759500D9C738 /* IconD64.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50D6954412E3759500D9C738 /* IconD64.icns */; };
-		50D6954B12E3759500D9C738 /* IconT64.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50D6954612E3759500D9C738 /* IconT64.icns */; };
-		50D6954C12E3759500D9C738 /* IconV64.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50D6954712E3759500D9C738 /* IconV64.icns */; };
-		50D6956C12E380E500D9C738 /* IconPRG.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50D6956B12E380E500D9C738 /* IconPRG.icns */; };
-		50DA14A30A6418470022B4A7 /* bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DA14A20A6418470022B4A7 /* bottom.png */; };
 		50DAD6920A736F9B00BB44AC /* VirtualComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50DAD6910A736F9B00BB44AC /* VirtualComponent.cpp */; };
-		50DB328B1B948489000FB839 /* kext.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB328A1B948489000FB839 /* kext.png */; };
 		50DBB44B2025CE5700489271 /* Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DBB44A2025CE5700489271 /* Basics.swift */; };
 		50DEAD8F2008E615008A8761 /* Shaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DEAD8E2008E615008A8761 /* Shaders.swift */; };
-		50E033BB12E3868100ABF9E3 /* IconP00.icns in Resources */ = {isa = PBXBuildFile; fileRef = 50E033BA12E3868100ABF9E3 /* IconP00.icns */; };
-		50E4BFA70C3CE95400CB6B43 /* floppy.png in Resources */ = {isa = PBXBuildFile; fileRef = 50E4BFA60C3CE95400CB6B43 /* floppy.png */; };
-		50E4BFAA0C3CEAB700CB6B43 /* warpOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 50E4BFA90C3CEAB700CB6B43 /* warpOff.png */; };
-		50E4BFAC0C3CEAD100CB6B43 /* warpOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 50E4BFAB0C3CEAD100CB6B43 /* warpOn.png */; };
-		50E555FD0C42698E00AFB05F /* flag_usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 50E555FC0C42698E00AFB05F /* flag_usa.png */; };
-		50E555FF0C42699300AFB05F /* flag_eu.png in Resources */ = {isa = PBXBuildFile; fileRef = 50E555FE0C42699300AFB05F /* flag_eu.png */; };
 		50E6014813A3653900EDBEA9 /* PropertiesDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50E6014713A3653900EDBEA9 /* PropertiesDialog.mm */; };
 		50E9B92D201F299500065A89 /* MyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E9B92C201F299500065A89 /* MyController.swift */; };
 		50E9B92F201FA92C00065A89 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E9B92E201FA92C00065A89 /* Alerts.swift */; };
@@ -212,20 +140,16 @@
 		50F2381E12DF505B00B1F275 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F2381D12DF505B00B1F275 /* Quartz.framework */; };
 		50F238F412DF576600B1F275 /* CheatboxItem.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50F238F312DF576600B1F275 /* CheatboxItem.mm */; };
 		50F239BB12DF66CB00B1F275 /* CheatboxImageBrowserCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50F239BA12DF66CB00B1F275 /* CheatboxImageBrowserCell.mm */; };
-		50F23D0812DF932800B1F275 /* glossy.png in Resources */ = {isa = PBXBuildFile; fileRef = 50F23D0712DF932800B1F275 /* glossy.png */; };
 		50F2AB1B1EF267510040BC3A /* VIC_colors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F2AB1A1EF267510040BC3A /* VIC_colors.cpp */; };
 		50F55DA50F28EADC0040592B /* MyDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50F55DA30F28EADC0040592B /* MyDocument.xib */; };
 		50F55DCD0F28EC010040592B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50F55DCB0F28EC010040592B /* MainMenu.xib */; };
 		50F681E41BEA203F008568E3 /* TapeDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50F681E31BEA203F008568E3 /* TapeDialog.mm */; };
 		50F681E71BEA2927008568E3 /* TAPContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F681E61BEA2927008568E3 /* TAPContainer.cpp */; };
 		50F681EA1BEA3BE4008568E3 /* Datasette.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F681E81BEA3BE4008568E3 /* Datasette.cpp */; };
-		50F8731D1EE7DB6000B30DBD /* del.png in Resources */ = {isa = PBXBuildFile; fileRef = 50F8731C1EE7DB6000B30DBD /* del.png */; };
-		50F8731F1EE7DB6900B30DBD /* home.png in Resources */ = {isa = PBXBuildFile; fileRef = 50F8731E1EE7DB6900B30DBD /* home.png */; };
-		50F873211EE7E42500B30DBD /* restore.png in Resources */ = {isa = PBXBuildFile; fileRef = 50F873201EE7E42500B30DBD /* restore.png */; };
 		50F93BE712EF309900DD6A8A /* FileArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F93BE512EF309900DD6A8A /* FileArchive.cpp */; };
 		50FBE90B12DC992B0093194C /* MyControllerVicPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 50FBE90A12DC992B0093194C /* MyControllerVicPanel.mm */; };
-		50FD96A51BF65861009134A4 /* 1541.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FD96A41BF65861009134A4 /* 1541.png */; };
 		50FF818F1F88D9100004548A /* GamePad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FF818E1F88D9100004548A /* GamePad.swift */; };
+		551DEAF92033755B0091F6AD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 551DEAF82033755B0091F6AD /* Images.xcassets */; };
 		8D15AC2C0486D014006FF6A4 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */; };
 		8D15AC2F0486D014006FF6A4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165FFE840EACC02AAC07 /* InfoPlist.strings */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
@@ -259,9 +183,6 @@
 		32DBCF750370BD2300C91783 /* V64_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = V64_Prefix.pch; sourceTree = "<group>"; };
 		389E777E0C7A3B6F00BEAFA6 /* Joystick.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
 		389E777F0C7A3B6F00BEAFA6 /* Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
-		38AF83890C7BA24A00F6DBCE /* joystick1_32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joystick1_32.png; sourceTree = "<group>"; };
-		38AF838A0C7BA24A00F6DBCE /* joystick2_32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joystick2_32.png; sourceTree = "<group>"; };
-		38AF838B0C7BA24A00F6DBCE /* none32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = none32.png; sourceTree = "<group>"; };
 		5000471012DCE8890098D890 /* MyControllerCpuPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyControllerCpuPanel.h; sourceTree = "<group>"; };
 		5000471112DCE8890098D890 /* MyControllerCpuPanel.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MyControllerCpuPanel.mm; sourceTree = "<group>"; };
 		5000472612DCE9AB0098D890 /* MyControllerMemoryPanel.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MyControllerMemoryPanel.mm; sourceTree = "<group>"; };
@@ -280,8 +201,6 @@
 		500EC05010E4DCC4005A19A3 /* Message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
 		500FC6770D17D2190044131D /* VIA6522.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VIA6522.h; sourceTree = "<group>"; };
 		500FC6780D17D2190044131D /* VIA6522.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VIA6522.cpp; sourceTree = "<group>"; };
-		500FF38F1BD7F4DF0038245B /* rom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rom.png; sourceTree = "<group>"; };
-		500FF3901BD7F4DF0038245B /* rom_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rom_light.png; sourceTree = "<group>"; };
 		50133B96200D4EED00167227 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		50137EB01BCA83B000147283 /* ModelIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ModelIO.framework; path = System/Library/Frameworks/ModelIO.framework; sourceTree = SDKROOT; };
 		5014D683200CD62C00044217 /* MetalSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalSetup.swift; sourceTree = "<group>"; };
@@ -314,25 +233,12 @@
 		5018E47F12240F7100F0820E /* Container.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Container.h; sourceTree = "<group>"; };
 		5018E48012240F7100F0820E /* Container.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Container.cpp; sourceTree = "<group>"; };
 		501D2C7D1B85C0F700B1AD0F /* VIC_globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VIC_globals.h; sourceTree = "<group>"; };
-		5020434D1EE71BB8006C3FD3 /* runstop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = runstop.png; sourceTree = "<group>"; };
 		5020F28A0BBABE3C0093C396 /* IEC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IEC.h; sourceTree = "<group>"; };
 		5020F28B0BBABE3C0093C396 /* IEC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IEC.cpp; sourceTree = "<group>"; };
 		5022FB761EED87B800415BBD /* TimeTravelTouchBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeTravelTouchBar.swift; sourceTree = "<group>"; };
 		50265F56202D00940041C315 /* TapeMountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapeMountController.swift; sourceTree = "<group>"; };
-		50271DE91A7E1CFE00C04290 /* LEDnewRed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDnewRed.png; sourceTree = "<group>"; };
-		50271DEB1A7E458F00C04290 /* LEDnewGreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDnewGreen.png; sourceTree = "<group>"; };
-		50271DED1A7E459800C04290 /* LEDnewGray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDnewGray.png; sourceTree = "<group>"; };
-		50287EEA0A7CA86900292533 /* stepOut32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = stepOut32.png; sourceTree = "<group>"; };
-		502F57F11B93441400D1077E /* LEDgreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDgreen.png; sourceTree = "<group>"; };
-		502F57F31B93441A00D1077E /* LEDred.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDred.png; sourceTree = "<group>"; };
-		502F57F51B93442100D1077E /* LEDgray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDgray.png; sourceTree = "<group>"; };
-		502F57F71B93445300D1077E /* LEDyellow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LEDyellow.png; sourceTree = "<group>"; };
-		502F57F91B93457200D1077E /* fast.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fast.png; sourceTree = "<group>"; };
-		502F57FB1B93457700D1077E /* slow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = slow.png; sourceTree = "<group>"; };
 		5031D599200B47B70088C802 /* ImageUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtilities.swift; sourceTree = "<group>"; };
 		5031D59B200B81D20088C802 /* Animation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animation.swift; sourceTree = "<group>"; };
-		5039A31315BE89940038ACBC /* drive48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = drive48.png; sourceTree = "<group>"; };
-		5039A31F15BE97500038ACBC /* diskette.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = diskette.png; sourceTree = "<group>"; };
 		503A5AD612227C0300EAA95E /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		503DAC612011DDFC0015EFF5 /* MyControllerToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyControllerToolbar.swift; sourceTree = "<group>"; };
 		50412B0C2028F31800CC90A1 /* DiskMountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskMountController.swift; sourceTree = "<group>"; };
@@ -342,15 +248,6 @@
 		504606331BE4B99100463FD7 /* G64Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = G64Archive.h; sourceTree = "<group>"; };
 		5046C412202344F3000D9B1C /* ArchiveMountDialog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ArchiveMountDialog.xib; sourceTree = "<group>"; };
 		5046C414202349EE000D9B1C /* ArchiveMountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveMountController.swift; sourceTree = "<group>"; };
-		50471FE50A7B679A00A8DB94 /* stepInto32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = stepInto32.png; sourceTree = "<group>"; };
-		50471FE70A7B67A100A8DB94 /* stepOver32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = stepOver32.png; sourceTree = "<group>"; };
-		50471FEB0A7B67AE00A8DB94 /* restart32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = restart32.png; sourceTree = "<group>"; };
-		504A22A51BF71FD500B29BEB /* clock_blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clock_blue.png; sourceTree = "<group>"; };
-		504A22A61BF71FD500B29BEB /* clock_green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clock_green.png; sourceTree = "<group>"; };
-		504A22A71BF71FD500B29BEB /* clock_yellow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clock_yellow.png; sourceTree = "<group>"; };
-		504A22A81BF71FD500B29BEB /* clock_red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clock_red.png; sourceTree = "<group>"; };
-		504A22A91BF71FD500B29BEB /* pin_red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pin_red.png; sourceTree = "<group>"; };
-		504A22AA1BF71FD500B29BEB /* pin_black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pin_black.png; sourceTree = "<group>"; };
 		5051A1511B88438800CBFB5A /* 1541_track_change_0.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = 1541_track_change_0.aiff; sourceTree = "<group>"; };
 		5051A1551B884EBE00CBFB5A /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		5051A1591B885E1B00CBFB5A /* 1541_door_closed_2.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = 1541_door_closed_2.aiff; sourceTree = "<group>"; };
@@ -363,7 +260,6 @@
 		5052AD0D202A5C1B005FDD88 /* CartridgeMountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartridgeMountController.swift; sourceTree = "<group>"; };
 		5054BF0F20133BA2003D86D4 /* Cartridge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Cartridge.cpp; sourceTree = "<group>"; };
 		5054BF1020133BA2003D86D4 /* Cartridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Cartridge.h; sourceTree = "<group>"; };
-		505529BB2033014B006004B3 /* rom_medium.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rom_medium.png; sourceTree = "<group>"; };
 		5055A83E1BC7996900399A20 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		505739E31C01FC5700B80646 /* NIBArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NIBArchive.cpp; sourceTree = "<group>"; };
 		505739E41C01FC5700B80646 /* NIBArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NIBArchive.h; sourceTree = "<group>"; };
@@ -394,32 +290,25 @@
 		5077743112DE490B00D72088 /* CpuTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CpuTableView.h; sourceTree = "<group>"; };
 		5077743212DE490B00D72088 /* CpuTableView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CpuTableView.mm; sourceTree = "<group>"; };
 		507CFDAF2013E765007FED87 /* MyControllerCartridges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyControllerCartridges.swift; sourceTree = "<group>"; };
-		5080F3581EE74784001313D4 /* commodore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = commodore.png; sourceTree = "<group>"; };
 		5081AB621EF29E6400D6F616 /* AudioEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
-		5087FD581BDA16C400570F0D /* metal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = metal.png; sourceTree = "<group>"; };
 		5088A6D412E0676200378033 /* MyControllerDebugPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyControllerDebugPanel.h; sourceTree = "<group>"; };
 		5088A6D512E0676200378033 /* MyControllerDebugPanel.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MyControllerDebugPanel.mm; sourceTree = "<group>"; };
 		5088E6861C3515DB006A80E5 /* VC64Object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VC64Object.cpp; sourceTree = "<group>"; };
 		5088E6871C3515DB006A80E5 /* VC64Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VC64Object.h; sourceTree = "<group>"; };
 		5092A5B0200BC4B70037754D /* DragAndDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragAndDrop.swift; sourceTree = "<group>"; };
-		5094197C0E426C13008D6F71 /* cartridge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cartridge.png; sourceTree = "<group>"; };
 		509A26062027AA1100D28827 /* DiskMountDialog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DiskMountDialog.xib; sourceTree = "<group>"; };
 		509AEA0A0C324AB0001FC9FD /* PRGArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRGArchive.h; sourceTree = "<group>"; };
 		509AEA0B0C324AB0001FC9FD /* PRGArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PRGArchive.cpp; sourceTree = "<group>"; };
 		509AEAFD0C325EFB001FC9FD /* P00Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = P00Archive.h; sourceTree = "<group>"; };
 		509AEAFE0C325EFB001FC9FD /* P00Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = P00Archive.cpp; sourceTree = "<group>"; };
-		509DF2470A9F681900AE0859 /* keyboard32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = keyboard32.png; sourceTree = "<group>"; };
 		50A0E0200A8F33120067714C /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
 		50A0E0240A8F332A0067714C /* System.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = System.framework; path = /System/Library/Frameworks/System.framework; sourceTree = "<absolute>"; };
-		50A3E0890E66F7BC00D3564D /* play32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = play32.png; sourceTree = "<group>"; };
-		50A3E08B0E66F7C400D3564D /* pause32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pause32.png; sourceTree = "<group>"; };
 		50A519401B8DA230006771E2 /* drive_click.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = drive_click.aiff; sourceTree = "<group>"; };
 		50A519421B8DA360006771E2 /* drive_snatch_uae.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = drive_snatch_uae.aiff; sourceTree = "<group>"; };
 		50A52A170C2FD43700A1377F /* D64Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = D64Archive.h; sourceTree = "<group>"; };
 		50A52A180C2FD43700A1377F /* D64Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = D64Archive.cpp; sourceTree = "<group>"; };
 		50A8F8F10E47171300ACE17D /* RomDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RomDialog.h; sourceTree = "<group>"; };
 		50A8F8F20E47171300ACE17D /* RomDialog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RomDialog.mm; sourceTree = "<group>"; };
-		50A8F9E90E472BA800ACE17D /* romMissing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = romMissing.png; sourceTree = "<group>"; };
 		50AFEDBB0C3A7A78007749E7 /* Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Archive.cpp; sourceTree = "<group>"; };
 		50B1032E121E7C4C003E7729 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		50B1644B202DD52500447D3E /* ExportDiskController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportDiskController.swift; sourceTree = "<group>"; };
@@ -437,35 +326,11 @@
 		50BF77D120309A2A006E000F /* WindowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDelegate.swift; sourceTree = "<group>"; };
 		50C72DE31BC7BC8800F1863B /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		50C72DE51BC7F42100F1863B /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
-		50C8924E1BEFB11700231B96 /* cntrlEject.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlEject.png; sourceTree = "<group>"; };
-		50C892501BEFB31200231B96 /* tape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tape.png; sourceTree = "<group>"; };
-		50C892521BEFB48600231B96 /* cntrlPause.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlPause.png; sourceTree = "<group>"; };
-		50C892541BEFB64500231B96 /* cntrlPlay.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlPlay.png; sourceTree = "<group>"; };
-		50C892551BEFB64500231B96 /* cntrlRewind.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlRewind.png; sourceTree = "<group>"; };
-		50C892561BEFB64500231B96 /* cntrlStart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlStart.png; sourceTree = "<group>"; };
-		50C892571BEFB64500231B96 /* cntrlStop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cntrlStop.png; sourceTree = "<group>"; };
-		50C892581BEFB64500231B96 /* ctrlEnd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ctrlEnd.png; sourceTree = "<group>"; };
 		50C9B3C41F879A3900EA35C6 /* GamePadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePadManager.swift; sourceTree = "<group>"; };
-		50C9CB1B1B8213EC0054EE86 /* tb_motherboard.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_motherboard.png; sourceTree = "<group>"; };
-		50C9CB1F1B826C960054EE86 /* joystick.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = joystick.png; sourceTree = "<group>"; };
-		50C9CB231B826CD50054EE86 /* expansion.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = expansion.png; sourceTree = "<group>"; };
-		50C9CB2B1B826FF20054EE86 /* graphics.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = graphics.png; sourceTree = "<group>"; };
 		50C9CB311B8272DA0054EE86 /* HardwareDialog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HardwareDialog.mm; sourceTree = "<group>"; };
 		50C9CB331B8272F40054EE86 /* HardwareDialog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HardwareDialog.h; sourceTree = "<group>"; };
-		50C9CB361B83561E0054EE86 /* pref_vic.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pref_vic.png; sourceTree = "<group>"; };
-		50C9CB381B8356280054EE86 /* pref_sid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pref_sid.png; sourceTree = "<group>"; };
 		50CA0D500A9076FD00A5A08D /* OldSID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OldSID.h; sourceTree = "<group>"; };
 		50CA0D510A9076FD00A5A08D /* OldSID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OldSID.cpp; sourceTree = "<group>"; };
-		50CCB1B91B8499C6008D8C30 /* tb_motherboard2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_motherboard2.png; sourceTree = "<group>"; };
-		50CCB1BB1B8499DE008D8C30 /* tb_setup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_setup.png; sourceTree = "<group>"; };
-		50CCB1C31B84A185008D8C30 /* tb_inspect.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_inspect.png; sourceTree = "<group>"; };
-		50CCB1C41B84A185008D8C30 /* tb_inspect2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_inspect2.png; sourceTree = "<group>"; };
-		50CCB1C71B84A191008D8C30 /* tb_pacman.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_pacman.png; sourceTree = "<group>"; };
-		50CCB1CA1B84A19F008D8C30 /* tb_timetravel2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_timetravel2.png; sourceTree = "<group>"; };
-		50CCB1CF1B84A5DD008D8C30 /* tb_virtualmachine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tb_virtualmachine.png; sourceTree = "<group>"; };
-		50CCB1D11B84AC10008D8C30 /* none.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = none.png; sourceTree = "<group>"; };
-		50CCB1D31B84ACA8008D8C30 /* keyboard.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = keyboard.png; sourceTree = "<group>"; };
-		50CE89D913A268E000A2FDCE /* VirtualC64Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = VirtualC64Icon.icns; sourceTree = "<group>"; };
 		50D1072D2019D6C3006E6428 /* MyControllerMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyControllerMenu.swift; sourceTree = "<group>"; };
 		50D141651417A34B0024FC74 /* envelope.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = envelope.cc; sourceTree = "<group>"; };
 		50D141661417A34B0024FC74 /* envelope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = envelope.h; sourceTree = "<group>"; };
@@ -496,23 +361,10 @@
 		50D5004B0C2ED1200022CA3A /* Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Archive.h; sourceTree = "<group>"; };
 		50D500500C2ED13F0022CA3A /* T64Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = T64Archive.h; sourceTree = "<group>"; };
 		50D500510C2ED13F0022CA3A /* T64Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = T64Archive.cpp; sourceTree = "<group>"; };
-		50D6954312E3759500D9C738 /* IconCRT.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconCRT.icns; sourceTree = "<group>"; };
-		50D6954412E3759500D9C738 /* IconD64.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconD64.icns; sourceTree = "<group>"; };
-		50D6954612E3759500D9C738 /* IconT64.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconT64.icns; sourceTree = "<group>"; };
-		50D6954712E3759500D9C738 /* IconV64.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconV64.icns; sourceTree = "<group>"; };
-		50D6956B12E380E500D9C738 /* IconPRG.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconPRG.icns; sourceTree = "<group>"; };
-		50DA14A20A6418470022B4A7 /* bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bottom.png; sourceTree = "<group>"; };
 		50DAD6900A736F9B00BB44AC /* VirtualComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualComponent.h; sourceTree = "<group>"; };
 		50DAD6910A736F9B00BB44AC /* VirtualComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualComponent.cpp; sourceTree = "<group>"; };
-		50DB328A1B948489000FB839 /* kext.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kext.png; sourceTree = "<group>"; };
 		50DBB44A2025CE5700489271 /* Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Basics.swift; sourceTree = "<group>"; };
 		50DEAD8E2008E615008A8761 /* Shaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shaders.swift; sourceTree = "<group>"; };
-		50E033BA12E3868100ABF9E3 /* IconP00.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = IconP00.icns; sourceTree = "<group>"; };
-		50E4BFA60C3CE95400CB6B43 /* floppy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = floppy.png; sourceTree = "<group>"; };
-		50E4BFA90C3CEAB700CB6B43 /* warpOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = warpOff.png; sourceTree = "<group>"; };
-		50E4BFAB0C3CEAD100CB6B43 /* warpOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = warpOn.png; sourceTree = "<group>"; };
-		50E555FC0C42698E00AFB05F /* flag_usa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flag_usa.png; sourceTree = "<group>"; };
-		50E555FE0C42699300AFB05F /* flag_eu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flag_eu.png; sourceTree = "<group>"; };
 		50E6014613A3653900EDBEA9 /* PropertiesDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesDialog.h; sourceTree = "<group>"; };
 		50E6014713A3653900EDBEA9 /* PropertiesDialog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PropertiesDialog.mm; sourceTree = "<group>"; };
 		50E9B92C201F299500065A89 /* MyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyController.swift; sourceTree = "<group>"; };
@@ -526,7 +378,6 @@
 		50F238F312DF576600B1F275 /* CheatboxItem.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CheatboxItem.mm; sourceTree = "<group>"; };
 		50F239B912DF66CB00B1F275 /* CheatboxImageBrowserCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheatboxImageBrowserCell.h; sourceTree = "<group>"; };
 		50F239BA12DF66CB00B1F275 /* CheatboxImageBrowserCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CheatboxImageBrowserCell.mm; sourceTree = "<group>"; };
-		50F23D0712DF932800B1F275 /* glossy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glossy.png; sourceTree = "<group>"; };
 		50F2AB1A1EF267510040BC3A /* VIC_colors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VIC_colors.cpp; sourceTree = "<group>"; };
 		50F55DA40F28EADC0040592B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MyDocument.xib; sourceTree = "<group>"; };
 		50F55DCC0F28EC010040592B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -536,15 +387,12 @@
 		50F681E61BEA2927008568E3 /* TAPContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TAPContainer.cpp; sourceTree = "<group>"; };
 		50F681E81BEA3BE4008568E3 /* Datasette.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Datasette.cpp; sourceTree = "<group>"; };
 		50F681E91BEA3BE4008568E3 /* Datasette.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Datasette.h; sourceTree = "<group>"; };
-		50F8731C1EE7DB6000B30DBD /* del.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = del.png; sourceTree = "<group>"; };
-		50F8731E1EE7DB6900B30DBD /* home.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = home.png; sourceTree = "<group>"; };
-		50F873201EE7E42500B30DBD /* restore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = restore.png; sourceTree = "<group>"; };
 		50F93BE512EF309900DD6A8A /* FileArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileArchive.cpp; sourceTree = "<group>"; };
 		50F93BE612EF309900DD6A8A /* FileArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileArchive.h; sourceTree = "<group>"; };
 		50FBE90912DC992B0093194C /* MyControllerVicPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyControllerVicPanel.h; sourceTree = "<group>"; };
 		50FBE90A12DC992B0093194C /* MyControllerVicPanel.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MyControllerVicPanel.mm; sourceTree = "<group>"; };
-		50FD96A41BF65861009134A4 /* 1541.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1541.png; sourceTree = "<group>"; };
 		50FF818E1F88D9100004548A /* GamePad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePad.swift; sourceTree = "<group>"; };
+		551DEAF82033755B0091F6AD /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		8D15AC360486D014006FF6A4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* VirtualC64.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualC64.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -632,7 +480,7 @@
 			children = (
 				5018A2721F17FC5000707AFA /* C64_Pro_Mono-STYLE.ttf */,
 				503A5AD612227C0300EAA95E /* dsa_pub.pem */,
-				50732BCA0A70D560008D8FF0 /* Images */,
+				551DEAF82033755B0091F6AD /* Images.xcassets */,
 				5051A1501B8842F100CBFB5A /* Sounds */,
 				2A37F4B9FDCFA73011CA2CEA /* Credits.rtf */,
 				8D15AC360486D014006FF6A4 /* Info.plist */,
@@ -894,74 +742,6 @@
 			path = sounds;
 			sourceTree = "<group>";
 		};
-		50732BCA0A70D560008D8FF0 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				5080F3511EE7469C001313D4 /* TouchBar Icons */,
-				50CCB1B81B84999E008D8C30 /* Toolbar icons */,
-				50D6955012E375A800D9C738 /* Icons */,
-				50FD96A41BF65861009134A4 /* 1541.png */,
-				504A22A61BF71FD500B29BEB /* clock_green.png */,
-				504A22A71BF71FD500B29BEB /* clock_yellow.png */,
-				504A22A81BF71FD500B29BEB /* clock_red.png */,
-				504A22A51BF71FD500B29BEB /* clock_blue.png */,
-				504A22A91BF71FD500B29BEB /* pin_red.png */,
-				504A22AA1BF71FD500B29BEB /* pin_black.png */,
-				50C8924E1BEFB11700231B96 /* cntrlEject.png */,
-				50C892521BEFB48600231B96 /* cntrlPause.png */,
-				50C892541BEFB64500231B96 /* cntrlPlay.png */,
-				50C892551BEFB64500231B96 /* cntrlRewind.png */,
-				50C892561BEFB64500231B96 /* cntrlStart.png */,
-				50C892571BEFB64500231B96 /* cntrlStop.png */,
-				50C892581BEFB64500231B96 /* ctrlEnd.png */,
-				50C9CB361B83561E0054EE86 /* pref_vic.png */,
-				50C9CB381B8356280054EE86 /* pref_sid.png */,
-				50C9CB2B1B826FF20054EE86 /* graphics.png */,
-				50C9CB1F1B826C960054EE86 /* joystick.png */,
-				50C9CB231B826CD50054EE86 /* expansion.png */,
-				50DB328A1B948489000FB839 /* kext.png */,
-				50F23D0712DF932800B1F275 /* glossy.png */,
-				5039A31315BE89940038ACBC /* drive48.png */,
-				5039A31F15BE97500038ACBC /* diskette.png */,
-				50C892501BEFB31200231B96 /* tape.png */,
-				502F57F11B93441400D1077E /* LEDgreen.png */,
-				502F57F31B93441A00D1077E /* LEDred.png */,
-				502F57F51B93442100D1077E /* LEDgray.png */,
-				502F57F71B93445300D1077E /* LEDyellow.png */,
-				50271DE91A7E1CFE00C04290 /* LEDnewRed.png */,
-				50271DEB1A7E458F00C04290 /* LEDnewGreen.png */,
-				50271DED1A7E459800C04290 /* LEDnewGray.png */,
-				5087FD581BDA16C400570F0D /* metal.png */,
-				50DA14A20A6418470022B4A7 /* bottom.png */,
-				50E555FE0C42699300AFB05F /* flag_eu.png */,
-				50E555FC0C42698E00AFB05F /* flag_usa.png */,
-				50E4BFA60C3CE95400CB6B43 /* floppy.png */,
-				38AF83890C7BA24A00F6DBCE /* joystick1_32.png */,
-				38AF838A0C7BA24A00F6DBCE /* joystick2_32.png */,
-				509DF2470A9F681900AE0859 /* keyboard32.png */,
-				50CCB1D31B84ACA8008D8C30 /* keyboard.png */,
-				38AF838B0C7BA24A00F6DBCE /* none32.png */,
-				50CCB1D11B84AC10008D8C30 /* none.png */,
-				50A3E08B0E66F7C400D3564D /* pause32.png */,
-				50A3E0890E66F7BC00D3564D /* play32.png */,
-				50471FEB0A7B67AE00A8DB94 /* restart32.png */,
-				500FF38F1BD7F4DF0038245B /* rom.png */,
-				505529BB2033014B006004B3 /* rom_medium.png */,
-				500FF3901BD7F4DF0038245B /* rom_light.png */,
-				5094197C0E426C13008D6F71 /* cartridge.png */,
-				50A8F9E90E472BA800ACE17D /* romMissing.png */,
-				50471FE50A7B679A00A8DB94 /* stepInto32.png */,
-				50287EEA0A7CA86900292533 /* stepOut32.png */,
-				50471FE70A7B67A100A8DB94 /* stepOver32.png */,
-				50E4BFA90C3CEAB700CB6B43 /* warpOff.png */,
-				50E4BFAB0C3CEAD100CB6B43 /* warpOn.png */,
-				502F57F91B93457200D1077E /* fast.png */,
-				502F57FB1B93457700D1077E /* slow.png */,
-			);
-			name = Images;
-			path = images;
-			sourceTree = "<group>";
-		};
 		50763278202989E000575110 /* UserDialogs */ = {
 			isa = PBXGroup;
 			children = (
@@ -976,18 +756,6 @@
 				506D54CB2032255A0026D8B4 /* RomDropView.swift */,
 			);
 			name = UserDialogs;
-			sourceTree = "<group>";
-		};
-		5080F3511EE7469C001313D4 /* TouchBar Icons */ = {
-			isa = PBXGroup;
-			children = (
-				50F873201EE7E42500B30DBD /* restore.png */,
-				50F8731E1EE7DB6900B30DBD /* home.png */,
-				50F8731C1EE7DB6000B30DBD /* del.png */,
-				5080F3581EE74784001313D4 /* commodore.png */,
-				5020434D1EE71BB8006C3FD3 /* runstop.png */,
-			);
-			name = "TouchBar Icons";
 			sourceTree = "<group>";
 		};
 		509AE9FE0C3249D4001FC9FD /* Loading and saving */ = {
@@ -1061,21 +829,6 @@
 			name = MetalView;
 			sourceTree = "<group>";
 		};
-		50CCB1B81B84999E008D8C30 /* Toolbar icons */ = {
-			isa = PBXGroup;
-			children = (
-				50CCB1C31B84A185008D8C30 /* tb_inspect.png */,
-				50CCB1C41B84A185008D8C30 /* tb_inspect2.png */,
-				50CCB1CF1B84A5DD008D8C30 /* tb_virtualmachine.png */,
-				50C9CB1B1B8213EC0054EE86 /* tb_motherboard.png */,
-				50CCB1B91B8499C6008D8C30 /* tb_motherboard2.png */,
-				50CCB1BB1B8499DE008D8C30 /* tb_setup.png */,
-				50CCB1C71B84A191008D8C30 /* tb_pacman.png */,
-				50CCB1CA1B84A19F008D8C30 /* tb_timetravel2.png */,
-			);
-			name = "Toolbar icons";
-			sourceTree = "<group>";
-		};
 		50D141641417A34B0024FC74 /* resid */ = {
 			isa = PBXGroup;
 			children = (
@@ -1106,20 +859,6 @@
 				50D1417D1417A34B0024FC74 /* wave8580_PST.cc */,
 			);
 			path = resid;
-			sourceTree = "<group>";
-		};
-		50D6955012E375A800D9C738 /* Icons */ = {
-			isa = PBXGroup;
-			children = (
-				50CE89D913A268E000A2FDCE /* VirtualC64Icon.icns */,
-				50D6954312E3759500D9C738 /* IconCRT.icns */,
-				50D6954412E3759500D9C738 /* IconD64.icns */,
-				50D6954612E3759500D9C738 /* IconT64.icns */,
-				50D6954712E3759500D9C738 /* IconV64.icns */,
-				50D6956B12E380E500D9C738 /* IconPRG.icns */,
-				50E033BA12E3868100ABF9E3 /* IconP00.icns */,
-			);
-			name = Icons;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1178,104 +917,28 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50CCB1BA1B8499C6008D8C30 /* tb_motherboard2.png in Resources */,
+				551DEAF92033755B0091F6AD /* Images.xcassets in Resources */,
 				5052AD0A202A526E005FDD88 /* CartridgeMountDialog.xib in Resources */,
 				8D15AC2C0486D014006FF6A4 /* Credits.rtf in Resources */,
-				50C8925B1BEFB64500231B96 /* cntrlStart.png in Resources */,
 				50B1644E202DDAA600447D3E /* ExportDiskDialog.xib in Resources */,
 				8D15AC2F0486D014006FF6A4 /* InfoPlist.strings in Resources */,
-				50C8924F1BEFB11700231B96 /* cntrlEject.png in Resources */,
 				5018A2731F17FC5000707AFA /* C64_Pro_Mono-STYLE.ttf in Resources */,
-				50C9CB201B826C960054EE86 /* joystick.png in Resources */,
-				50DA14A30A6418470022B4A7 /* bottom.png in Resources */,
-				5080F3591EE74784001313D4 /* commodore.png in Resources */,
-				502F57FC1B93457700D1077E /* slow.png in Resources */,
-				50471FE60A7B679A00A8DB94 /* stepInto32.png in Resources */,
-				50DB328B1B948489000FB839 /* kext.png in Resources */,
-				502F57F61B93442100D1077E /* LEDgray.png in Resources */,
-				50471FE80A7B67A100A8DB94 /* stepOver32.png in Resources */,
-				50271DEA1A7E1CFE00C04290 /* LEDnewRed.png in Resources */,
-				50471FEC0A7B67AE00A8DB94 /* restart32.png in Resources */,
 				5052AD0C202A57C4005FDD88 /* TapeMountDialog.xib in Resources */,
-				50287EEB0A7CA86900292533 /* stepOut32.png in Resources */,
-				502F57FA1B93457200D1077E /* fast.png in Resources */,
-				50C9CB371B83561E0054EE86 /* pref_vic.png in Resources */,
-				509DF2480A9F681900AE0859 /* keyboard32.png in Resources */,
-				50C8925A1BEFB64500231B96 /* cntrlRewind.png in Resources */,
 				509A26072027AA1100D28827 /* DiskMountDialog.xib in Resources */,
-				50C892591BEFB64500231B96 /* cntrlPlay.png in Resources */,
-				504A22B01BF71FD500B29BEB /* pin_black.png in Resources */,
-				504A22AB1BF71FD500B29BEB /* clock_blue.png in Resources */,
 				5046C413202344F3000D9B1C /* ArchiveMountDialog.xib in Resources */,
-				500FF3911BD7F4DF0038245B /* rom.png in Resources */,
-				50E4BFA70C3CE95400CB6B43 /* floppy.png in Resources */,
-				504A22AF1BF71FD500B29BEB /* pin_red.png in Resources */,
-				50FD96A51BF65861009134A4 /* 1541.png in Resources */,
-				50E4BFAA0C3CEAB700CB6B43 /* warpOff.png in Resources */,
-				500FF3921BD7F4DF0038245B /* rom_light.png in Resources */,
-				50F873211EE7E42500B30DBD /* restore.png in Resources */,
-				50E4BFAC0C3CEAD100CB6B43 /* warpOn.png in Resources */,
 				5051A15B1B885E1B00CBFB5A /* 1541_door_closed_2.aiff in Resources */,
-				504A22AC1BF71FD500B29BEB /* clock_green.png in Resources */,
-				50271DEC1A7E458F00C04290 /* LEDnewGreen.png in Resources */,
-				5020434E1EE71BB8006C3FD3 /* runstop.png in Resources */,
-				50C9CB2D1B826FF20054EE86 /* graphics.png in Resources */,
-				50C9CB1C1B8213EC0054EE86 /* tb_motherboard.png in Resources */,
 				50A519411B8DA230006771E2 /* drive_click.aiff in Resources */,
 				5051A1521B88438800CBFB5A /* 1541_track_change_0.aiff in Resources */,
-				50E555FD0C42698E00AFB05F /* flag_usa.png in Resources */,
-				50C892511BEFB31200231B96 /* tape.png in Resources */,
-				50C9CB391B8356280054EE86 /* pref_sid.png in Resources */,
 				5051A15F1B885FDD00CBFB5A /* 1541_power_on_0.aiff in Resources */,
-				50CCB1D21B84AC10008D8C30 /* none.png in Resources */,
-				50E555FF0C42699300AFB05F /* flag_eu.png in Resources */,
-				50CCB1C61B84A185008D8C30 /* tb_inspect2.png in Resources */,
 				5051A1601B885FDD00CBFB5A /* 1541_track_change_2.aiff in Resources */,
-				38AF838C0C7BA24A00F6DBCE /* joystick1_32.png in Resources */,
-				38AF838D0C7BA24A00F6DBCE /* joystick2_32.png in Resources */,
-				504A22AD1BF71FD500B29BEB /* clock_yellow.png in Resources */,
-				504A22AE1BF71FD500B29BEB /* clock_red.png in Resources */,
-				50CCB1D41B84ACA8008D8C30 /* keyboard.png in Resources */,
-				38AF838E0C7BA24A00F6DBCE /* none32.png in Resources */,
-				50CCB1BC1B8499DE008D8C30 /* tb_setup.png in Resources */,
-				50C892531BEFB48600231B96 /* cntrlPause.png in Resources */,
-				5094197D0E426C13008D6F71 /* cartridge.png in Resources */,
-				50C8925C1BEFB64500231B96 /* cntrlStop.png in Resources */,
-				50F8731F1EE7DB6900B30DBD /* home.png in Resources */,
-				50A8F9EA0E472BA800ACE17D /* romMissing.png in Resources */,
 				506D54CA20321EDF0026D8B4 /* RomDialog.xib in Resources */,
-				50A3E08A0E66F7BC00D3564D /* play32.png in Resources */,
-				50A3E08C0E66F7C400D3564D /* pause32.png in Resources */,
-				502F57F41B93441A00D1077E /* LEDred.png in Resources */,
-				50CCB1C81B84A191008D8C30 /* tb_pacman.png in Resources */,
-				502F57F21B93441400D1077E /* LEDgreen.png in Resources */,
 				50F55DA50F28EADC0040592B /* MyDocument.xib in Resources */,
-				502F57F81B93445300D1077E /* LEDyellow.png in Resources */,
-				50CCB1D01B84A5DD008D8C30 /* tb_virtualmachine.png in Resources */,
 				50F55DCD0F28EC010040592B /* MainMenu.xib in Resources */,
 				50A519431B8DA360006771E2 /* drive_snatch_uae.aiff in Resources */,
-				50CCB1CC1B84A19F008D8C30 /* tb_timetravel2.png in Resources */,
-				50CCB1C51B84A185008D8C30 /* tb_inspect.png in Resources */,
 				5051A1621B88661000CBFB5A /* 1541_track_change_1.aiff in Resources */,
 				503A5AD712227C0300EAA95E /* dsa_pub.pem in Resources */,
-				50F23D0812DF932800B1F275 /* glossy.png in Resources */,
-				50D6954812E3759500D9C738 /* IconCRT.icns in Resources */,
-				505529BC2033014B006004B3 /* rom_medium.png in Resources */,
-				50D6954912E3759500D9C738 /* IconD64.icns in Resources */,
-				50271DEE1A7E459800C04290 /* LEDnewGray.png in Resources */,
-				50D6954B12E3759500D9C738 /* IconT64.icns in Resources */,
-				50D6954C12E3759500D9C738 /* IconV64.icns in Resources */,
-				50D6956C12E380E500D9C738 /* IconPRG.icns in Resources */,
-				50C8925D1BEFB64500231B96 /* ctrlEnd.png in Resources */,
-				5087FD591BDA16C400570F0D /* metal.png in Resources */,
 				5020434C1EE71B47006C3FD3 /* (null) in Resources */,
-				50E033BB12E3868100ABF9E3 /* IconP00.icns in Resources */,
-				50CE89DA13A268E000A2FDCE /* VirtualC64Icon.icns in Resources */,
 				5051A15C1B885E1B00CBFB5A /* 1541_door_open_1.aiff in Resources */,
-				50C9CB241B826CD50054EE86 /* expansion.png in Resources */,
-				5039A31415BE89940038ACBC /* drive48.png in Resources */,
-				50F8731D1EE7DB6000B30DBD /* del.png in Resources */,
-				5039A32015BE97500038ACBC /* diskette.png in Resources */,
 				50186A20202E31B700EEAD72 /* ExportScreenshotDialog.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1444,6 +1107,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VirtualC64Icon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -1494,6 +1158,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VirtualC64Icon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -1543,6 +1208,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VirtualC64Icon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;

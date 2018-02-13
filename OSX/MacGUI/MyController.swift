@@ -291,11 +291,11 @@ extension MyController {
              MSG_ALWAYS_WARP_OFF:
 
             if c64.alwaysWarp {
-                warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "pin_red"))
+                warpIcon.image = #imageLiteral(resourceName: "pin_red")
             } else if c64.warp {
-                warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "clock_red"))
+                warpIcon.image = #imageLiteral(resourceName: "clock_red")
             } else {
-                warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "clock_green"))
+                warpIcon.image = #imageLiteral(resourceName: "clock_green")
             }
             break
     
@@ -307,12 +307,12 @@ extension MyController {
     
         case MSG_VC1541_ATTACHED:
             
-            greenLED.image = NSImage.init(named: NSImage.Name(rawValue:"LEDgreen"))
+            greenLED.image = #imageLiteral(resourceName: "LEDgreen")
             break
 
         case MSG_VC1541_DETACHED:
             
-            greenLED.image = NSImage.init(named: NSImage.Name(rawValue:"LEDgray"))
+            greenLED.image = #imageLiteral(resourceName: "LEDgray") 
             break
 
         case MSG_VC1541_ATTACHED_SOUND:

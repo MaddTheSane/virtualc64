@@ -44,7 +44,7 @@ extension NSImage {
         
         let width  = size.width
         let height = size.height
-        let glossy = NSImage(named: NSImage.Name(rawValue: "glossy.png"))
+        let glossy = NSImage(named: NSImage.Name(rawValue: "glossy"))!
         let rect   = NSRect(x: 0, y: 0, width: width, height: height)
         
         lockFocus()
@@ -52,7 +52,7 @@ extension NSImage {
         //         draw(in: rect, from: NSZeroRect, operation: NSCompositeSourceOver, fraction: 1.0)
         //         glossy!.draw(in: rect, from: NSZeroRect, operation: NSCompositeSourceOver, fraction: 1.0)
         draw(in: rect, from: NSZeroRect, operation: sourceOver, fraction: 1.0)
-        glossy!.draw(in: rect, from: NSZeroRect, operation: sourceOver, fraction: 1.0)
+        glossy.draw(in: rect, from: NSZeroRect, operation: sourceOver, fraction: 1.0)
         unlockFocus()
     }
 }

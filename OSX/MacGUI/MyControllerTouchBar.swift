@@ -152,8 +152,8 @@ extension MyController : NSTouchBarDelegate
             
         case NSTouchBarItem.Identifier.ttpopover:
             let item = NSPopoverTouchBarItem(identifier: identifier)
-            let icon = NSImage(named: NSImage.Name(rawValue: "tb_timetravel2.png"))
-            let resizedIcon = icon?.resizeImage(width: 24, height: 24)
+            let icon = #imageLiteral(resourceName: "tb_timetravel2")
+            let resizedIcon = icon.resizeImage(width: 24, height: 24)
             item.customizationLabel = "Time travel"
             item.collapsedRepresentationImage = resizedIcon
             item.popoverTouchBar = TimeTravelTouchBar (parent: item, controller:self)
