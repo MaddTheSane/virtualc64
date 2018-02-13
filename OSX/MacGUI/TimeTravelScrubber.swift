@@ -71,13 +71,13 @@ class TimeTravelScrubber : NSCustomTouchBarItem, NSScrubberDelegate, NSScrubberD
     public func numberOfItems(for scrubber: NSScrubber) -> Int
     {
         // return min(c!.c64.historicSnapshots(), 10)
-        return c!.c64.historicSnapshots()
+        return c!.c64.historicSnapshots
     }
     
     public func scrubber(_ scrubber: NSScrubber, viewForItemAt index: Int) -> NSScrubberItemView {
         let itemView = scrubber.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: TimeTravelScrubber.timetravelViewId), owner: self) as! NSScrubberImageItemView
         
-        assert(index < c!.c64.historicSnapshots())
+        assert(index < c!.c64.historicSnapshots)
         
         // determine corresponding snapshot index in time travel buffer
         let ttindex = numberOfItems(for: scrubber) - index - 1
@@ -89,7 +89,7 @@ class TimeTravelScrubber : NSCustomTouchBarItem, NSScrubberDelegate, NSScrubberD
     // NSScrubberFlowLayoutDelegate
     func scrubber(_ scrubber: NSScrubber, layout: NSScrubberFlowLayout, sizeForItemAt itemIndex: Int) -> NSSize {
         
-        assert(itemIndex < c!.c64.historicSnapshots())
+        assert(itemIndex < c!.c64.historicSnapshots)
         let w = c!.c64.historicSnapshotImageWidth(itemIndex)
         let h = c!.c64.historicSnapshotImageHeight(itemIndex)
         // return NSSize(width: 40, height: (40*h/w))

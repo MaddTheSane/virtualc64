@@ -150,7 +150,7 @@ extension MyController {
         if (animationCounter % 1) == 0 {
  
             // Refresh debug panel if open
-            if c64.isRunning() {
+            if c64.isRunning {
                 let state = debugPanel.state
                 if state == NSDrawerState.open || state == NSDrawerState.opening {
                     refresh()
@@ -186,7 +186,7 @@ extension MyController {
         
         // Do 3 times a second ...
         if (animationCounter % 4) == 0 {
-            speedometer.updateWith(cycle: c64.cycles(), frame: metalScreen.frames)
+            speedometer.updateWith(cycle: c64.cycles, frame: metalScreen.frames)
             let mhz = speedometer.mhz(digits: 2)
             let fps = speedometer.fps(digits: 0)
             clockSpeed.stringValue = String(format:"%.2f MHz %.0f fps", mhz, fps)
@@ -290,9 +290,9 @@ extension MyController {
              MSG_ALWAYS_WARP_ON,
              MSG_ALWAYS_WARP_OFF:
 
-            if c64.alwaysWarp() {
+            if c64.alwaysWarp {
                 warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "pin_red"))
-            } else if (c64.warp()) {
+            } else if c64.warp {
                 warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "clock_red"))
             } else {
                 warpIcon.image = NSImage.init(named: NSImage.Name(rawValue: "clock_green"))
@@ -510,7 +510,7 @@ extension MyController {
         
         // Which mount dialog should we use?
         var controller: UserDialogController!
-        switch attachment.type() {
+        switch attachment.type {
         case T64_CONTAINER,
              PRG_CONTAINER,
              P00_CONTAINER,
@@ -530,7 +530,7 @@ extension MyController {
             
             // Check if we support this cartridge
             let crt = attachment as! CRTProxy
-            if !crt.isSupported() {
+            if !crt.isSupported {
                 showUnsupportedCartridgeAlert(crt)
                 return
             }
@@ -561,8 +561,8 @@ extension MyController {
         undoManager?.registerUndo(withTarget: self) {
             targetSelf in targetSelf.alwaysWarpAction(sender)
         }
-    
-        c64.setAlwaysWarp(!c64.alwaysWarp())
+		
+		c64.alwaysWarp = !c64.alwaysWarp
         refresh()
     }
     

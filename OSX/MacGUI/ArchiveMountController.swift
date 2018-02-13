@@ -41,14 +41,14 @@ class ArchiveMountController : UserDialogController {
         contents.reloadData()
         
         // Set icon and title
-        if (archive.numberOfItems() == 1) {
+        if (archive.numberOfItems == 1) {
             subheader.stringValue = "This file contains the byte stream of a single C64 program."
         } else {
             subheader.stringValue = "This file contains the byte streams of multiple C64 programs."
         }
         subsubheader.stringValue = "Flushing files directly into memory is likely to work."
         
-        switch archive.type() {
+        switch archive.type {
 
         case T64_CONTAINER:
             icon.image = NSImage.init(named: NSImage.Name(rawValue: "IconT64"))
@@ -92,7 +92,7 @@ class ArchiveMountController : UserDialogController {
         
         // Set write protection
         let value = protect.integerValue
-        c64.vc1541.setWriteProtection(value != 0)
+        c64.vc1541.writeProtection=(value != 0)
         
         hideSheet()
     }
@@ -134,7 +134,7 @@ extension ArchiveMountController : NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
 
-        return archive.numberOfItems()
+        return archive.numberOfItems
     }
 
     func tableView(_ tableView: NSTableView,

@@ -37,16 +37,16 @@ class CartridgeMountController : UserDialogController {
         data.reloadData()
         
         // Set name and type
-        let cartName = cartridge.cartridgeName()!
-        let cartType = cartridge.cartridgeType().rawValue
-        let cartTypeName = cartridge.cartridgeTypeName()!
+        let cartName = cartridge.cartridgeName!
+        let cartType = cartridge.cartridgeType.rawValue
+        let cartTypeName = cartridge.cartridgeTypeName!
     
         name.stringValue = (cartName == "") ? "" : "Name: \(cartName)"
         type.stringValue = "Type \(cartType): \(cartTypeName)"
     
         // Set exrom and game line
-        let exromLine = cartridge.exromLine()
-        let gameLine = cartridge.gameLine()
+        let exromLine = cartridge.exromLine
+        let gameLine = cartridge.gameLine
         exrom.stringValue = "Exrom line: \(exromLine)"
         game.stringValue = "Game line: \(gameLine)"
     }
@@ -90,7 +90,7 @@ extension CartridgeMountController : NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
         
-        return cartridge.chipCount()
+        return cartridge.chipCount
     }
     
     func tableView(_ tableView: NSTableView,

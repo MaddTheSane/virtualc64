@@ -19,35 +19,35 @@ extension MyController {
         
         // Keyboard menu
         if item.action == #selector(MyController.toggleShiftKey(_:)) {
-            item.state = c64.keyboard.shiftKeyIsPressed() ? .on : .off
+            item.state = c64.keyboard.shiftKeyIsPressed ? .on : .off
             return true
         }
         if item.action == #selector(MyController.toggleCommodoreKey(_:)) {
-            item.state = c64.keyboard.commodoreKeyIsPressed() ? .on : .off
+            item.state = c64.keyboard.commodoreKeyIsPressed ? .on : .off
             return true
         }
         if item.action == #selector(MyController.toggleCtrlKey(_:)) {
-            item.state = c64.keyboard.ctrlKeyIsPressed() ? .on : .off
+            item.state = c64.keyboard.ctrlKeyIsPressed ? .on : .off
             return true
         }
         if item.action == #selector(MyController.toggleRunstopKey(_:)) {
-            item.state = c64.keyboard.runstopKeyIsPressed() ? .on : .off
+            item.state = c64.keyboard.runstopKeyIsPressed ? .on : .off
             return true
         }
         
         // Disk menu
         if item.action == #selector(MyController.driveEjectAction(_:)) {
-            return c64.iec.isDriveConnected() && c64.vc1541.hasDisk()
+            return c64.iec.isDriveConnected && c64.vc1541.hasDisk
         }
         if item.action == #selector(MyController.driveAction(_:)) {
-            item.title = c64.iec.isDriveConnected() ? "Power off" : "Power on"
+            item.title = c64.iec.isDriveConnected ? "Power off" : "Power on"
             return true
         }
         if item.action == #selector(MyController.insertBlankDisk(_:)) {
-            return c64.iec.isDriveConnected()
+            return c64.iec.isDriveConnected
         }
         if item.action == #selector(MyController.exportDisk(_:)) {
-            return c64.vc1541.hasDisk()
+            return c64.vc1541.hasDisk
         }
 
         // Tape menu
@@ -64,31 +64,31 @@ extension MyController {
         
         // Cartridge menu
         if item.action == #selector(MyController.detachCartridgeAction(_:)) {
-            return c64.expansionport.cartridgeAttached()
+            return c64.expansionport.cartridgeAttached
         }
         if item.action == #selector(MyController.finalCartridgeIIIaction(_:)) {
-            return c64.expansionport.cartridgeType() == CRT_FINAL_III
+            return c64.expansionport.cartridgeType == CRT_FINAL_III
         }
         
         // Debug menu
         if item.action == #selector(MyController.pauseAction(_:)) {
-            return c64.isRunning();
+            return c64.isRunning
         }
         if item.action == #selector(MyController.continueAction(_:)) ||
             item.action == #selector(MyController.stepIntoAction(_:)) ||
             item.action == #selector(MyController.stepOutAction(_:)) ||
             item.action == #selector(MyController.stepOverAction(_:)) ||
             item.action == #selector(MyController.stopAndGoAction(_:)) {
-            return c64.isHalted();
+            return c64.isHalted
         }
         if item.action == #selector(MyController.markIRQLinesAction(_:)) {
-            item.state = c64.vic.showIrqLines() ? .on : .off
+            item.state = c64.vic.showIrqLines ? .on : .off
         }
         if item.action == #selector(MyController.markDMALinesAction(_:)) {
-            item.state = c64.vic.showDmaLines() ? .on : .off
+            item.state = c64.vic.showDmaLines ? .on : .off
         }
         if item.action == #selector(MyController.hideSpritesAction(_:)) {
-            item.state = c64.vic.hideSprites() ? .on : .off
+            item.state = c64.vic.hideSprites ? .on : .off
         }
 
         if item.action == #selector(MyController.traceAction(_:)) {
@@ -98,13 +98,13 @@ extension MyController {
             item.state = c64.cpu.tracingEnabled() ? .on : .off
         }
         if item.action == #selector(MyController.traceIecAction(_:)) {
-            item.state = c64.iec.tracingEnabled() ? .on : .off
+            item.state = c64.iec.tracingEnabled ? .on : .off
         }
         if item.action == #selector(MyController.traceVC1541CpuAction(_:)) {
             item.state = c64.vc1541.cpu.tracingEnabled() ? .on : .off
         }
         if item.action == #selector(MyController.traceViaAction(_:)) {
-            item.state = c64.vc1541.via1.tracingEnabled() ? .on : .off
+            item.state = c64.vc1541.via1.tracingEnabled ? .on : .off
         }
         
         if item.action == #selector(MyController.dumpStateAction(_:)) {
@@ -179,9 +179,9 @@ extension MyController {
             redLED.isHidden = false
             progress.isHidden = false
             tapeProgress.isHidden = false
-            driveIcon.isHidden = !c64.vc1541.hasDisk()
+            driveIcon.isHidden = !c64.vc1541.hasDisk
             tapeIcon.isHidden = !c64.datasette.hasTape()
-            cartridgeIcon.isHidden = !c64.expansionport.cartridgeAttached()
+            cartridgeIcon.isHidden = !c64.expansionport.cartridgeAttached
             clockSpeed.isHidden = false
             clockSpeedBar.isHidden = false
             warpIcon.isHidden = false
@@ -326,7 +326,7 @@ extension MyController {
 
     @IBAction func driveEjectAction(_ sender: Any!) {
         
-        if !c64.vc1541.diskModified() ||
+        if !c64.vc1541.diskModified ||
             showDiskIsUnsafedAlert() == .alertFirstButtonReturn {
             
             c64.vc1541.ejectDisk()
@@ -336,7 +336,7 @@ extension MyController {
     @IBAction func driveAction(_ sender: Any!) {
         
         track()
-        if c64.iec.isDriveConnected() {
+        if c64.iec.isDriveConnected {
             c64.iec.disconnectDrive()
         } else {
             c64.iec.connectDrive()
@@ -345,7 +345,7 @@ extension MyController {
 
     @IBAction func insertBlankDisk(_ sender: Any!) {
         
-        if !c64.vc1541.diskModified() ||
+        if !c64.vc1541.diskModified ||
             showDiskIsUnsafedAlert() == .alertFirstButtonReturn {
 
             c64.insertDisk(ArchiveProxy.make())
@@ -415,8 +415,8 @@ extension MyController {
         undoManager?.registerUndo(withTarget: self) {
             targetSelf in targetSelf.hideSpritesAction(sender)
         }
-        
-        c64.vic.setHideSprites(!c64.vic.hideSprites())
+		
+		c64.vic.hideSprites = !c64.vic.hideSprites
     }
   
     @IBAction func markIRQLinesAction(_ sender: Any!) {
@@ -424,8 +424,8 @@ extension MyController {
         undoManager?.registerUndo(withTarget: self) {
             targetSelf in targetSelf.markIRQLinesAction(sender)
         }
-        
-        c64.vic.setShowIrqLines(!c64.vic.showIrqLines())
+		
+		c64.vic.showIrqLines = !c64.vic.showIrqLines
     }
     
     @IBAction func markDMALinesAction(_ sender: Any!) {
@@ -433,8 +433,8 @@ extension MyController {
         undoManager?.registerUndo(withTarget: self) {
             targetSelf in targetSelf.markDMALinesAction(sender)
         }
-        
-        c64.vic.setShowDmaLines(!c64.vic.showDmaLines())
+		
+		c64.vic.showDmaLines = !c64.vic.showDmaLines
     }
     
     @IBAction func traceAction(_ sender: Any!) {
@@ -460,7 +460,7 @@ extension MyController {
             targetSelf in targetSelf.traceIecAction(sender)
         }
         
-        c64.iec.setTraceMode(!c64.iec.tracingEnabled())
+        c64.iec.setTraceMode(!c64.iec.tracingEnabled)
     }
  
     @IBAction func traceVC1541CpuAction(_ sender: Any!) {
@@ -478,8 +478,8 @@ extension MyController {
             targetSelf in targetSelf.traceViaAction(sender)
         }
         
-        c64.vc1541.via1.setTraceMode(!c64.vc1541.via1.tracingEnabled())
-        c64.vc1541.via2.setTraceMode(!c64.vc1541.via2.tracingEnabled())
+        c64.vc1541.via1.setTraceMode(!c64.vc1541.via1.tracingEnabled)
+        c64.vc1541.via2.setTraceMode(!c64.vc1541.via2.tracingEnabled)
     }
     
     @IBAction func dumpC64(_ sender: Any!) { c64.dump() }

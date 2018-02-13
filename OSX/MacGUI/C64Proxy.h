@@ -89,8 +89,8 @@ struct ContainerWrapper;
 - (uint16_t) peekPC;
 - (uint8_t) lengthOfInstruction:(uint8_t)opcode;
 - (uint8_t) lengthOfInstructionAtAddress:(uint16_t)addr;
-- (uint8_t) lengthOfCurrentInstruction;
-- (uint16_t) addressOfNextInstruction;
+@property (readonly) uint8_t lengthOfCurrentInstruction;
+@property (readonly) uint16_t addressOfNextInstruction;
 - (const char *) mnemonic:(uint8_t)opcode;
 - (AddressingMode) addressingMode:(uint8_t)opcode;
 
@@ -140,24 +140,18 @@ struct ContainerWrapper;
 - (void *) screenBuffer;
 
 - (NSColor *) color:(NSInteger)nr;
-- (NSInteger) colorScheme;
-- (void) setColorScheme:(NSInteger)scheme;
+@property NSInteger colorScheme;
 
-- (uint16_t) memoryBankAddr;
-- (void) setMemoryBankAddr:(uint16_t)addr;
-- (uint16_t) screenMemoryAddr;
-- (void) setScreenMemoryAddr:(uint16_t)addr;
-- (uint16_t) characterMemoryAddr;
-- (void) setCharacterMemoryAddr:(uint16_t)addr;
+@property uint16_t memoryBankAddr;
+@property uint16_t screenMemoryAddr;
+@property uint16_t characterMemoryAddr;
 
 - (int) displayMode;
 - (void) setDisplayMode:(long)mode;
 - (int) screenGeometry;
 - (void) setScreenGeometry:(long)mode;
-- (int) horizontalRasterScroll;
-- (void) setHorizontalRasterScroll:(int)offset;
-- (int) verticalRasterScroll;
-- (void) setVerticalRasterScroll:(int)offset;
+@property int horizontalRasterScroll;
+@property int verticalRasterScroll;
 
 - (bool) spriteVisibilityFlag:(NSInteger)nr;
 - (void) setSpriteVisibilityFlag:(NSInteger)nr value:(bool)flag;
@@ -181,28 +175,20 @@ struct ContainerWrapper;
 - (void) setSpriteStretchYFlag:(NSInteger)nr value:(bool)flag;
 - (void) toggleSpriteStretchYFlag:(NSInteger)nr;
 
-- (bool) spriteSpriteCollisionFlag;
-- (void) setSpriteSpriteCollisionFlag:(bool)flag;
+@property BOOL spriteSpriteCollisionFlag;
 - (void) toggleSpriteSpriteCollisionFlag;
 
-- (bool) spriteBackgroundCollisionFlag;
-- (void) setSpriteBackgroundCollisionFlag:(bool)flag;
+@property BOOL spriteBackgroundCollisionFlag;
 - (void) toggleSpriteBackgroundCollisionFlag;
 
-- (uint16_t) rasterline;
-- (void) setRasterline:(uint16_t)line;
-- (uint16_t) rasterInterruptLine;
-- (void) setRasterInterruptLine:(uint16_t)line;
-- (bool) rasterInterruptFlag;
-- (void) setRasterInterruptFlag:(bool)b;
+@property uint16_t rasterline;
+@property uint16_t rasterInterruptLine;
+@property BOOL rasterInterruptFlag;
 - (void) toggleRasterInterruptFlag;
 
-- (bool) hideSprites;
-- (void) setHideSprites:(bool)b;
-- (bool) showIrqLines;
-- (void) setShowIrqLines:(bool)b;
-- (bool) showDmaLines;
-- (void) setShowDmaLines:(bool)b;
+@property BOOL hideSprites;
+@property BOOL showIrqLines;
+@property BOOL showDmaLines;
 
 @end
 
@@ -216,76 +202,49 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (bool) tracingEnabled;
+@property (readonly) bool tracingEnabled;
 - (void) setTraceMode:(bool)b;
 
-- (uint8_t) dataPortA;
-- (void) setDataPortA:(uint8_t)v;
-- (uint8_t) dataPortDirectionA;
-- (void) setDataPortDirectionA:(uint8_t)v;
-- (uint16_t) timerA;
-- (void) setTimerA:(uint16_t)v;
-- (uint16_t) timerLatchA;
-- (void) setTimerLatchA:(uint16_t)v;
-- (bool) startFlagA;
-- (void) setStartFlagA:(bool)b;
+@property uint8_t dataPortA;
+@property uint8_t dataPortDirectionA;
+@property uint16_t timerA;
+@property uint16_t timerLatchA;
+@property bool startFlagA;
 - (void) toggleStartFlagA;
-- (bool) oneShotFlagA;
-- (void) setOneShotFlagA:(bool)b;
+@property bool oneShotFlagA;
 - (void) toggleOneShotFlagA;
-- (bool) underflowFlagA;
-- (void) setUnderflowFlagA:(bool)b;
+@property bool underflowFlagA;
 - (void) toggleUnderflowFlagA;
-- (bool) pendingSignalFlagA;
-- (void) setPendingSignalFlagA:(bool)b;
+@property bool pendingSignalFlagA;
 - (void) togglePendingSignalFlagA;
-- (bool) interruptEnableFlagA;
-- (void) setInterruptEnableFlagA:(bool)b;
+@property bool interruptEnableFlagA;
 - (void) toggleInterruptEnableFlagA;
 
-- (uint8_t) dataPortB;
-- (void) setDataPortB:(uint8_t)v;
-- (uint8_t) dataPortDirectionB;
-- (void) setDataPortDirectionB:(uint8_t)v;
-- (uint16_t) timerB;
-- (void) setTimerB:(uint16_t)v;
-- (uint16_t) timerLatchB;
-- (void) setTimerLatchB:(uint16_t)v;
-- (bool) startFlagB;
-- (void) setStartFlagB:(bool)b;
+@property uint8_t dataPortB;
+@property uint8_t dataPortDirectionB;
+@property uint16_t timerB;
+@property uint16_t timerLatchB;
+@property bool startFlagB;
 - (void) toggleStartFlagB;
-- (bool) oneShotFlagB;
-- (void) setOneShotFlagB:(bool)b;
+@property bool oneShotFlagB;
 - (void) toggleOneShotFlagB;
-- (bool) underflowFlagB;
-- (void) setUnderflowFlagB:(bool)b;
+@property bool underflowFlagB;
 - (void) toggleUnderflowFlagB;
-- (bool) pendingSignalFlagB;
-- (void) setPendingSignalFlagB:(bool)b;
+@property bool pendingSignalFlagB;
 - (void) togglePendingSignalFlagB;
-- (bool) interruptEnableFlagB;
-- (void) setInterruptEnableFlagB:(bool)b;
+@property bool interruptEnableFlagB;
 - (void) toggleInterruptEnableFlagB;
 
-- (uint8_t) todHours;
-- (void) setTodHours:(uint8_t)value;
-- (uint8_t) todMinutes;
-- (void) setTodMinutes:(uint8_t)value;
-- (uint8_t) todSeconds;
-- (void) setTodSeconds:(uint8_t)value;
-- (uint8_t) todTenth;
-- (void) setTodTenth:(uint8_t)value;
+@property uint8_t todHours;
+@property uint8_t todMinutes;
+@property uint8_t todSeconds;
+@property uint8_t todTenth;
 
-- (uint8_t) alarmHours;
-- (void) setAlarmHours:(uint8_t)value;
-- (uint8_t) alarmMinutes;
-- (void) setAlarmMinutes:(uint8_t)value;
-- (uint8_t) alarmSeconds;
-- (void) setAlarmSeconds:(uint8_t)value;
-- (uint8_t) alarmTenth;
-- (void) setAlarmTenth:(uint8_t)value;
-- (bool) isTodInterruptEnabled;
-- (void) setTodInterruptEnabled:(bool)b;
+@property uint8_t alarmHours;
+@property uint8_t alarmMinutes;
+@property uint8_t alarmSeconds;
+@property uint8_t alarmTenth;
+@property (getter=isTodInterruptEnabled) BOOL todInterruptEnabled;
 
 @end 
 
@@ -300,10 +259,10 @@ struct ContainerWrapper;
 
 - (void) dump;
 
-- (BOOL) shiftKeyIsPressed;
-- (BOOL) commodoreKeyIsPressed;
-- (BOOL) ctrlKeyIsPressed;
-- (BOOL) runstopKeyIsPressed;
+@property (readonly) BOOL shiftKeyIsPressed;
+@property (readonly) BOOL commodoreKeyIsPressed;
+@property (readonly) BOOL ctrlKeyIsPressed;
+@property (readonly) BOOL runstopKeyIsPressed;
 
 - (void) pressKey:(C64KeyFingerprint)c;
 - (void) pressShiftKey;
@@ -369,8 +328,7 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (uint32_t) sampleRate;
-- (void) setSampleRate:(uint32_t)rate;
+@property uint32_t sampleRate;
 - (float) getSample;
 - (void) readMonoSamples:(float *)target size:(NSInteger)n;
 - (void) readStereoSamples:(float *)target1 buffer2:(float *)target2 size:(NSInteger)n;
@@ -388,9 +346,9 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (bool) tracingEnabled;
+@property (readonly) BOOL tracingEnabled;
 - (void) setTraceMode:(bool)b;
-- (bool) isDriveConnected;
+@property (readonly, getter=isDriveConnected) BOOL driveConnected;
 - (void) connectDrive;
 - (void) disconnectDrive;
 
@@ -406,8 +364,8 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (bool) cartridgeAttached; 
-- (CartridgeType) cartridgeType;
+@property (readonly) BOOL cartridgeAttached;
+@property (readonly) CartridgeType cartridgeType;
 - (void) pressFirstButton;
 - (void) pressSecondButton;
 
@@ -423,7 +381,7 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (bool) tracingEnabled;
+@property (readonly) BOOL tracingEnabled;
 - (void) setTraceMode:(bool)b;
 
 @end
@@ -437,11 +395,9 @@ struct ContainerWrapper;
     struct Disk525Wrapper *wrapper;
 }
 
-- (BOOL)isWriteProtected;
-- (void)setWriteProtection:(BOOL)b;
-- (BOOL)isModified;
-- (void)setModified:(BOOL)b;
-- (NSInteger)numTracks;
+@property (getter=isWriteProtected) BOOL writeProtection;
+@property (getter=isModified) BOOL modified;
+@property (readonly) NSInteger numTracks;
 
 @end
 
@@ -471,18 +427,15 @@ struct ContainerWrapper;
 - (VIAProxy *) via:(int)num;
 
 - (void) dump;
-- (bool) tracingEnabled;
+@property (readonly) BOOL tracingEnabled;
 - (void) setTraceMode:(bool)b;
-- (bool) hasRedLED;
-- (bool) hasDisk;
+@property (readonly) bool hasRedLED;
+@property (readonly) BOOL hasDisk;
 - (void) ejectDisk;
-- (bool) writeProtection;
-- (void) setWriteProtection:(bool)b;
-- (bool) DiskModified;
-- (void) setDiskModified:(bool)b;
-- (bool) bitAccuracy;
-- (void) setBitAccuracy:(bool)b;
-- (bool) soundMessagesEnabled;
+@property BOOL writeProtection;
+@property bool DiskModified;
+@property bool bitAccuracy;
+@property (readonly) BOOL soundMessagesEnabled;
 - (void) setSendSoundMessages:(bool)b;
 - (bool) exportToD64:(NSString *)path;
 
@@ -552,6 +505,7 @@ struct ContainerWrapper;
     long colorScheme;
 }
 
+// @property (strong,readonly) MyMetalView *metalScreen;
 @property (readonly) CPUProxy *cpu;
 @property (readonly) MemoryProxy *mem;
 @property (readonly) VICProxy *vic;
@@ -573,10 +527,8 @@ struct ContainerWrapper;
 - (void) kill;
 
 // Hardware configuration
-- (bool) reSID;
-- (void) setReSID:(bool)b;
-- (bool) audioFilter;
-- (void) setAudioFilter:(bool)b;
+@property BOOL reSID;
+@property BOOL audioFilter;
 - (int) samplingMethod;
 - (void) setSamplingMethod:(long)value;
 - (int) chipModel;
@@ -604,14 +556,14 @@ struct ContainerWrapper;
 - (void) ping;
 - (void) halt;
 - (void) step;
-- (bool) isRunnable;
+@property (readonly, getter=isRunnable) BOOL runnable;
 - (void) run;
 - (void) suspend;
 - (void) resume; 
-- (bool) isHalted;
-- (bool) isRunning;
-- (bool) isPAL;
-- (bool) isNTSC;
+@property (readonly, getter=isHalted) BOOL halted;
+@property (readonly, getter=isRunning) BOOL running;
+@property (readonly, getter=isPAL) BOOL PAL;
+@property (getter=isNTSC) BOOL NTSC;
 - (void) setPAL;
 - (void) setNTSC;
 - (void) setNTSC:(BOOL)b;
@@ -621,41 +573,38 @@ struct ContainerWrapper;
 
 - (bool) isBasicRom:(NSURL *)url;
 - (bool) loadBasicRom:(NSURL *)url;
-- (bool) isBasicRomLoaded;
+@property (readonly, getter=isBasicRomLoaded) BOOL basicRomLoaded;
 - (bool) isCharRom:(NSURL *)url;
 - (bool) loadCharRom:(NSURL *)url;
-- (bool) isCharRomLoaded;
+@property (readonly, getter=isCharRomLoaded) BOOL charRomLoaded;
 - (bool) isKernelRom:(NSURL *)url;
 - (bool) loadKernelRom:(NSURL *)url;
-- (bool) isKernelRomLoaded;
+@property (readonly, getter=isKernelRomLoaded) BOOL kernelRomLoaded;
 - (bool) isVC1541Rom:(NSURL *)url;
 - (bool) loadVC1541Rom:(NSURL *)url;
-- (bool) isVC1541RomLoaded;
+@property (readonly, getter=isVC1541RomLoaded) BOOL VC1541RomLoaded;
 - (bool) isRom:(NSURL *)url;
 - (bool) loadRom:(NSURL *)url;
 
 - (bool) attachCartridgeAndReset:(CRTProxy *)c;
 - (void) detachCartridgeAndReset;
-- (bool) isCartridgeAttached;
+@property (readonly, getter=isCartridgeAttached) BOOL cartridgeAttached;
 
 - (bool) insertDisk:(ArchiveProxy *)a;
 - (bool) flushArchive:(ArchiveProxy *)a item:(NSInteger)nr;
 
 - (bool) insertTape:(TAPProxy *)a;
 
-- (bool) warp;
-- (void) setWarp:(bool)b;
-- (bool) alwaysWarp;
-- (void) setAlwaysWarp:(bool)b;
-- (bool) warpLoad;
-- (void) setWarpLoad:(bool)b;
-- (UInt64) cycles;
-- (UInt64) frames;
+@property (atomic) BOOL warp;
+@property (atomic) BOOL alwaysWarp;
+@property (atomic) BOOL warpLoad;
+@property (readonly) UInt64 cycles;
+@property (readonly) UInt64 frames;
 
 // - (SnapshotProxy *) takeSnapshot;
 
 // Cheatbox
-- (NSInteger) historicSnapshots;
+@property (readonly) NSInteger historicSnapshots;
 - (NSInteger) historicSnapshotHeaderSize:(NSInteger)nr;
 - (uint8_t *) historicSnapshotHeader:(NSInteger)nr;
 - (NSInteger) historicSnapshotDataSize:(NSInteger)nr;
@@ -690,8 +639,8 @@ struct ContainerWrapper;
 
 - (struct ContainerWrapper *)wrapper;
 
-- (ContainerType)type; 
-- (NSInteger)sizeOnDisk;
+@property (readonly) ContainerType type;
+@property (readonly) NSInteger sizeOnDisk;
 - (void)readFromBuffer:(const void *)buffer length:(NSInteger)length;
 - (NSInteger)writeToBuffer:(void *)buffer;
 @end
@@ -714,20 +663,19 @@ struct ContainerWrapper;
 //                                  CRTProxy
 // --------------------------------------------------------------------------
 
-@interface CRTProxy : ContainerProxy {
-}
+@interface CRTProxy : ContainerProxy
 
 + (BOOL)isCRTFile:(NSString *)path;
 + (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
 + (instancetype)makeWithFile:(NSString *)path;
 
-- (NSString *)cartridgeName;
-- (CartridgeType)cartridgeType;
-- (NSString *)cartridgeTypeName;
-- (BOOL)isSupported;
-- (NSInteger)exromLine;
-- (NSInteger)gameLine;
-- (NSInteger)chipCount;
+@property (readonly, copy) NSString *cartridgeName;
+@property (readonly) CartridgeType cartridgeType;
+@property (readonly, copy) NSString *cartridgeTypeName;
+@property (readonly, getter=isSupported) BOOL supported;
+@property (readonly) NSInteger exromLine;
+@property (readonly) NSInteger gameLine;
+@property (readonly) NSInteger chipCount;
 - (NSInteger)typeOfChip:(NSInteger)nr;
 - (NSInteger)loadAddrOfChip:(NSInteger)nr;
 - (NSInteger)sizeOfChip:(NSInteger)nr;
@@ -744,7 +692,7 @@ struct ContainerWrapper;
 + (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
 + (instancetype)makeWithFile:(NSString *)path;
 
-- (NSInteger)TAPversion;
+@property (readonly) NSInteger TAPversion;
 @end
 
 // --------------------------------------------------------------------------
@@ -757,7 +705,7 @@ struct ContainerWrapper;
 + (instancetype)make;
 + (instancetype)makeWithFile:(NSString *)path;
 
-- (NSInteger)numberOfItems;
+@property (readonly) NSInteger numberOfItems;
 - (NSString *)nameOfItem:(NSInteger)item;
 - (NSString *)unicodeNameOfItem:(NSInteger)item maxChars:(NSInteger)max;
 - (NSInteger)sizeOfItem:(NSInteger)item;

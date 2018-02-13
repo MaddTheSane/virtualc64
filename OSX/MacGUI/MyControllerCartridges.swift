@@ -18,7 +18,7 @@ extension MyController {
         }
         
         // Is the attachment a cartridge?
-        if attachment.type() != CRT_CONTAINER {
+        if attachment.type != CRT_CONTAINER {
             return false;
         }
         

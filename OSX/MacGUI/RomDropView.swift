@@ -65,7 +65,7 @@ class RomDropView : NSImageView
         }
         
         // Check if all ROMs are loaded
-        if dialogController.c64.isRunnable() {
+        if dialogController.c64.isRunnable {
             dialogController.hideSheet()
         }
         return true

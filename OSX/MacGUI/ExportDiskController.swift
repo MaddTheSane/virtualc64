@@ -17,7 +17,7 @@ class ExportDiskController : UserDialogController {
     override func awakeFromNib() {
         
         // Export format PRG and P00 will only be available if disk is not empty
-        let items = d64archive.numberOfItems()
+        let items = d64archive.numberOfItems
         if items == 0 {
             track()
             print("\(button)")
@@ -49,7 +49,7 @@ class ExportDiskController : UserDialogController {
         savePanel.beginSheetModal(for: parent.window!, completionHandler: { result in
             if result == .OK {
                 self.export()
-                self.c64.vc1541.setDiskModified(false)
+				self.c64.vc1541.diskModified = false
             }
         })
     }
@@ -72,7 +72,7 @@ class ExportDiskController : UserDialogController {
             
         case PRG_CONTAINER:
             track("Exporting to PRG format")
-            if d64archive.numberOfItems() > 1  {
+            if d64archive.numberOfItems > 1  {
                 parent.showDiskHasMultipleFilesAlert(format: "PRG")
             }
             archive = PRGProxy.make(withAnyArchive: d64archive)
@@ -80,7 +80,7 @@ class ExportDiskController : UserDialogController {
             
         case P00_CONTAINER:
             track("Exporting to P00 format")
-            if d64archive.numberOfItems() > 1  {
+            if d64archive.numberOfItems > 1  {
                 parent.showDiskHasMultipleFilesAlert(format: "P00")
             }
             archive = P00Proxy.make(withAnyArchive: d64archive)
@@ -92,7 +92,7 @@ class ExportDiskController : UserDialogController {
         }
         
         // Serialize archive
-        let data = NSMutableData.init(length: archive!.sizeOnDisk())
+        let data = NSMutableData.init(length: archive!.sizeOnDisk)
         let ptr = data!.mutableBytes
         archive!.write(toBuffer: ptr)
         

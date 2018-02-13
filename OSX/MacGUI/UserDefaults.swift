@@ -134,7 +134,7 @@ extension MyController {
         setEyeX(defaults.float(forKey: VC64Keys.eyeX))
         setEyeY(defaults.float(forKey: VC64Keys.eyeY))
         setEyeZ(defaults.float(forKey: VC64Keys.eyeZ))
-        c64.vic.setColorScheme(defaults.integer(forKey: VC64Keys.colorScheme))
+		c64.vic.colorScheme = defaults.integer(forKey: VC64Keys.colorScheme)
         setVideoUpscaler(defaults.integer(forKey: VC64Keys.videoUpscaler))
         setVideoFilter(defaults.integer(forKey: VC64Keys.videoFilter))
         setFullscreenKeepAspectRatio(defaults.bool(forKey: VC64Keys.aspectRatio))
@@ -156,13 +156,13 @@ extension MyController {
         
         track()
         let defaults = UserDefaults.standard
-        c64.setNTSC(defaults.bool(forKey: VC64Keys.ntsc))
-        c64.setWarpLoad(defaults.bool(forKey: VC64Keys.warpLoad))
+		c64.isNTSC = defaults.bool(forKey: VC64Keys.ntsc)
+		c64.warpLoad = defaults.bool(forKey: VC64Keys.warpLoad)
         c64.vc1541.setSendSoundMessages(defaults.bool(forKey: VC64Keys.driveNoise))
-        c64.vc1541.setBitAccuracy(defaults.bool(forKey: VC64Keys.bitAccuracy))
-        c64.setReSID(defaults.bool(forKey: VC64Keys.reSID))
+		c64.vc1541.bitAccuracy = defaults.bool(forKey: VC64Keys.bitAccuracy)
+		c64.reSID = defaults.bool(forKey: VC64Keys.reSID)
         c64.setChipModel(defaults.integer(forKey: VC64Keys.audioChip))
-        c64.setAudioFilter(defaults.bool(forKey: VC64Keys.audioFilter))
+		c64.audioFilter = defaults.bool(forKey: VC64Keys.audioFilter)
         c64.setSamplingMethod(defaults.integer(forKey: VC64Keys.samplingMethod))
     }
     
@@ -186,7 +186,7 @@ extension MyController {
         defaults.set(eyeX(), forKey: VC64Keys.eyeX)
         defaults.set(eyeY(), forKey: VC64Keys.eyeY)
         defaults.set(eyeZ(), forKey: VC64Keys.eyeZ)
-        defaults.set(c64.vic.colorScheme(), forKey: VC64Keys.colorScheme)
+        defaults.set(c64.vic.colorScheme, forKey: VC64Keys.colorScheme)
         defaults.set(videoUpscaler(), forKey: VC64Keys.videoUpscaler)
         defaults.set(videoFilter(), forKey: VC64Keys.videoFilter)
         defaults.set(fullscreenKeepAspectRatio(), forKey: VC64Keys.aspectRatio)
@@ -204,13 +204,13 @@ extension MyController {
         
         track()
         let defaults = UserDefaults.standard
-        defaults.set(c64.isNTSC(), forKey: VC64Keys.ntsc)
-        defaults.set(c64.warpLoad(), forKey: VC64Keys.warpLoad)
-        defaults.set(c64.vc1541.soundMessagesEnabled(), forKey: VC64Keys.driveNoise)
-        defaults.set(c64.vc1541.bitAccuracy(), forKey: VC64Keys.bitAccuracy)
-        defaults.set(c64.reSID(), forKey: VC64Keys.reSID)
+        defaults.set(c64.isNTSC, forKey: VC64Keys.ntsc)
+        defaults.set(c64.warpLoad, forKey: VC64Keys.warpLoad)
+        defaults.set(c64.vc1541.soundMessagesEnabled, forKey: VC64Keys.driveNoise)
+        defaults.set(c64.vc1541.bitAccuracy, forKey: VC64Keys.bitAccuracy)
+        defaults.set(c64.reSID, forKey: VC64Keys.reSID)
         defaults.set(c64.chipModel(), forKey: VC64Keys.audioChip)
-        defaults.set(c64.audioFilter(), forKey: VC64Keys.audioFilter)
+        defaults.set(c64.audioFilter, forKey: VC64Keys.audioFilter)
         defaults.set(c64.samplingMethod(), forKey: VC64Keys.samplingMethod)
     }
     

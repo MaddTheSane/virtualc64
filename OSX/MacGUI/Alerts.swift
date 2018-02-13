@@ -74,7 +74,7 @@ public extension MyController {
     
     @objc func showUnsupportedCartridgeAlert(_ container: CRTProxy) {
         
-        let name = container.cartridgeTypeName() as String
+        let name = container.cartridgeTypeName!
         
         let alert = NSAlert()
         alert.alertStyle = .warning

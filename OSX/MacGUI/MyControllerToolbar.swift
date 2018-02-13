@@ -31,7 +31,7 @@ extension MyController {
         
         // NSLog("Validating \(tag)...")
     
-        if c64 != nil && c64.isRunning() {
+        if c64 != nil && c64.isRunning {
             
             let document = self.document as! MyDocument?
             document?.updateChangeCount(.changeDone)
@@ -39,7 +39,7 @@ extension MyController {
     
         // Pause/Continue
         if tag == 1 {
-            if c64.isRunning() {
+            if c64.isRunning {
                 item.image = NSImage.init(named: NSImage.Name(rawValue: "pause32"))
                 item.label = "Pause"
             } else {
@@ -51,7 +51,7 @@ extension MyController {
     
         // Step into, Step out, Step over
         if (tag >= 2 && tag <= 4) {
-            return !c64.isRunning() && c64.isRunnable()
+            return !c64.isRunning && c64.isRunnable
         }
         
         // All other items

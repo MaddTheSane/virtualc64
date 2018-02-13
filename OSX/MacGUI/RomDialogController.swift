@@ -32,14 +32,14 @@ class RomDialogController : UserDialogController {
 
     func refresh()
     {
-        kernelRom.image = c64.isKernelRomLoaded() ? romImage : romImageLight
-        kernelRomText.isHidden = c64.isKernelRomLoaded()
-        basicRom.image = c64.isBasicRomLoaded() ? romImage : romImageLight
-        basicRomText.isHidden = c64.isBasicRomLoaded()
-        characterRom.image = c64.isCharRomLoaded() ? romImage : romImageLight
-        characterRomText.isHidden = c64.isCharRomLoaded()
-        vc1541Rom.image = c64.isVC1541RomLoaded() ? romImage : romImageLight
-        vc1541RomText.isHidden = c64.isVC1541RomLoaded()
+        kernelRom.image = c64.isKernelRomLoaded ? romImage : romImageLight
+        kernelRomText.isHidden = c64.isKernelRomLoaded
+        basicRom.image = c64.isBasicRomLoaded ? romImage : romImageLight
+        basicRomText.isHidden = c64.isBasicRomLoaded
+        characterRom.image = c64.isCharRomLoaded ? romImage : romImageLight
+        characterRomText.isHidden = c64.isCharRomLoaded
+        vc1541Rom.image = c64.isVC1541RomLoaded ? romImage : romImageLight
+        vc1541RomText.isHidden = c64.isVC1541RomLoaded
     }
 
     //

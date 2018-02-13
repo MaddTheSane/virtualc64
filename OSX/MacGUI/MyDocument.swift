@@ -165,10 +165,11 @@ class MyDocument : NSDocument {
             if let snapshot = SnapshotProxy.make(withC64: c64) {
 
                 // Write to data buffer
-                if let data = NSMutableData.init(length: snapshot.sizeOnDisk()) {
-                    snapshot.write(toBuffer: data.mutableBytes)
-                    return data as Data
-                }
+				var data = Data(count: snapshot.sizeOnDisk)
+				data.withUnsafeMutableBytes({ (dat: UnsafeMutablePointer<UInt8>) -> Void in
+					snapshot.write(toBuffer: dat)
+				})
+				return data
             }
         }
         

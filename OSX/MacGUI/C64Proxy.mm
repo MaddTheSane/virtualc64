@@ -223,28 +223,28 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (void) setSpriteStretchYFlag:(NSInteger)nr value:(bool)flag { return wrapper->vic->setSpriteStretchY((unsigned)nr, flag); }
 - (void) toggleSpriteStretchYFlag:(NSInteger)nr { wrapper->vic->spriteToggleStretchYFlag((unsigned)nr); }
 
-- (bool) spriteSpriteCollisionFlag { return wrapper->vic->getSpriteSpriteCollisionFlag(); }
-- (void) setSpriteSpriteCollisionFlag:(bool)flag { wrapper->vic->setSpriteSpriteCollisionFlag(flag); }
+- (BOOL) spriteSpriteCollisionFlag { return wrapper->vic->getSpriteSpriteCollisionFlag(); }
+- (void) setSpriteSpriteCollisionFlag:(BOOL)flag { wrapper->vic->setSpriteSpriteCollisionFlag(flag); }
 - (void) toggleSpriteSpriteCollisionFlag { wrapper->vic->toggleSpriteSpriteCollisionFlag(); }
 
-- (bool) spriteBackgroundCollisionFlag { return wrapper->vic->getSpriteBackgroundCollisionFlag(); }
-- (void) setSpriteBackgroundCollisionFlag:(bool)flag { wrapper->vic->setSpriteBackgroundCollisionFlag(flag); }
+- (BOOL) spriteBackgroundCollisionFlag { return wrapper->vic->getSpriteBackgroundCollisionFlag(); }
+- (void) setSpriteBackgroundCollisionFlag:(BOOL)flag { wrapper->vic->setSpriteBackgroundCollisionFlag(flag); }
 - (void) toggleSpriteBackgroundCollisionFlag { wrapper->vic->toggleSpriteBackgroundCollisionFlag(); }
 
 - (uint16_t) rasterline { return wrapper->vic->getScanline(); }
 - (void) setRasterline:(uint16_t)line { wrapper->vic->setScanline(line); }
 - (uint16_t) rasterInterruptLine { return wrapper->vic->rasterInterruptLine(); }
 - (void) setRasterInterruptLine:(uint16_t)line { wrapper->vic->setRasterInterruptLine(line); }
-- (bool) rasterInterruptFlag { return wrapper->vic->rasterInterruptEnabled(); }
-- (void) setRasterInterruptFlag:(bool)b { wrapper->vic->setRasterInterruptEnable(b); }
+- (BOOL) rasterInterruptFlag { return wrapper->vic->rasterInterruptEnabled(); }
+- (void) setRasterInterruptFlag:(BOOL)b { wrapper->vic->setRasterInterruptEnable(b); }
 - (void) toggleRasterInterruptFlag { wrapper->vic->toggleRasterInterruptFlag(); }
 
-- (bool) hideSprites { return wrapper->vic->hideSprites(); }
-- (void) setHideSprites:(bool)b { wrapper->vic->setHideSprites(b); }
-- (bool) showIrqLines { return wrapper->vic->showIrqLines(); }
-- (void) setShowIrqLines:(bool)b { wrapper->vic->setShowIrqLines(b); }
-- (bool) showDmaLines { return wrapper->vic->showDmaLines(); }
-- (void) setShowDmaLines:(bool)b { wrapper->vic->setShowDmaLines(b); }
+- (BOOL) hideSprites { return wrapper->vic->hideSprites(); }
+- (void) setHideSprites:(BOOL)b { wrapper->vic->setHideSprites(b); }
+- (BOOL) showIrqLines { return wrapper->vic->showIrqLines(); }
+- (void) setShowIrqLines:(BOOL)b { wrapper->vic->setShowIrqLines(b); }
+- (BOOL) showDmaLines { return wrapper->vic->showDmaLines(); }
+- (void) setShowDmaLines:(BOOL)b { wrapper->vic->setShowDmaLines(b); }
 
 @end
 
@@ -332,8 +332,8 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (void) setAlarmSeconds:(uint8_t)value { wrapper->cia->tod.setAlarmSeconds(value); }
 - (uint8_t) alarmTenth { return wrapper->cia->tod.getAlarmTenth(); }
 - (void) setAlarmTenth:(uint8_t)value { wrapper->cia->tod.setAlarmTenth(value); }
-- (bool) isTodInterruptEnabled { return wrapper->cia->isInterruptEnabledTOD(); }
-- (void) setTodInterruptEnabled:(bool)b { wrapper->cia->setInterruptEnabledTOD(b); }
+- (BOOL) isTodInterruptEnabled { return wrapper->cia->isInterruptEnabledTOD(); }
+- (void) setTodInterruptEnabled:(BOOL)b { wrapper->cia->setInterruptEnabledTOD(b); }
 
 @end 
 
@@ -454,11 +454,11 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->iec->dumpState(); }
-- (bool) tracingEnabled { return wrapper->iec->tracingEnabled(); }
+- (BOOL) tracingEnabled { return wrapper->iec->tracingEnabled(); }
 - (void) setTraceMode:(bool)b { wrapper->iec->setTraceMode(b); }
 - (void) connectDrive { wrapper->iec->connectDrive(); }
 - (void) disconnectDrive { wrapper->iec->disconnectDrive(); }
-- (bool) isDriveConnected { return wrapper->iec->driveIsConnected(); }
+- (BOOL) isDriveConnected { return wrapper->iec->driveIsConnected(); }
 
 @end
 
@@ -479,7 +479,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 - (void) dump { wrapper->expansionPort->dumpState(); }
 - (CartridgeType) cartridgeType { return wrapper->expansionPort->getCartridgeType(); }
-- (bool) cartridgeAttached { return wrapper->expansionPort->getCartridgeAttached(); }
+- (BOOL) cartridgeAttached { return wrapper->expansionPort->getCartridgeAttached(); }
 - (void) pressFirstButton { wrapper->expansionPort->pressFirstButton(); }
 - (void) pressSecondButton { wrapper->expansionPort->pressSecondButton(); }
 
@@ -501,7 +501,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->via->dumpState(); }
-- (bool) tracingEnabled { return wrapper->via->tracingEnabled(); }
+- (BOOL) tracingEnabled { return wrapper->via->tracingEnabled(); }
 - (void) setTraceMode:(bool)b { wrapper->via->setTraceMode(b); }
 
 @end
@@ -565,18 +565,18 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->vc1541->dumpState(); }
-- (bool) tracingEnabled { return wrapper->vc1541->tracingEnabled(); }
+- (BOOL) tracingEnabled { return wrapper->vc1541->tracingEnabled(); }
 - (void) setTraceMode:(bool)b { wrapper->vc1541->setTraceMode(b); }
 - (bool) hasRedLED { return wrapper->vc1541->getRedLED(); }
-- (bool) hasDisk { return wrapper->vc1541->hasDisk(); }
+- (BOOL) hasDisk { return wrapper->vc1541->hasDisk(); }
 - (void) ejectDisk { wrapper->vc1541->ejectDisk(); }
-- (bool) writeProtection { return wrapper->vc1541->disk.isWriteProtected(); }
-- (void) setWriteProtection:(bool)b { wrapper->vc1541->disk.setWriteProtection(b); }
+- (BOOL) writeProtection { return wrapper->vc1541->disk.isWriteProtected(); }
+- (void) setWriteProtection:(BOOL)b { wrapper->vc1541->disk.setWriteProtection(b); }
 - (bool) DiskModified { return wrapper->vc1541->disk.isModified(); }
 - (void) setDiskModified:(bool)b { wrapper->vc1541->disk.setModified(b); }
 - (bool) bitAccuracy { return wrapper->vc1541->getBitAccuracy(); }
 - (void) setBitAccuracy:(bool)b { wrapper->vc1541->setBitAccuracy(b); }
-- (bool) soundMessagesEnabled { return wrapper->vc1541->soundMessagesEnabled(); }
+- (BOOL) soundMessagesEnabled { return wrapper->vc1541->soundMessagesEnabled(); }
 - (void) setSendSoundMessages:(bool)b { wrapper->vc1541->setSendSoundMessages(b); }
 - (bool) exportToD64:(NSString *)path { return wrapper->vc1541->exportToD64([path UTF8String]); }
 
@@ -693,10 +693,10 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 	wrapper->c64 = NULL;
 }
 
-- (bool) audioFilter { return wrapper->c64->getAudioFilter(); }
-- (void) setAudioFilter:(bool)b { wrapper->c64->setAudioFilter(b); }
-- (bool) reSID { return wrapper->c64->getReSID(); }
-- (void) setReSID:(bool)b { wrapper->c64->setReSID(b); }
+- (BOOL) audioFilter { return wrapper->c64->getAudioFilter(); }
+- (void) setAudioFilter:(BOOL)b { wrapper->c64->setAudioFilter(b); }
+- (BOOL) reSID { return wrapper->c64->getReSID(); }
+- (void) setReSID:(BOOL)b { wrapper->c64->setReSID(b); }
 - (int) samplingMethod { return (int)(wrapper->c64->getSamplingMethod()); }
 - (void) setSamplingMethod:(long)value { wrapper->c64->setSamplingMethod((sampling_method)value); }
 - (int) chipModel { return (chip_model)(wrapper->c64->getChipModel()); }
@@ -746,11 +746,11 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (void) run { wrapper->c64->run(); }
 - (void) suspend { wrapper->c64->suspend(); }
 - (void) resume { wrapper->c64->resume(); }
-- (bool) isHalted { return wrapper->c64->isHalted(); }
-- (bool) isRunnable { return wrapper->c64->isRunnable(); }
-- (bool) isRunning { return wrapper->c64->isRunning(); }
-- (bool) isPAL { return wrapper->c64->isPAL(); }
-- (bool) isNTSC { return wrapper->c64->isNTSC(); }
+- (BOOL) isHalted { return wrapper->c64->isHalted(); }
+- (BOOL) isRunnable { return wrapper->c64->isRunnable(); }
+- (BOOL) isRunning { return wrapper->c64->isRunning(); }
+- (BOOL) isPAL { return wrapper->c64->isPAL(); }
+- (BOOL) isNTSC { return wrapper->c64->isNTSC(); }
 - (void) setPAL { wrapper->c64->setPAL(); }
 - (void) setNTSC { wrapper->c64->setNTSC(); }
 - (void) setNTSC:(BOOL)b { if (b) [self setNTSC]; else [self setPAL]; }
@@ -764,13 +764,13 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (bool) loadBasicRom:(NSURL *)url {
     return [self isBasicRom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
 }
-- (bool) isBasicRomLoaded {
+- (BOOL) isBasicRomLoaded {
     return wrapper->c64->mem.basicRomIsLoaded();
 }
 - (bool) isCharRom:(NSURL *)url {
     return wrapper->c64->mem.isCharRom([[url absoluteString] UTF8String]);
 }
-- (bool) isCharRomLoaded {
+- (BOOL) isCharRomLoaded {
     return wrapper->c64->mem.charRomIsLoaded();
 }
 - (bool) loadCharRom:(NSURL *)url {
@@ -782,7 +782,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (bool) loadKernelRom:(NSURL *)url {
     return [self isKernelRom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
 }
-- (bool) isKernelRomLoaded {
+- (BOOL) isKernelRomLoaded {
     return wrapper->c64->mem.kernelRomIsLoaded();
 }
 - (bool) isVC1541Rom:(NSURL *)url {
@@ -791,7 +791,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (bool) loadVC1541Rom:(NSURL *)url {
     return [self isVC1541Rom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
 }
-- (bool) isVC1541RomLoaded {
+- (BOOL) isVC1541RomLoaded {
     return wrapper->c64->floppy.mem.romIsLoaded();
 }
 - (bool) isRom:(NSURL *)url {
@@ -804,7 +804,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (bool) attachCartridgeAndReset:(CRTProxy *)c {
     return wrapper->c64->attachCartridgeAndReset((CRTContainer *)([c wrapper]->container)); }
 - (void) detachCartridgeAndReset { wrapper->c64->detachCartridgeAndReset(); }
-- (bool) isCartridgeAttached { return wrapper->c64->isCartridgeAttached(); }
+- (BOOL) isCartridgeAttached { return wrapper->c64->isCartridgeAttached(); }
 - (bool) insertDisk:(ArchiveProxy *)a {
     Archive *archive = (Archive *)([a wrapper]->container);
     return wrapper->c64->insertDisk(archive);
@@ -817,12 +817,12 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
     TAPContainer *container = (TAPContainer *)([c wrapper]->container);
     return wrapper->c64->insertTape(container);
 }
-- (bool) warp { return wrapper->c64->getWarp(); }
-- (void) setWarp:(bool)b { wrapper->c64->setWarp(b); }
-- (bool) alwaysWarp { return wrapper->c64->getAlwaysWarp(); }
-- (void) setAlwaysWarp:(bool)b { wrapper->c64->setAlwaysWarp(b); }
-- (bool) warpLoad { return wrapper->c64->getWarpLoad(); }
-- (void) setWarpLoad:(bool)b { wrapper->c64->setWarpLoad(b); }
+- (BOOL) warp { return wrapper->c64->getWarp(); }
+- (void) setWarp:(BOOL)b { wrapper->c64->setWarp(b); }
+- (BOOL) alwaysWarp { return wrapper->c64->getAlwaysWarp(); }
+- (void) setAlwaysWarp:(BOOL)b { wrapper->c64->setAlwaysWarp(b); }
+- (BOOL) warpLoad { return wrapper->c64->getWarpLoad(); }
+- (void) setWarpLoad:(BOOL)b { wrapper->c64->setWarpLoad(b); }
 
 - (UInt64) cycles { return wrapper->c64->getCycles(); }
 - (UInt64) frames { return wrapper->c64->getFrame(); }
