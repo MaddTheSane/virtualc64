@@ -52,14 +52,14 @@ extension MyController {
 
         // Tape menu
         if item.action == #selector(MyController.ejectTapeAction(_:)) {
-            return c64.datasette.hasTape()
+            return c64.datasette.hasTape
         }
         if item.action == #selector(MyController.playOrStopAction(_:)) {
-            item.title = c64.datasette.playKey() ? "Press Stop" : "Press Play"
-            return c64.datasette.hasTape()
+            item.title = c64.datasette.playKey ? "Press Stop" : "Press Play"
+            return c64.datasette.hasTape
         }
         if item.action == #selector(MyController.rewindAction(_:)) {
-            return c64.datasette.hasTape()
+            return c64.datasette.hasTape
         }
         
         // Cartridge menu
@@ -95,13 +95,13 @@ extension MyController {
             return c64.developmentMode();
         }
         if item.action == #selector(MyController.traceC64CpuAction(_:)) {
-            item.state = c64.cpu.tracingEnabled() ? .on : .off
+            item.state = c64.cpu.tracingEnabled ? .on : .off
         }
         if item.action == #selector(MyController.traceIecAction(_:)) {
             item.state = c64.iec.tracingEnabled ? .on : .off
         }
         if item.action == #selector(MyController.traceVC1541CpuAction(_:)) {
-            item.state = c64.vc1541.cpu.tracingEnabled() ? .on : .off
+            item.state = c64.vc1541.cpu.tracingEnabled ? .on : .off
         }
         if item.action == #selector(MyController.traceViaAction(_:)) {
             item.state = c64.vc1541.via1.tracingEnabled ? .on : .off
@@ -180,7 +180,7 @@ extension MyController {
             progress.isHidden = false
             tapeProgress.isHidden = false
             driveIcon.isHidden = !c64.vc1541.hasDisk
-            tapeIcon.isHidden = !c64.datasette.hasTape()
+            tapeIcon.isHidden = !c64.datasette.hasTape
             cartridgeIcon.isHidden = !c64.expansionport.cartridgeAttached
             clockSpeed.isHidden = false
             clockSpeedBar.isHidden = false
@@ -370,7 +370,7 @@ extension MyController {
     
     @IBAction func playOrStopAction(_ sender: Any!) {
         track()
-        if c64.datasette.playKey() {
+        if c64.datasette.playKey {
             c64.datasette.pressStop()
         } else {
             c64.datasette.pressPlay()
@@ -451,7 +451,7 @@ extension MyController {
             targetSelf in targetSelf.traceC64CpuAction(sender)
         }
         
-        c64.cpu.setTraceMode(!c64.cpu.tracingEnabled())
+        c64.cpu.tracingEnabled = !c64.cpu.tracingEnabled
     }
   
     @IBAction func traceIecAction(_ sender: Any!) {
@@ -460,7 +460,7 @@ extension MyController {
             targetSelf in targetSelf.traceIecAction(sender)
         }
         
-        c64.iec.setTraceMode(!c64.iec.tracingEnabled)
+        c64.iec.tracingEnabled = !c64.iec.tracingEnabled
     }
  
     @IBAction func traceVC1541CpuAction(_ sender: Any!) {
@@ -469,7 +469,7 @@ extension MyController {
             targetSelf in targetSelf.traceVC1541CpuAction(sender)
         }
         
-        c64.vc1541.cpu.setTraceMode(!c64.vc1541.cpu.tracingEnabled())
+        c64.vc1541.cpu.tracingEnabled = !c64.vc1541.cpu.tracingEnabled
     }
   
     @IBAction func traceViaAction(_ sender: Any!) {
@@ -478,8 +478,8 @@ extension MyController {
             targetSelf in targetSelf.traceViaAction(sender)
         }
         
-        c64.vc1541.via1.setTraceMode(!c64.vc1541.via1.tracingEnabled)
-        c64.vc1541.via2.setTraceMode(!c64.vc1541.via2.tracingEnabled)
+        c64.vc1541.via1.tracingEnabled = !c64.vc1541.via1.tracingEnabled
+        c64.vc1541.via2.tracingEnabled = !c64.vc1541.via2.tracingEnabled
     }
     
     @IBAction func dumpC64(_ sender: Any!) { c64.dump() }

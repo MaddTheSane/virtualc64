@@ -5,7 +5,7 @@
 //  Created by Dirk Hoffmann on 14.01.18.
 //
 
-import Foundation
+import Cocoa
 
 struct DragType {
     static let string = NSPasteboard.PasteboardType.string
@@ -95,7 +95,7 @@ public extension MetalView {
             let length = fileData!.count
             let nsData = fileData! as NSData
             let rawPtr = nsData.bytes
-            let snapshot = SnapshotProxy.make(withBuffer: rawPtr, length: length)
+            let snapshot = SnapshotProxy(buffer: rawPtr, length: length)
             
             controller.c64.load(fromSnapshot: snapshot)
             return true
@@ -114,14 +114,14 @@ public extension MetalView {
             }
             
             // Is it a snapshop with a matching version number?
-            if let snapshot = SnapshotProxy.make(withFile: path) {
+            if let snapshot = SnapshotProxy(file: path) {
                 controller.c64.load(fromSnapshot: snapshot)
                 document.fileURL = nil // Make document 'Untitled'
                 return true
             }
             
             // Is it an archive?
-            document.attachment = ArchiveProxy.make(withFile: path)
+            document.attachment = ArchiveProxy(file: path)
             if document.attachment != nil {
                 
                 track("Successfully read archive.")
@@ -130,7 +130,7 @@ public extension MetalView {
             }
         
             // Is it a band tape?
-            document.attachment = TAPProxy.make(withFile: path)
+            document.attachment = TAPProxy(file: path)
             if document.attachment != nil {
                 track("Successfully read tape.")
                 controller.showMountDialog()
@@ -138,7 +138,7 @@ public extension MetalView {
             }
             
             // Is it a cartridge?
-            document.attachment = CRTProxy.make(withFile: path)
+            document.attachment = CRTProxy(file: path)
             if document.attachment != nil {
                 track("Successfully read cartridge.")
                 controller.showMountDialog()

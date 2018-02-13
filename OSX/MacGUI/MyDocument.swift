@@ -81,30 +81,30 @@ class MyDocument : NSDocument {
         switch (typeName) {
         
         case "VC64":
-            let snapshot = SnapshotProxy.make(withBuffer: ptr, length: size)
+            let snapshot = SnapshotProxy(buffer: ptr, length: size)
             c64.load(fromSnapshot: snapshot)
             return
             
         case "CRT":
-            attachment = CRTProxy.make(withBuffer: ptr, length: size)
+            attachment = CRTProxy(buffer: ptr, length: size)
             break
         case "TAP":
-            attachment = TAPProxy.make(withBuffer: ptr, length: size)
+            attachment = TAPProxy(buffer: ptr, length: size)
             break
         case "T64":
-            attachment = T64Proxy.make(withBuffer: ptr, length: size)
+            attachment = T64Proxy(buffer: ptr, length: size)
             break
         case "PRG":
-            attachment = PRGProxy.make(withBuffer: ptr, length: size)
+            attachment = PRGProxy(buffer: ptr, length: size)
             break
         case "P00":
-            attachment = P00Proxy.make(withBuffer: ptr, length: size)
+            attachment = P00Proxy(buffer: ptr, length: size)
             break
         case "G64":
-            attachment = G64Proxy.make(withBuffer: ptr, length: size)
+            attachment = G64Proxy(buffer: ptr, length: size)
             break
         case "NIB":
-            attachment = NIBProxy.make(withBuffer: ptr, length: size)
+            attachment = NIBProxy(buffer: ptr, length: size)
             break
 
         default:
@@ -162,7 +162,7 @@ class MyDocument : NSDocument {
             NSLog("Type is VC64")
             
             // Take snapshot
-            if let snapshot = SnapshotProxy.make(withC64: c64) {
+            if let snapshot = SnapshotProxy(c64: c64) {
 
                 // Write to data buffer
 				var data = Data(count: snapshot.sizeOnDisk)

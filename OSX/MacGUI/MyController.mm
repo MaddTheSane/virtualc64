@@ -17,10 +17,10 @@
  */
 
 #import "C64GUI.h"
+#import <MetalKit/MetalKit.h>
 #import "VirtualC64-Swift.h"
 
-@implementation MyController {
-}
+@implementation MyController
 
 @synthesize c64;
 

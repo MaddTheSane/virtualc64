@@ -59,18 +59,12 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-- (bool) tracingEnabled;
-- (void) setTraceMode:(bool)b;
-- (uint16_t) PC;
-- (void) setPC:(uint16_t)pc;
-- (uint8_t) SP;
-- (void) setSP:(uint8_t)sp;
-- (uint8_t) A;
-- (void) setA:(uint8_t)a;
-- (uint8_t) X;
-- (void) setX:(uint8_t)x;
-- (uint8_t) Y;
-- (void) setY:(uint8_t)y;
+@property (setter=setTraceMode:) BOOL tracingEnabled;
+@property uint16_t PC;
+@property uint8_t SP;
+@property uint8_t A;
+@property uint8_t X;
+@property uint8_t Y;
 - (bool) Nflag;
 - (void) setNflag:(bool)b;
 - (bool) Zflag;
@@ -94,7 +88,7 @@ struct ContainerWrapper;
 - (const char *) mnemonic:(uint8_t)opcode;
 - (AddressingMode) addressingMode:(uint8_t)opcode;
 
-- (int) topOfCallStack;
+@property (readonly) int topOfCallStack;
 - (int) breakpoint:(int)addr;
 - (void) setBreakpoint:(int)addr tag:(uint8_t)t;
 - (void) setHardBreakpoint:(int)addr;
@@ -202,8 +196,7 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-@property (readonly) bool tracingEnabled;
-- (void) setTraceMode:(bool)b;
+@property (setter=setTraceMode:) BOOL tracingEnabled;
 
 @property uint8_t dataPortA;
 @property uint8_t dataPortDirectionA;
@@ -346,8 +339,7 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-@property (readonly) BOOL tracingEnabled;
-- (void) setTraceMode:(bool)b;
+@property (setter=setTraceMode:) BOOL tracingEnabled;
 @property (readonly, getter=isDriveConnected) BOOL driveConnected;
 - (void) connectDrive;
 - (void) disconnectDrive;
@@ -381,8 +373,7 @@ struct ContainerWrapper;
 }
 
 - (void) dump;
-@property (readonly) BOOL tracingEnabled;
-- (void) setTraceMode:(bool)b;
+@property (setter=setTraceMode:) BOOL tracingEnabled;
 
 @end
 
@@ -427,9 +418,8 @@ struct ContainerWrapper;
 - (VIAProxy *) via:(int)num;
 
 - (void) dump;
-@property (readonly) BOOL tracingEnabled;
-- (void) setTraceMode:(bool)b;
-@property (readonly) bool hasRedLED;
+@property (setter=setTraceMode:) BOOL tracingEnabled;
+@property (readonly) BOOL hasRedLED;
 @property (readonly) BOOL hasDisk;
 - (void) ejectDisk;
 @property BOOL writeProtection;
@@ -454,20 +444,19 @@ struct ContainerWrapper;
 
 - (void) dump;
 
-- (bool) hasTape;
+@property (readonly) BOOL hasTape;
 - (void) pressPlay;
 - (void) pressStop;
 - (void) rewind;
 - (void) ejectTape;
-- (NSInteger) getType; 
-- (long) durationInCycles;
-- (int) durationInSeconds;
-- (NSInteger) head;
-- (NSInteger) headInCycles;
-- (int) headInSeconds;
-- (void) setHeadInCycles:(long)value;
-- (BOOL) motor;
-- (BOOL) playKey;
+@property (readonly, getter=getType) NSInteger type;
+@property (readonly) long durationInCycles;
+@property (readonly) int durationInSeconds;
+@property (readonly) NSInteger head;
+@property NSInteger headInCycles;
+@property (readonly) int headInSeconds;
+@property (readonly) BOOL motor;
+@property (readonly) BOOL playKey;
 
 @end
 
@@ -523,7 +512,7 @@ struct ContainerWrapper;
 @property BOOL iecBusIsBusy;
 @property BOOL tapeBusIsBusy;
 
-- (struct C64Wrapper *)wrapper;
+@property (readonly) struct C64Wrapper *wrapper;
 - (void) kill;
 
 // Hardware configuration
@@ -566,7 +555,6 @@ struct ContainerWrapper;
 @property (getter=isNTSC) BOOL NTSC;
 - (void) setPAL;
 - (void) setNTSC;
-- (void) setNTSC:(BOOL)b;
 
 - (uint8_t) missingRoms; // DEPRECATED
 
@@ -637,7 +625,7 @@ struct ContainerWrapper;
     struct ContainerWrapper *wrapper;
 }
 
-- (struct ContainerWrapper *)wrapper;
+@property (readonly) struct ContainerWrapper *wrapper;
 
 @property (readonly) ContainerType type;
 @property (readonly) NSInteger sizeOnDisk;
@@ -649,14 +637,13 @@ struct ContainerWrapper;
 //                               SnapshotProxy
 // --------------------------------------------------------------------------
 
-@interface SnapshotProxy : ContainerProxy {
-}
+@interface SnapshotProxy : ContainerProxy
 
 + (BOOL)isSnapshotFile:(NSString *)path;
 + (BOOL)isUsupportedSnapshotFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype)makeWithFile:(NSString *)path;
-+ (instancetype)makeWithC64:(C64Proxy *)c64proxy;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
++ (instancetype)makeWithC64:(C64Proxy *)c64proxy NS_SWIFT_NAME(init(c64:));
 @end
 
 // --------------------------------------------------------------------------
@@ -666,8 +653,8 @@ struct ContainerWrapper;
 @interface CRTProxy : ContainerProxy
 
 + (BOOL)isCRTFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype)makeWithFile:(NSString *)path;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly, copy) NSString *cartridgeName;
 @property (readonly) CartridgeType cartridgeType;
@@ -685,12 +672,11 @@ struct ContainerWrapper;
 //                                  TAPProxy
 // --------------------------------------------------------------------------
 
-@interface TAPProxy : ContainerProxy {
-}
+@interface TAPProxy : ContainerProxy
 
 + (BOOL)isTAPFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype)makeWithFile:(NSString *)path;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly) NSInteger TAPversion;
 @end
@@ -699,11 +685,10 @@ struct ContainerWrapper;
 //                                ArchiveProxy
 // --------------------------------------------------------------------------
 
-@interface ArchiveProxy : ContainerProxy {
-}
+@interface ArchiveProxy : ContainerProxy
 
 + (instancetype)make;
-+ (instancetype)makeWithFile:(NSString *)path;
++ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly) NSInteger numberOfItems;
 - (NSString *)nameOfItem:(NSInteger)item;
@@ -717,62 +702,55 @@ struct ContainerWrapper;
 @end
 
 @interface T64Proxy : ArchiveProxy
-{
-}
+
 + (BOOL)isT64File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
 + (instancetype)makeWithFile:(NSString *)filename;
 + (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface PRGProxy : ArchiveProxy
-{
-}
+
 + (BOOL)isPRGFile:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
 + (instancetype)makeWithFile:(NSString *)filename;
 + (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface P00Proxy : ArchiveProxy
-{
-}
+
 + (BOOL)isP00File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
 + (instancetype)makeWithFile:(NSString *)filename;
 + (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface D64Proxy : ArchiveProxy
-{
-}
+
 + (BOOL)isD64File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype)makeWithFile:(NSString *)filename;
++ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype)makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 + (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 + (instancetype)makeWithVC1541:(VC1541Proxy *)vc1541;
 @end
 
 @interface G64Proxy : ArchiveProxy
-{
-}
+
 + (BOOL)isG64File:(NSString *)filename;
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype) makeWithFile:(NSString *)filename;
++ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 
 @interface NIBProxy : ArchiveProxy
-{
-}
+
 + (BOOL) isNIBFile:(NSString *)filename;
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype) makeWithFile:(NSString *)filename;
++ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 
 @interface FileProxy : ArchiveProxy
-{
-}
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length;
-+ (instancetype) makeWithFile:(NSString *)filename;
+
++ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 

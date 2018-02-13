@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import simd
 
 public extension MetalView {
     /*
@@ -284,9 +285,9 @@ public extension MetalView {
     
         var v = vector_float3(x, y, z)
         v = normalize(v)
-        let cos = cosf(radians)
+        let cos = Darwin.cos(radians)
         let cosp = 1.0 - cos
-        let sin = sinf(radians)
+        let sin = Darwin.sin(radians)
     
         var m = matrix_float4x4()
         m.columns.0 = float4(cos + cosp * v.x * v.x,

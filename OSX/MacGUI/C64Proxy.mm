@@ -16,8 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <simd/simd.h>
 #import "C64GUI.h"
 #import "C64.h"
+#import <MetalKit/MetalKit.h>
 #import "VirtualC64-Swift.h"
 
 struct C64Wrapper { C64 *c64; };
@@ -59,8 +61,8 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->cpu->dumpState(); }
-- (bool) tracingEnabled { return wrapper->cpu->tracingEnabled(); }
-- (void) setTraceMode:(bool)b { wrapper->cpu->setTraceMode(b); }
+- (BOOL) tracingEnabled { return wrapper->cpu->tracingEnabled(); }
+- (void) setTraceMode:(BOOL)b { wrapper->cpu->setTraceMode(b); }
 
 - (uint16_t) PC { return wrapper->cpu->getPC_at_cycle_0(); }
 - (void) setPC:(uint16_t)pc { wrapper->cpu->setPC_at_cycle_0(pc); }
@@ -264,8 +266,8 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->cia->dumpState(); }
-- (bool) tracingEnabled { return wrapper->cia->tracingEnabled(); }
-- (void) setTraceMode:(bool)b { wrapper->cia->setTraceMode(b); }
+- (BOOL) tracingEnabled { return wrapper->cia->tracingEnabled(); }
+- (void) setTraceMode:(BOOL)b { wrapper->cia->setTraceMode(b); }
 
 - (uint8_t) dataPortA { return wrapper->cia->getDataPortA(); }
 - (void) setDataPortA:(uint8_t)v { wrapper->cia->setDataPortA(v); }
@@ -455,7 +457,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 - (void) dump { wrapper->iec->dumpState(); }
 - (BOOL) tracingEnabled { return wrapper->iec->tracingEnabled(); }
-- (void) setTraceMode:(bool)b { wrapper->iec->setTraceMode(b); }
+- (void) setTraceMode:(BOOL)b { wrapper->iec->setTraceMode(b); }
 - (void) connectDrive { wrapper->iec->connectDrive(); }
 - (void) disconnectDrive { wrapper->iec->disconnectDrive(); }
 - (BOOL) isDriveConnected { return wrapper->iec->driveIsConnected(); }
@@ -502,7 +504,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 - (void) dump { wrapper->via->dumpState(); }
 - (BOOL) tracingEnabled { return wrapper->via->tracingEnabled(); }
-- (void) setTraceMode:(bool)b { wrapper->via->setTraceMode(b); }
+- (void) setTraceMode:(BOOL)b { wrapper->via->setTraceMode(b); }
 
 @end
 
@@ -566,8 +568,8 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 - (void) dump { wrapper->vc1541->dumpState(); }
 - (BOOL) tracingEnabled { return wrapper->vc1541->tracingEnabled(); }
-- (void) setTraceMode:(bool)b { wrapper->vc1541->setTraceMode(b); }
-- (bool) hasRedLED { return wrapper->vc1541->getRedLED(); }
+- (void) setTraceMode:(BOOL)b { wrapper->vc1541->setTraceMode(b); }
+- (BOOL) hasRedLED { return wrapper->vc1541->getRedLED(); }
 - (BOOL) hasDisk { return wrapper->vc1541->hasDisk(); }
 - (void) ejectDisk { wrapper->vc1541->ejectDisk(); }
 - (BOOL) writeProtection { return wrapper->vc1541->disk.isWriteProtected(); }
@@ -578,7 +580,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (void) setBitAccuracy:(bool)b { wrapper->vc1541->setBitAccuracy(b); }
 - (BOOL) soundMessagesEnabled { return wrapper->vc1541->soundMessagesEnabled(); }
 - (void) setSendSoundMessages:(bool)b { wrapper->vc1541->setSendSoundMessages(b); }
-- (bool) exportToD64:(NSString *)path { return wrapper->vc1541->exportToD64([path UTF8String]); }
+- (bool) exportToD64:(NSString *)path { return wrapper->vc1541->exportToD64([path fileSystemRepresentation]); }
 
 - (void) playSound:(NSString *)name volume:(float)v
 {
@@ -605,7 +607,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 
 - (void) dump { wrapper->datasette->dumpState(); }
-- (bool) hasTape { return wrapper->datasette->hasTape(); }
+- (BOOL) hasTape { return wrapper->datasette->hasTape(); }
 - (void) pressPlay { wrapper->datasette->pressPlay(); }
 - (void) pressStop { wrapper->datasette->pressStop(); }
 - (void) rewind { wrapper->datasette->rewind(); }
@@ -616,7 +618,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (NSInteger) head { return wrapper->datasette->getHead(); }
 - (NSInteger) headInCycles { return wrapper->datasette->getHeadInCycles(); }
 - (int) headInSeconds { return wrapper->datasette->getHeadInSeconds(); }
-- (void) setHeadInCycles:(long)value { wrapper->datasette->setHeadInCycles(value); }
+- (void) setHeadInCycles:(NSInteger)value { wrapper->datasette->setHeadInCycles(value); }
 - (BOOL) motor { return wrapper->datasette->getMotor(); }
 - (BOOL) playKey { return wrapper->datasette->getPlayKey(); }
 @end
@@ -759,37 +761,37 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
     return wrapper->c64->getMissingRoms();
 }
 - (bool) isBasicRom:(NSURL *)url {
-    return wrapper->c64->mem.isBasicRom([[url absoluteString] UTF8String]);
+    return wrapper->c64->mem.isBasicRom(url.fileSystemRepresentation);
 }
 - (bool) loadBasicRom:(NSURL *)url {
-    return [self isBasicRom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
+    return [self isBasicRom:url] && wrapper->c64->loadRom(url.fileSystemRepresentation);
 }
 - (BOOL) isBasicRomLoaded {
     return wrapper->c64->mem.basicRomIsLoaded();
 }
 - (bool) isCharRom:(NSURL *)url {
-    return wrapper->c64->mem.isCharRom([[url absoluteString] UTF8String]);
+    return wrapper->c64->mem.isCharRom(url.fileSystemRepresentation);
 }
 - (BOOL) isCharRomLoaded {
     return wrapper->c64->mem.charRomIsLoaded();
 }
 - (bool) loadCharRom:(NSURL *)url {
-    return [self isCharRom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
+    return [self isCharRom:url] && wrapper->c64->loadRom(url.fileSystemRepresentation);
 }
 - (bool) isKernelRom:(NSURL *)url {
-    return wrapper->c64->mem.isKernelRom([[url absoluteString] UTF8String]);
+    return wrapper->c64->mem.isKernelRom(url.fileSystemRepresentation);
 }
 - (bool) loadKernelRom:(NSURL *)url {
-    return [self isKernelRom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
+    return [self isKernelRom:url] && wrapper->c64->loadRom(url.fileSystemRepresentation);
 }
 - (BOOL) isKernelRomLoaded {
     return wrapper->c64->mem.kernelRomIsLoaded();
 }
 - (bool) isVC1541Rom:(NSURL *)url {
-    return wrapper->c64->floppy.mem.is1541Rom([[url absoluteString] UTF8String]);
+    return wrapper->c64->floppy.mem.is1541Rom(url.fileSystemRepresentation);
 }
 - (bool) loadVC1541Rom:(NSURL *)url {
-    return [self isVC1541Rom:url] && wrapper->c64->loadRom([[url absoluteString] UTF8String]);
+    return [self isVC1541Rom:url] && wrapper->c64->loadRom(url.fileSystemRepresentation);
 }
 - (BOOL) isVC1541RomLoaded {
     return wrapper->c64->floppy.mem.romIsLoaded();
@@ -930,11 +932,11 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 @implementation SnapshotProxy
 
 + (BOOL) isSnapshotFile:(NSString *)path {
-    return Snapshot::isSnapshotFile([path UTF8String]);
+    return Snapshot::isSnapshotFile([path fileSystemRepresentation]);
 }
 
 + (BOOL) isUsupportedSnapshotFile:(NSString *)path {
-    return Snapshot::isUnsupportedSnapshotFile([path UTF8String]);
+    return Snapshot::isUnsupportedSnapshotFile([path fileSystemRepresentation]);
 }
 
 + (instancetype) make:(Snapshot *)snapshot
@@ -953,7 +955,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (instancetype) makeWithFile:(NSString *)path
 {
-    Snapshot *snapshot = Snapshot::makeSnapshotWithFile([path UTF8String]);
+    Snapshot *snapshot = Snapshot::makeSnapshotWithFile([path fileSystemRepresentation]);
     return [self make:snapshot];
 }
 
@@ -974,7 +976,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL) isCRTFile:(NSString *)path
 {
-    return CRTContainer::isValidCRTFile([path UTF8String]);
+    return CRTContainer::isValidCRTFile([path fileSystemRepresentation]);
 }
 
 + (instancetype) make:(CRTContainer *)container
@@ -993,7 +995,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (instancetype) makeWithFile:(NSString *)path
 {
-    CRTContainer *container = CRTContainer::makeCRTContainerWithFile([path UTF8String]);
+    CRTContainer *container = CRTContainer::makeCRTContainerWithFile([path fileSystemRepresentation]);
     return [self make: container];
 }
 
@@ -1056,7 +1058,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL) isTAPFile:(NSString *)path
 {
-    return TAPContainer::isTAPFile([path UTF8String]);
+    return TAPContainer::isTAPFile([path fileSystemRepresentation]);
 }
 
 + (instancetype) make:(TAPContainer *)container
@@ -1075,7 +1077,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (instancetype) makeWithFile:(NSString *)path
 {
-    TAPContainer *container = TAPContainer::makeTAPContainerWithFile([path UTF8String]);
+    TAPContainer *container = TAPContainer::makeTAPContainerWithFile([path fileSystemRepresentation]);
     return [self make: container];
 }
 
@@ -1105,7 +1107,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (instancetype) makeWithFile:(NSString *)path
 {
-    Archive *archive = Archive::makeArchiveWithFile([path UTF8String]);
+    Archive *archive = Archive::makeArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 
@@ -1160,7 +1162,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isT64File:(NSString *)filename
 {
-    return T64Archive::isT64File([filename UTF8String]);
+    return T64Archive::isT64File([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(T64Archive *)archive
 {
@@ -1174,7 +1176,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    T64Archive *archive = T64Archive::makeT64ArchiveWithFile([path UTF8String]);
+    T64Archive *archive = T64Archive::makeT64ArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 + (instancetype) makeWithAnyArchive:(ArchiveProxy *)otherArchive
@@ -1193,7 +1195,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isPRGFile:(NSString *)filename
 {
-    return PRGArchive::isPRGFile([filename UTF8String]);
+    return PRGArchive::isPRGFile([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(PRGArchive *)archive
 {
@@ -1207,7 +1209,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    PRGArchive *archive = PRGArchive::makePRGArchiveWithFile([path UTF8String]);
+    PRGArchive *archive = PRGArchive::makePRGArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 + (instancetype) makeWithAnyArchive:(ArchiveProxy *)otherArchive
@@ -1226,7 +1228,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isP00File:(NSString *)filename
 {
-    return P00Archive::isP00File([filename UTF8String]);
+    return P00Archive::isP00File([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(P00Archive *)archive
 {
@@ -1240,7 +1242,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    P00Archive *archive = P00Archive::makeP00ArchiveWithFile([path UTF8String]);
+    P00Archive *archive = P00Archive::makeP00ArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 + (instancetype) makeWithAnyArchive:(ArchiveProxy *)otherArchive
@@ -1259,7 +1261,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isD64File:(NSString *)filename
 {
-    return D64Archive::isD64File([filename UTF8String]);
+    return D64Archive::isD64File([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(D64Archive *)archive
 {
@@ -1273,7 +1275,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    D64Archive *archive = D64Archive::makeD64ArchiveWithFile([path UTF8String]);
+    D64Archive *archive = D64Archive::makeD64ArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 + (instancetype) makeWithAnyArchive:(ArchiveProxy *)otherArchive
@@ -1297,7 +1299,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isG64File:(NSString *)filename
 {
-    return G64Archive::isG64File([filename UTF8String]);
+    return G64Archive::isG64File([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(G64Archive *)archive
 {
@@ -1311,7 +1313,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    G64Archive *archive = G64Archive::makeG64ArchiveWithFile([path UTF8String]);
+    G64Archive *archive = G64Archive::makeG64ArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 @end
@@ -1324,7 +1326,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 
 + (BOOL)isNIBFile:(NSString *)filename
 {
-    return NIBArchive::isNIBFile([filename UTF8String]);
+    return NIBArchive::isNIBFile([filename fileSystemRepresentation]);
 }
 + (instancetype) make:(NIBArchive *)archive
 {
@@ -1338,7 +1340,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    NIBArchive *archive = NIBArchive::makeNIBArchiveWithFile([path UTF8String]);
+    NIBArchive *archive = NIBArchive::makeNIBArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 @end
@@ -1361,7 +1363,7 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 }
 + (instancetype) makeWithFile:(NSString *)path
 {
-    FileArchive *archive = FileArchive::makeFileArchiveWithFile([path UTF8String]);
+    FileArchive *archive = FileArchive::makeFileArchiveWithFile([path fileSystemRepresentation]);
     return [self make: archive];
 }
 @end
