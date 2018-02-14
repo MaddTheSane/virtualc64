@@ -9,9 +9,9 @@ import Foundation
 
 class RomDialogController : UserDialogController {
     
-    let romImage = NSImage.init(named: NSImage.Name.init(rawValue: "rom"))
-    let romImageLight = NSImage.init(named: NSImage.Name.init(rawValue: "rom_light"))
-    let romImageMedium = NSImage.init(named: NSImage.Name.init(rawValue: "rom_medium"))
+    let romImage = #imageLiteral(resourceName: "rom")
+    let romImageLight = #imageLiteral(resourceName: "rom_light")
+    let romImageMedium = #imageLiteral(resourceName: "rom_medium")
 
     // @IBOutlet weak var learnMore: NSTextField!
     @IBOutlet weak var kernelRom: NSImageView!

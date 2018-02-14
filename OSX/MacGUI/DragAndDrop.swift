@@ -101,7 +101,9 @@ public extension MetalView {
             let length = fileData!.count
             let nsData = fileData! as NSData
             let rawPtr = nsData.bytes
-            let snapshot = SnapshotProxy(buffer: rawPtr, length: length)
+            guard let snapshot = SnapshotProxy(buffer: rawPtr, length: length) else {
+                return false
+            }
             
             controller.c64.load(fromSnapshot: snapshot)
             return true

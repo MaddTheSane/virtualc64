@@ -40,10 +40,10 @@ extension MyController {
         // Pause/Continue
         if tag == 1 {
             if c64.isRunning {
-                item.image = NSImage.init(named: NSImage.Name(rawValue: "pause32"))
+                item.image = #imageLiteral(resourceName: "pause32")
                 item.label = "Pause"
             } else {
-                item.image = NSImage.init(named: NSImage.Name(rawValue: "play32"))
+                item.image = #imageLiteral(resourceName: "play32")
                 item.label = "Run"
             }
             return true

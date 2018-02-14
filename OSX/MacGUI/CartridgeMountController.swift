@@ -37,9 +37,9 @@ class CartridgeMountController : UserDialogController {
         data.reloadData()
         
         // Set name and type
-        let cartName = cartridge.cartridgeName!
+        let cartName = cartridge.cartridgeName
         let cartType = cartridge.cartridgeType.rawValue
-        let cartTypeName = cartridge.cartridgeTypeName!
+        let cartTypeName = cartridge.cartridgeTypeName
     
         name.stringValue = (cartName == "") ? "" : "Name: \(cartName)"
         type.stringValue = "Type \(cartType): \(cartTypeName)"

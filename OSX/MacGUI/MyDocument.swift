@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-import Foundation
+import Cocoa
 
 class MyDocument : NSDocument {
     
@@ -81,8 +81,9 @@ class MyDocument : NSDocument {
         switch (typeName) {
         
         case "VC64":
-            let snapshot = SnapshotProxy(buffer: ptr, length: size)
+            if let snapshot = SnapshotProxy(buffer: ptr, length: size) {
             c64.load(fromSnapshot: snapshot)
+            }
             return
             
         case "CRT":
@@ -118,34 +119,34 @@ class MyDocument : NSDocument {
     @discardableResult
     @objc func loadRom(_ url: URL?) -> Bool {
         
-        if (url == nil) {
+        guard let url = url else {
             return false
         }
         
         let defaults = UserDefaults.standard
         
-        if c64.loadBasicRom(url!) {
-            track("Basic ROM:  \(url!)")
+        if c64.loadBasicRom(url) {
+            track("Basic ROM:  \(url)")
             defaults.set(url, forKey: VC64BasicRomFileKey)
             return true
         }
-        if c64.loadCharRom(url!) {
-            track("Char ROM:   \(url!)")
+        if c64.loadCharRom(url) {
+            track("Char ROM:   \(url)")
             defaults.set(url, forKey: VC64CharRomFileKey)
             return true
         }
-        if c64.loadKernelRom(url!) {
-            track("Kernel ROM: \(url!)")
+        if c64.loadKernelRom(url) {
+            track("Kernel ROM: \(url)")
             defaults.set(url, forKey: VC64KernelRomFileKey)
             return true
         }
-        if c64.loadVC1541Rom(url!) {
-            track("VC1541 ROM: \(url!)")
+        if c64.loadVC1541Rom(url) {
+            track("VC1541 ROM: \(url)")
             defaults.set(url, forKey: VC64VC1541RomFileKey)
             return true
         }
         
-        track("ROM file \(url!) not found")
+        track("ROM file \(url) not found")
         return false
     }
 

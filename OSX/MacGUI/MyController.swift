@@ -371,13 +371,13 @@ extension MyController {
             
         case MSG_VC1541_RED_LED_ON:
             
-            redLED.image = NSImage.init(named: NSImage.Name(rawValue: "LEDred"))
+            redLED.image = #imageLiteral(resourceName: "LEDred")
             redLED.setNeedsDisplay()
             break
             
         case MSG_VC1541_RED_LED_OFF:
             
-            redLED.image = NSImage.init(named: NSImage.Name(rawValue: "LEDgray"))
+            redLED.image = #imageLiteral(resourceName: "LEDgray") 
             redLED.setNeedsDisplay()
             break
     

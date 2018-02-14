@@ -236,7 +236,7 @@ public class MetalView: MTKView {
             return
         }
     
-        let buf = c64proxy.vic.screenBuffer()
+        let buf = c64proxy.vic.screenBuffer
         precondition(buf != nil)
         
         let pixelSize = 4

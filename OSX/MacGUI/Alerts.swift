@@ -42,7 +42,7 @@ public extension MyController {
        
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.icon = NSImage.init(named: NSImage.Name(rawValue: "diskette"))
+        alert.icon = #imageLiteral(resourceName: "diskette")
         alert.messageText = "The inserted floppy disk has not yet been saved."
         alert.informativeText = "All data will be lost if you proceed."
         alert.addButton(withTitle: "Proceed")
@@ -54,7 +54,7 @@ public extension MyController {
         
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.icon = NSImage.init(named: NSImage.Name(rawValue: "diskette"))
+        alert.icon = #imageLiteral(resourceName: "diskette")
         alert.messageText = "Cannot export empty disk."
         alert.informativeText = "The \(format) format is designed to store a single file."
         alert.addButton(withTitle: "OK")
@@ -65,7 +65,7 @@ public extension MyController {
         
         let alert = NSAlert()
         alert.alertStyle = .informational
-        alert.icon = NSImage.init(named: NSImage.Name(rawValue: "diskette"))
+        alert.icon = #imageLiteral(resourceName: "diskette")
         alert.messageText = "Only the first file will be exported."
         alert.informativeText = "The \(format) format is designed to store a single file."
         alert.addButton(withTitle: "OK")
@@ -74,7 +74,7 @@ public extension MyController {
     
     @objc func showUnsupportedCartridgeAlert(_ container: CRTProxy) {
         
-        let name = container.cartridgeTypeName!
+        let name = container.cartridgeTypeName
         
         let alert = NSAlert()
         alert.alertStyle = .warning

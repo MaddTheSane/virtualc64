@@ -21,6 +21,8 @@
 #import "VIC_globals.h"
 #import "basic.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 // Forward declarations
 @class MyController;
 @class C64Proxy;
@@ -65,20 +67,13 @@ struct ContainerWrapper;
 @property uint8_t A;
 @property uint8_t X;
 @property uint8_t Y;
-- (bool) Nflag;
-- (void) setNflag:(bool)b;
-- (bool) Zflag;
-- (void) setZflag:(bool)b;
-- (bool) Cflag;
-- (void) setCflag:(bool)b;
-- (bool) Iflag;
-- (void) setIflag:(bool)b;
-- (bool) Bflag;
-- (void) setBflag:(bool)b;
-- (bool) Dflag;
-- (void) setDflag:(bool)b;
-- (bool) Vflag;
-- (void) setVflag:(bool)b;
+@property BOOL Nflag;
+@property BOOL  Zflag;
+@property BOOL  Cflag;
+@property BOOL  Iflag;
+@property BOOL  Bflag;
+@property BOOL  Dflag;
+@property BOOL  Vflag;
 
 - (uint16_t) peekPC;
 - (uint8_t) lengthOfInstruction:(uint8_t)opcode;
@@ -131,7 +126,7 @@ struct ContainerWrapper;
 
 - (void) dump;
 
-- (void *) screenBuffer;
+@property (readonly, nullable) void *screenBuffer;
 
 - (NSColor *) color:(NSInteger)nr;
 @property NSInteger colorScheme;
@@ -539,7 +534,7 @@ struct ContainerWrapper;
 
 - (VC64Message)message;
 - (void) putMessage:(VC64Message)msg;
-- (void) setListener:(const void *)sender function:(void(*)(const void *, int))func;
+- (void) setListener:(const void *)sender function:(void(*)(const void *_Nullable, int))func;
 
 - (void) powerUp;
 - (void) ping;
@@ -599,7 +594,7 @@ struct ContainerWrapper;
 - (uint8_t *) historicSnapshotData:(NSInteger)nr;
 
 - (time_t)historicSnapshotTimestamp:(NSInteger)nr;
-- (unsigned char *)historicSnapshotImageData:(NSInteger)nr;
+- (nullable unsigned char *)historicSnapshotImageData:(NSInteger)nr;
 - (NSInteger)historicSnapshotImageWidth:(NSInteger)nr;
 - (NSInteger)historicSnapshotImageHeight:(NSInteger)nr;
 
@@ -641,9 +636,9 @@ struct ContainerWrapper;
 
 + (BOOL)isSnapshotFile:(NSString *)path;
 + (BOOL)isUsupportedSnapshotFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
-+ (instancetype)makeWithC64:(C64Proxy *)c64proxy NS_SWIFT_NAME(init(c64:));
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
++ (nullable instancetype)makeWithC64:(C64Proxy *)c64proxy NS_SWIFT_NAME(init(c64:));
 @end
 
 // --------------------------------------------------------------------------
@@ -653,8 +648,8 @@ struct ContainerWrapper;
 @interface CRTProxy : ContainerProxy
 
 + (BOOL)isCRTFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly, copy) NSString *cartridgeName;
 @property (readonly) CartridgeType cartridgeType;
@@ -675,8 +670,8 @@ struct ContainerWrapper;
 @interface TAPProxy : ContainerProxy
 
 + (BOOL)isTAPFile:(NSString *)path;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly) NSInteger TAPversion;
 @end
@@ -688,7 +683,7 @@ struct ContainerWrapper;
 @interface ArchiveProxy : ContainerProxy
 
 + (instancetype)make;
-+ (instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
++ (nullable instancetype)makeWithFile:(NSString *)path NS_SWIFT_NAME(init(file:));
 
 @property (readonly) NSInteger numberOfItems;
 - (NSString *)nameOfItem:(NSInteger)item;
@@ -704,53 +699,54 @@ struct ContainerWrapper;
 @interface T64Proxy : ArchiveProxy
 
 + (BOOL)isT64File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)filename;
-+ (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)filename;
++ (nullable instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface PRGProxy : ArchiveProxy
 
 + (BOOL)isPRGFile:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)filename;
-+ (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)filename;
++ (nullable instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface P00Proxy : ArchiveProxy
 
 + (BOOL)isP00File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)filename;
-+ (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)filename;
++ (nullable instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
 @end
 
 @interface D64Proxy : ArchiveProxy
 
 + (BOOL)isD64File:(NSString *)filename;
-+ (instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype)makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
-+ (instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
-+ (instancetype)makeWithVC1541:(VC1541Proxy *)vc1541;
++ (nullable instancetype)makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype)makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
++ (nullable instancetype)makeWithAnyArchive:(ArchiveProxy *)otherArchive;
++ (nullable instancetype)makeWithVC1541:(VC1541Proxy *)vc1541;
 @end
 
 @interface G64Proxy : ArchiveProxy
 
 + (BOOL)isG64File:(NSString *)filename;
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
++ (nullable instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 
 @interface NIBProxy : ArchiveProxy
 
 + (BOOL) isNIBFile:(NSString *)filename;
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
++ (nullable instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 
 @interface FileProxy : ArchiveProxy
 
-+ (instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
-+ (instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
++ (nullable instancetype) makeWithBuffer:(const void *)buffer length:(NSInteger)length NS_SWIFT_NAME(init(buffer:length:));
++ (nullable instancetype) makeWithFile:(NSString *)filename NS_SWIFT_NAME(init(file:));
 @end
 
+NS_ASSUME_NONNULL_END

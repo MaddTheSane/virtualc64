@@ -14,12 +14,11 @@ import Foundation
 public func track(_ message: String = "",
                   path: String = #file, function: String = #function, line: Int = #line ) {
     
-    if let file = URL.init(string: path)?.deletingPathExtension().lastPathComponent {
-        if (message == "") {
-            print("\(file)::\(function).\(line)")
-        } else {
-            print("\(file)::\(function).\(line): \(message)")
-        }
+    let file = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+    if message == "" {
+        print("\(file)::\(function).\(line)")
+    } else {
+        print("\(file)::\(function).\(line): \(message)")
     }
 }
 

@@ -74,20 +74,20 @@ struct CRTContainerWrapper { CRTContainer *crtcontainer; };
 - (void) setX:(uint8_t)x { wrapper->cpu->setX(x); }
 - (uint8_t) Y { return wrapper->cpu->getY(); }
 - (void) setY:(uint8_t)y { wrapper->cpu->setY(y); }
-- (bool) Nflag { return wrapper->cpu->getN(); }
-- (void) setNflag:(bool)b { wrapper->cpu->setN(b); }
-- (bool) Zflag { return wrapper->cpu->getZ(); }
-- (void) setZflag:(bool)b { wrapper->cpu->setZ(b); }
-- (bool) Cflag { return wrapper->cpu->getC(); }
-- (void) setCflag:(bool)b { wrapper->cpu->setC(b); }
-- (bool) Iflag { return wrapper->cpu->getI(); }
-- (void) setIflag:(bool)b { wrapper->cpu->setI(b); }
-- (bool) Bflag { return wrapper->cpu->getB(); }
-- (void) setBflag:(bool)b { wrapper->cpu->setB(b); }
-- (bool) Dflag { return wrapper->cpu->getD(); }
-- (void) setDflag:(bool)b { wrapper->cpu->setD(b); }
-- (bool) Vflag { return wrapper->cpu->getV(); }
-- (void) setVflag:(bool)b { wrapper->cpu->setV(b); }
+- (BOOL) Nflag { return wrapper->cpu->getN(); }
+- (void) setNflag:(BOOL)b { wrapper->cpu->setN(b); }
+- (BOOL) Zflag { return wrapper->cpu->getZ(); }
+- (void) setZflag:(BOOL)b { wrapper->cpu->setZ(b); }
+- (BOOL) Cflag { return wrapper->cpu->getC(); }
+- (void) setCflag:(BOOL)b { wrapper->cpu->setC(b); }
+- (BOOL) Iflag { return wrapper->cpu->getI(); }
+- (void) setIflag:(BOOL)b { wrapper->cpu->setI(b); }
+- (BOOL) Bflag { return wrapper->cpu->getB(); }
+- (void) setBflag:(BOOL)b { wrapper->cpu->setB(b); }
+- (BOOL) Dflag { return wrapper->cpu->getD(); }
+- (void) setDflag:(BOOL)b { wrapper->cpu->setD(b); }
+- (BOOL) Vflag { return wrapper->cpu->getV(); }
+- (void) setVflag:(BOOL)b { wrapper->cpu->setV(b); }
 
 - (uint16_t) peekPC {
     return wrapper->cpu->mem->peek(wrapper->cpu->getPC_at_cycle_0()); }
