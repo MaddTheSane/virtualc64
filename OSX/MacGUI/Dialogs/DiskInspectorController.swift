@@ -128,9 +128,9 @@ class DiskInspectorController: UserDialogController {
             headPositionIsDirty = true
             halftrack = drive.halftrack()
         }
-        if drive.offset() != offset {
+        if drive.offset != offset {
             headPositionIsDirty = true
-            offset = Int(drive.offset())
+            offset = Int(drive.offset)
         }
         
         // Update GUI elements
@@ -164,7 +164,7 @@ class DiskInspectorController: UserDialogController {
         
         if headPositionIsDirty {
             if hasDisk {
-                headField.integerValue = Int(drive.offset())
+                headField.integerValue = Int(drive.offset)
                 valueField.integerValue = Int(drive.readBitFromHead())
             } else {
                 headField.stringValue = ""
@@ -179,7 +179,7 @@ class DiskInspectorController: UserDialogController {
         var gcr: String
         
         if hasDisk {
-            gcrBox.title = "GCR Bitstream (\(drive.sizeOfCurrentHalftrack()) Bits)"
+            gcrBox.title = "GCR Bitstream (\(drive.sizeOfCurrentHalftrack) Bits)"
             gcr = String(cString: drive.disk.trackDataAsString())
         } else {
             gcrBox.title = "GCR Bitstream"
@@ -211,7 +211,7 @@ class DiskInspectorController: UserDialogController {
         
         removeHeadMarker()
         let storage = (gcrView.documentView as? NSTextView)?.textStorage
-        headPosition = NSRange.init(location: Int(drive.offset()), length: 1)
+        headPosition = NSRange.init(location: Int(drive.offset), length: 1)
         storage?.addAttribute(.backgroundColor, value: NSColor.red, range: headPosition!)
     }
     
@@ -237,7 +237,7 @@ class DiskInspectorController: UserDialogController {
     
     func setSectorMarkers(begin: Int, end: Int) {
         
-        let length = Int(drive.sizeOfCurrentHalftrack())
+        let length = Int(drive.sizeOfCurrentHalftrack)
         if length == 0 { return }
         
         let left = begin % (length + 1)
@@ -337,11 +337,11 @@ class DiskInspectorController: UserDialogController {
     @IBAction func headAction(_ sender: NSTextField!) {
         
         var value = sender.integerValue
-        let maxValue = Int(drive.sizeOfCurrentHalftrack())
+        let maxValue = Int(drive.sizeOfCurrentHalftrack)
         if value >= maxValue { value = maxValue - 1 }
         if value < 0 { value = 0 }
         
-        drive.setOffset(UInt16(value))
+        drive.offset = UInt16(value)
         refresh()
         scrollToHead()
     }

@@ -58,7 +58,7 @@ public class AudioEngine: NSObject {
         }
         
         // Tell SID to use the correct sample rate
-        sid?.setSampleRate(UInt32(sampleRate))
+        sid?.sampleRate = (UInt32(sampleRate))
         
         // Register render callback
         if stereo {

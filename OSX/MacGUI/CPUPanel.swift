@@ -25,7 +25,7 @@ extension MyController {
             }
             undoManager?.setActionName("Set Program Counter")
             
-            c64.cpu.setPC(value)
+            c64.cpu.pc = value
             refreshCPU()
         }
     }

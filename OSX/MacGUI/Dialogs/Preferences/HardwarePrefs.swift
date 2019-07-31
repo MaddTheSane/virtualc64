@@ -54,12 +54,12 @@ extension PreferencesController {
         hwCiaTimerBBug.state = c64.cia1.emulateTimerBBug() ? .on : .off
         
         // Audio
-        let sidModel = c64.sid.model()
+        let sidModel = c64.sid.model
         hwSidModelPopup.selectItem(withTag: sidModel)
-        hwSidFilter.state = c64.sid.audioFilter() ? .on : .off
-        hwSidEnginePopup.selectItem(withTag: (c64.sid.reSID() ? 1 : 0))
-        hwSidSamplingPopup.isEnabled = c64.sid.reSID()
-        hwSidSamplingPopup.selectItem(withTag: c64.sid.samplingMethod())
+        hwSidFilter.state = c64.sid.audioFilter ? .on : .off
+        hwSidEnginePopup.selectItem(withTag: (c64.sid.reSID ? 1 : 0))
+        hwSidSamplingPopup.isEnabled = c64.sid.reSID
+        hwSidSamplingPopup.selectItem(withTag: c64.sid.samplingMethod)
         
         // Logic board
         hwGlueLogicPopup.selectItem(withTag: c64.vic.glueLogic())
@@ -122,25 +122,25 @@ extension PreferencesController {
     
     @IBAction func hwSidFilterAction(_ sender: NSButton!) {
         
-        proxy?.sid.setAudioFilter(sender.state == .on)
+        proxy?.sid.audioFilter = (sender.state == .on)
         refresh()
     }
     
     @IBAction func hwSidEngineAction(_ sender: NSPopUpButton!) {
         
-        proxy?.sid.setReSID(sender.selectedTag() == 1)
+        proxy?.sid.reSID = sender.selectedTag() == 1
         refresh()
     }
     
     @IBAction func hwSidSamplingAction(_ sender: NSPopUpButton!) {
         
-        proxy?.sid.setSamplingMethod(sender.selectedTag())
+        proxy?.sid.samplingMethod = (sender.selectedTag())
         refresh()
     }
     
     @IBAction func hwSidModelAction(_ sender: NSPopUpButton!) {
         
-        proxy?.sid.setModel(sender.selectedTag())
+        proxy?.sid.model = (sender.selectedTag())
         refresh()
     }
     

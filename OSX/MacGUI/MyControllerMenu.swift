@@ -85,8 +85,8 @@ extension MyController: NSMenuItemValidation {
         }
         if item.action == #selector(MyController.drivePowerAction(_:)) {
             let poweredOn = firstDrive() ?
-                c64.drive1.isPoweredOn() :
-                c64.drive2.isPoweredOn()
+                c64.drive1.isPoweredOn :
+                c64.drive2.isPoweredOn
             item.title = poweredOn ? "Disconnect" : "Connect"
             return true
         }
@@ -187,13 +187,13 @@ extension MyController: NSMenuItemValidation {
             return c64.developmentMode()
         }
         if item.action == #selector(MyController.traceIecAction(_:)) {
-            item.state = c64.iec.tracing() ? .on : .off
+            item.state = c64.iec.tracing ? .on : .off
         }
         if item.action == #selector(MyController.traceVC1541CpuAction(_:)) {
-            item.state = c64.drive1.cpu.tracing() ? .on : .off
+            item.state = c64.drive1.cpu.tracing ? .on : .off
         }
         if item.action == #selector(MyController.traceViaAction(_:)) {
-            item.state = c64.drive1.via1.tracing() ? .on : .off
+            item.state = c64.drive1.via1.tracing ? .on : .off
         }
         
         if item.action == #selector(MyController.dumpStateAction(_:)) {
@@ -899,7 +899,7 @@ extension MyController: NSMenuItemValidation {
             targetSelf.traceIecAction(sender)
         }
         
-        c64.iec.setTracing(!c64.iec.tracing())
+        c64.iec.tracing = !c64.iec.tracing
     }
  
     @IBAction func traceVC1541CpuAction(_ sender: Any!) {
@@ -908,7 +908,7 @@ extension MyController: NSMenuItemValidation {
             targetSelf.traceVC1541CpuAction(sender)
         }
         
-        c64.drive1.cpu.setTracing(!c64.drive1.cpu.tracing())
+        c64.drive1.cpu.tracing = !c64.drive1.cpu.tracing
     }
   
     @IBAction func traceViaAction(_ sender: Any!) {
@@ -917,8 +917,8 @@ extension MyController: NSMenuItemValidation {
             targetSelf.traceViaAction(sender)
         }
         
-        c64.drive1.via1.setTracing(!c64.drive1.via1.tracing())
-        c64.drive1.via2.setTracing(!c64.drive1.via2.tracing())
+        c64.drive1.via1.tracing = !c64.drive1.via1.tracing
+        c64.drive1.via2.tracing = !c64.drive1.via2.tracing
     }
     
     @IBAction func dumpC64(_ sender: Any!) { c64.dump() }

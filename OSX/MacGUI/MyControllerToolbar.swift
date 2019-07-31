@@ -129,7 +129,7 @@ extension MyController {
         
         let state = debugger.state
         if state == NSDrawerState.closed || state == NSDrawerState.closing {
-            c64.cpu.setTracing(true)
+            c64.cpu.tracing = true
             debugger.open()
         }
     }
@@ -138,7 +138,7 @@ extension MyController {
         
         let state = debugger.state
         if state == NSDrawerState.open || state == NSDrawerState.opening {
-            c64.cpu.setTracing(false)
+            c64.cpu.tracing = false
             debugger.close()
         }
     }

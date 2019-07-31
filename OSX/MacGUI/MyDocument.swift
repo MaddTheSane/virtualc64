@@ -178,7 +178,7 @@ class MyDocument: NSDocument {
         // Check if the emulator has just been startet. In that case, we have
         // to wait until the Kernal boot routine has been executed. Otherwise,
         // the C64 would ignore everything we are doing here.
-        let delay = (c64.cpu.cycle() < 3000000) ? 2.0 : 0.0
+        let delay = (c64.cpu.cycle < 3000000) ? 2.0 : 0.0
 
         // Execute asynchronously ...
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: {

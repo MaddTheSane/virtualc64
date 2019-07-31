@@ -213,11 +213,10 @@ struct AnyC64FileWrapper;
 - (CPUInfo) getInfo;
 - (void) dump;
 
-- (BOOL) tracing;
-- (void) setTracing:(BOOL)b;
+@property BOOL tracing;
 
-- (UInt64) cycle;
-- (uint16_t) pc;
+@property (readonly) UInt64 cycle;
+@property (setter=setPC:) uint16_t pc;
 - (void) setPC:(uint16_t)pc;
 - (void) setSP:(uint8_t)sp;
 - (void) setA:(uint8_t)a;
@@ -290,8 +289,7 @@ struct AnyC64FileWrapper;
 
 - (CIAInfo) getInfo;
 - (void) dump;
-- (BOOL) tracing;
-- (void) setTracing:(BOOL)b;
+@property BOOL tracing;
 
 - (NSInteger) model;
 - (void) setModel:(NSInteger)value;
@@ -394,18 +392,13 @@ struct AnyC64FileWrapper;
 - (VoiceInfo) getVoiceInfo:(NSInteger)voice;
 - (void) dump;
 
-- (BOOL) reSID;
-- (void) setReSID:(BOOL)b;
-- (uint32_t) sampleRate;
-- (void) setSampleRate:(uint32_t)rate;
-- (BOOL) audioFilter;
-- (void) setAudioFilter:(BOOL)b;
-- (NSInteger) samplingMethod;
-- (void) setSamplingMethod:(NSInteger)value;
-- (NSInteger) model;
-- (void) setModel:(NSInteger)value;
+@property BOOL reSID;
+@property uint32_t sampleRate;
+@property BOOL audioFilter;
+@property NSInteger samplingMethod;
+@property NSInteger model;
 
-- (NSInteger) ringbufferSize;
+@property (readonly) NSInteger ringbufferSize;
 - (float) ringbufferData:(NSInteger)offset;
 - (double) fillLevel;
 - (NSInteger) bufferUnderflows;
@@ -529,8 +522,7 @@ struct AnyC64FileWrapper;
 
 - (void) dump;
 
-- (BOOL) tracing;
-- (void) setTracing:(BOOL)b;
+@property BOOL tracing;
 
 @end
 
@@ -559,10 +551,9 @@ struct AnyC64FileWrapper;
 - (VIAProxy *) via:(NSInteger)num;
 
 - (void) dump;
-- (BOOL) tracing;
-- (void) setTracing:(BOOL)b;
+@property BOOL tracing;
 
-- (BOOL) isPoweredOn;
+@property (readonly, getter=isPoweredOn) BOOL poweredOn;
 - (void) powerOn;
 - (void) powerOff;
 - (void) togglePowerSwitch;
@@ -586,9 +577,8 @@ struct AnyC64FileWrapper;
 - (Halftrack) halftrack;
 - (void) setTrack:(Track)t;
 - (void) setHalftrack:(Halftrack)ht;
-- (uint16_t) sizeOfCurrentHalftrack;
-- (uint16_t) offset;
-- (void) setOffset:(uint16_t)value;
+@property (readonly) uint16_t sizeOfCurrentHalftrack;
+@property uint16_t offset;
 - (uint8_t) readBitFromHead;
 - (void) writeBitToHead:(uint8_t)value;
 
@@ -611,8 +601,7 @@ struct AnyC64FileWrapper;
 }
 
 - (void) dump;
-- (BOOL) tracing;
-- (void) setTracing:(BOOL)b;
+@property BOOL tracing;
 
 @end
 

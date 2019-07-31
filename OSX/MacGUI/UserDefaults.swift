@@ -871,10 +871,10 @@ extension MyController {
         c64.cia1.setEmulateTimerBBug(defaults.bool(forKey: VC64Keys.timerBBug))
         c64.cia2.setEmulateTimerBBug(defaults.bool(forKey: VC64Keys.timerBBug))
 
-        c64.sid.setReSID(defaults.bool(forKey: VC64Keys.reSID))
-        c64.sid.setModel(defaults.integer(forKey: VC64Keys.audioChip))
-        c64.sid.setAudioFilter(defaults.bool(forKey: VC64Keys.audioFilter))
-        c64.sid.setSamplingMethod(defaults.integer(forKey: VC64Keys.samplingMethod))
+        c64.sid.reSID = defaults.bool(forKey: VC64Keys.reSID)
+        c64.sid.model = (defaults.integer(forKey: VC64Keys.audioChip))
+        c64.sid.audioFilter = (defaults.bool(forKey: VC64Keys.audioFilter))
+        c64.sid.samplingMethod = (defaults.integer(forKey: VC64Keys.samplingMethod))
         
         c64.vic.setGlueLogic(defaults.integer(forKey: VC64Keys.glueLogic))
         c64.mem.setRamInitPattern(defaults.integer(forKey: VC64Keys.initPattern))
@@ -892,10 +892,10 @@ extension MyController {
         defaults.set(c64.cia1.model(), forKey: VC64Keys.ciaChip)
         defaults.set(c64.cia1.emulateTimerBBug(), forKey: VC64Keys.timerBBug)
 
-        defaults.set(c64.sid.reSID(), forKey: VC64Keys.reSID)
-        defaults.set(c64.sid.model(), forKey: VC64Keys.audioChip)
-        defaults.set(c64.sid.audioFilter(), forKey: VC64Keys.audioFilter)
-        defaults.set(c64.sid.samplingMethod(), forKey: VC64Keys.samplingMethod)
+        defaults.set(c64.sid.reSID, forKey: VC64Keys.reSID)
+        defaults.set(c64.sid.model, forKey: VC64Keys.audioChip)
+        defaults.set(c64.sid.audioFilter, forKey: VC64Keys.audioFilter)
+        defaults.set(c64.sid.samplingMethod, forKey: VC64Keys.samplingMethod)
         
         defaults.set(c64.vic.glueLogic(), forKey: VC64Keys.glueLogic)
         defaults.set(c64.mem.ramInitPattern(), forKey: VC64Keys.initPattern)

@@ -66,14 +66,14 @@ class CpuTableView: NSTableView {
         
         if c == nil { return }
         
-        updateDisplayedAddresses(startAddr: c!.c64.cpu.pc())
+        updateDisplayedAddresses(startAddr: c!.c64.cpu.pc)
     }
     
     func refresh() {
     
         if c == nil { return }
         
-        if let row = rowForAddress[c!.c64.cpu.pc()] {
+        if let row = rowForAddress[c!.c64.cpu.pc] {
             
             // If PC points to an address which is already displayed,
             // we simply select the corresponding row.
