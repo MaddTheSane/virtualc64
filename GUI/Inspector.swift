@@ -345,12 +345,22 @@ class Inspector: DialogController {
         if full {
             
             if c64.running {
-                stopAndGoButton.image = NSImage(named: "pauseTemplate")
+                if #available(macOS 11.0, *) {
+                    stopAndGoButton.image = NSImage(systemSymbolName: "pause.fill",
+                                                    accessibilityDescription: "Two parallel vertical lines enclosed by a circle.")
+                } else {
+                    stopAndGoButton.image = NSImage(named: "pauseTemplate")
+                }
                 stopAndGoButton.toolTip = "Pause"
                 stepIntoButton.isEnabled = false
                 stepOverButton.isEnabled = false
             } else {
-                stopAndGoButton.image = NSImage(named: "runTemplate")
+                if #available(macOS 11.0, *) {
+                    stopAndGoButton.image = NSImage(systemSymbolName: "arrowtriangle.right.circle",
+                                                    accessibilityDescription: "An arrow pointing right enclosed by a circle.")
+                } else {
+                    stopAndGoButton.image = NSImage(named: "runTemplate")
+                }
                 stopAndGoButton.toolTip = "Run"
                 stepIntoButton.isEnabled = true
                 stepOverButton.isEnabled = true

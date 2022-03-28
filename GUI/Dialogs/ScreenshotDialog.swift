@@ -93,7 +93,12 @@ class ScreenshotDialog: DialogController {
         rightButton.isEnabled = currentItem >= 0 && currentItem < lastItem
         itemLabel.stringValue = "\(currentItem + 1) / \(screenshots.count)"
 
-        actionButton.image = NSImage(named: "trashTemplate")
+        if #available(macOS 11, *) {
+            actionButton.image = NSImage(systemSymbolName: "trash",
+                                         accessibilityDescription: "A trash can.")
+        } else {
+            actionButton.image = NSImage(named: "trash")
+        }
         actionButton.toolTip = "Delete screenshot"
         actionButton.isHidden = empty
         leftButton.isHidden = empty

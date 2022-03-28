@@ -50,7 +50,7 @@ class GamePadManager {
         // Add default devices
         gamePads[0] = GamePad(manager: self, type: .MOUSE)
         gamePads[0]!.name = "Mouse"
-        gamePads[0]!.setIcon(name: "devMouseTemplate")
+        gamePads[0]!.setIcon(name: "computermouse.fill")
         gamePads[0]!.keyMap = 0
 
         gamePads[1] = GamePad(manager: self, type: .JOYSTICK)

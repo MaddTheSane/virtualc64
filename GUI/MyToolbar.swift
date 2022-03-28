@@ -46,10 +46,22 @@ class MyToolbar: NSToolbar {
         }
         if c64.running {
             controlsSegCtrl.setToolTip("Pause", forSegment: 0)
-            controlsSegCtrl.setImage(NSImage(named: "pauseTemplate"), forSegment: 0)
+            if #available(macOS 11.0, *) {
+                controlsSegCtrl.setImage(NSImage(systemSymbolName: "pause.fill",
+                                                 accessibilityDescription: "Two parallel vertical lines enclosed by a circle."), forSegment: 0)
+                
+            } else {
+                controlsSegCtrl.setImage(NSImage(named: "pause.fill"), forSegment: 0)
+            }
+
         } else {
             controlsSegCtrl.setToolTip("Run", forSegment: 0)
-            controlsSegCtrl.setImage(NSImage(named: "runTemplate"), forSegment: 0)
+            if #available(macOS 11.0, *) {
+                controlsSegCtrl.setImage(NSImage(systemSymbolName: "arrowtriangle.right.circle",
+                                                accessibilityDescription: "An arrow pointing right enclosed by a circle."), forSegment: 0)
+            } else {
+                controlsSegCtrl.setImage(NSImage(named: "runTemplate"), forSegment: 0)
+            }
         }
     }
     

@@ -132,7 +132,14 @@ class GamePad {
         
     func setIcon(name: String) {
         
-        icon = NSImage(named: name)
+        icon = nil
+        if #available(macOS 11, *) {
+            icon = NSImage(systemSymbolName: name,
+                                         accessibilityDescription: nil)
+        }
+        if icon == nil {
+            icon = NSImage(named: name)
+        }
     }
     
     func property(key: String) -> String? {

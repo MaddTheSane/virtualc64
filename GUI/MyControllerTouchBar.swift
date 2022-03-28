@@ -152,7 +152,13 @@ extension MyController: NSTouchBarDelegate {
             
         case NSTouchBarItem.Identifier.browse:
             let item = NSCustomTouchBarItem(identifier: identifier)
-            let icon = NSImage(named: NSImage.Name("timeMachineTemplate"))!
+            let icon: NSImage
+            if #available(macOS 11.0, *) {
+                icon = NSImage(systemSymbolName: "clock.arrow.circlepath",
+                               accessibilityDescription: "A clock encircled with an arrow pointing counter-clockwise.")!
+            } else {
+                icon = NSImage(named: NSImage.Name("clock.arrow.circlepath"))!
+            }
             item.customizationLabel = "Browse"
             item.view = PaddedButton(image: icon,
                                      target: self,
