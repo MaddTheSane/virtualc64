@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "ClrHomeTemplate.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
