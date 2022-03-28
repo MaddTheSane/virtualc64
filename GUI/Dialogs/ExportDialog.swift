@@ -365,7 +365,7 @@ class ExportDialog: DialogController {
     
     func updateDiskIcon() {
         
-        let wp = drive!.hasWriteProtectedDisk()
+        let wp = drive!.hasWriteProtectedDisk
         diskIcon.image = AnyFileProxy.diskIcon(protected: wp)
     }
     
@@ -509,7 +509,7 @@ class ExportDialog: DialogController {
         do {
             try parent.mydocument.export(drive: driveID!, to: url)
             myAppDelegate.noteNewRecentlyExportedDiskURL(url, drive: driveID!)
-            drive?.setModifiedDisk(false)
+            drive?.hasModifiedDisk = false
             hideSheet()
 
         } catch let error as VC64Error {

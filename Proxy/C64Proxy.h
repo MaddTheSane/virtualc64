@@ -276,7 +276,7 @@
 - (NSInteger)loggedPCRel:(NSInteger)nr;
 - (NSInteger)loggedPCAbs:(NSInteger)nr;
 - (void)clearLog;
-- (BOOL)isJammed;
+@property (readonly, getter=isJammed) BOOL jammed;
 
 - (void)setHex;
 - (void)setDec;
@@ -340,7 +340,7 @@
 @property (readonly) NSInteger vPixels;
 
 - (VICIIConfig)getConfig;
-- (BOOL)isPAL;
+@property (readonly, getter=isPAL) BOOL PAL;
 - (NSColor *)color:(NSInteger)nr;
 - (UInt32)rgbaColor:(NSInteger)nr palette:(Palette)palette;
 - (VICIIInfo)getInfo;
@@ -374,10 +374,9 @@
 - (VoiceInfo)getVoiceInfo:(NSInteger)nr voice:(NSInteger)voice;
 - (SIDStats) getStats;
 
-- (double)sampleRate;
-- (void)setSampleRate:(double)rate;
+@property double sampleRate;
 
-- (NSInteger)ringbufferSize;
+@property (readonly) NSInteger ringbufferSize;
 - (void)ringbufferData:(NSInteger)offset left:(float *)l right:(float *)r;
 
 - (void)copyMono:(float *)target size:(NSInteger)n;
@@ -399,11 +398,11 @@
 
 - (BOOL)keyIsPressed:(NSInteger)nr;
 - (BOOL)keyIsPressedAtRow:(NSInteger)row col:(NSInteger)col;
-- (BOOL)controlIsPressed;
-- (BOOL)commodoreIsPressed;
-- (BOOL)leftShiftIsPressed;
-- (BOOL)rightShiftIsPressed;
-- (BOOL)shiftLockIsPressed;
+@property (readonly) BOOL controlIsPressed;
+@property (readonly) BOOL commodoreIsPressed;
+@property (readonly) BOOL leftShiftIsPressed;
+@property (readonly) BOOL rightShiftIsPressed;
+@property (readonly) BOOL shiftLockIsPressed;
 
 - (void)pressKey:(NSInteger)nr;
 - (void)pressKeyAtRow:(NSInteger)row col:(NSInteger)col;
@@ -448,35 +447,33 @@
 
 @interface ExpansionPortProxy : C64ComponentProxy { }
 
-- (BOOL)cartridgeAttached;
-- (CartridgeType)cartridgeType;
+@property (readonly) BOOL cartridgeAttached;
+@property (readonly) CartridgeType cartridgeType;
 - (void)attachCartridge:(CRTFileProxy *)c reset:(BOOL)reset exception:(ExceptionWrapper *)ex;
 - (void)attachGeoRamCartridge:(NSInteger)capacity;
 - (void)attachIsepicCartridge;
 - (void)detachCartridgeAndReset;
 
-- (NSInteger)numButtons;
+@property (readonly) NSInteger numButtons;
 - (NSString *)getButtonTitle:(NSInteger)nr;
 - (void)pressButton:(NSInteger)nr;
 - (void)releaseButton:(NSInteger)nr;
 
-- (BOOL)hasSwitch;
-- (NSInteger)switchPosition;
+@property (readonly) BOOL hasSwitch;
+@property NSInteger switchPosition;
 - (NSString *)switchDescription:(NSInteger)pos;
-- (NSString *)currentSwitchDescription;
+@property (readonly, copy) NSString *currentSwitchDescription;
 - (BOOL)validSwitchPosition:(NSInteger)pos;
-- (BOOL)switchIsNeutral;
-- (BOOL)switchIsLeft;
-- (BOOL)switchIsRight;
-- (void)setSwitchPosition:(NSInteger)pos;
+@property (readonly) BOOL switchIsNeutral;
+@property (readonly) BOOL switchIsLeft;
+@property (readonly) BOOL switchIsRight;
 
-- (BOOL)hasLed;
-- (BOOL)led;
-- (void)setLed:(BOOL)value;
+@property (readonly) BOOL hasLed;
+@property BOOL led;
 
 @property (readonly) NSInteger ramCapacity;
 
-- (BOOL)hasBattery;
+@property (readonly) BOOL hasBattery;
 - (void)setBattery:(BOOL)value;
 
 @end
@@ -513,17 +510,16 @@
 
 - (DriveConfig)getConfig;
 
-- (BOOL)isConnected;
-- (BOOL)isSwitchedOn;
+@property (readonly, getter=isConnected) BOOL connected;
+@property (readonly, getter=isSwitchedOn) BOOL switchedOn;
 
-- (BOOL)readMode;
-- (BOOL)writeMode;
+@property (readonly) BOOL readMode;
+@property (readonly) BOOL writeMode;
 
-- (BOOL)redLED;
-- (BOOL)hasDisk;
-- (BOOL)hasWriteProtectedDisk;
-- (BOOL)hasModifiedDisk;
-- (void)setModifiedDisk:(BOOL)b;
+@property (readonly) BOOL redLED;
+@property (readonly) BOOL hasDisk;
+@property (readonly) BOOL hasWriteProtectedDisk;
+@property (getter=hasModifiedDisk) BOOL modifiedDisk;
 - (void)insertNewDisk:(DOSType)fstype;
 - (void)insertD64:(D64FileProxy *)proxy protected:(BOOL)wp;
 - (void)insertG64:(G64FileProxy *)proxy protected:(BOOL)wp;
@@ -531,14 +527,14 @@
 - (void)insertFileSystem:(FSDeviceProxy *)proxy protected:(BOOL)wp;
 - (void)ejectDisk;
 
-- (Track)track;
-- (Halftrack)halftrack;
+@property (readonly) Track track;
+@property (readonly) Halftrack halftrack;
 - (NSInteger)sizeOfHalftrack:(Halftrack)ht;
-- (NSInteger)sizeOfCurrentHalftrack;
-- (NSInteger)offset;
+@property (readonly) NSInteger sizeOfCurrentHalftrack;
+@property (readonly) NSInteger offset;
 - (u8)readBitFromHead;
 
-- (BOOL)isRotating;
+@property (readonly, getter=isRotating) BOOL rotating;
 
 @end
 
@@ -567,8 +563,7 @@
 
 @interface DiskProxy : C64ComponentProxy { }
     
-- (BOOL)writeProtected;
-- (void)setWriteProtected:(BOOL)b;
+@property BOOL writeProtected;
 - (void)toggleWriteProtection;
 
 @end
@@ -586,10 +581,10 @@
 - (NSInteger)lengthOfHalftrack:(Halftrack)ht;
 
 - (SectorInfo)sectorInfo:(Halftrack)ht sector:(Sector)s;
-- (const char *)diskNameAsString;
-- (const char *)trackBitsAsString:(Halftrack)ht;
-- (const char *)sectorHeaderBytesAsString:(Halftrack)ht sector:(Sector)s hex:(BOOL)hex;
-- (const char *)sectorDataBytesAsString:(Halftrack)ht sector:(Sector)s hex:(BOOL)hex;
+@property (readonly) const char *diskNameAsString NS_RETURNS_INNER_POINTER;
+- (const char *)trackBitsAsString:(Halftrack)ht NS_RETURNS_INNER_POINTER;
+- (const char *)sectorHeaderBytesAsString:(Halftrack)ht sector:(Sector)s hex:(BOOL)hex NS_RETURNS_INNER_POINTER;
+- (const char *)sectorDataBytesAsString:(Halftrack)ht sector:(Sector)s hex:(BOOL)hex NS_RETURNS_INNER_POINTER;
 
 - (NSInteger)numErrors:(Halftrack)ht;
 - (NSString *)errorMessage:(Halftrack)ht nr:(NSInteger)nr;

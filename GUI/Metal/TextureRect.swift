@@ -37,7 +37,7 @@ extension Canvas {
     // Returns the largest visibile texture area (excluding HBLANK and VBLANK)
     var largestVisible: CGRect {
         
-        if c64.vic.isPAL() {
+        if c64.vic.isPAL {
             return CGRect(x: 104, y: 16, width: 487 - 104, height: 299 - 16)
         } else {
             return CGRect(x: 104, y: 16, width: 487 - 104, height: 249 - 16)

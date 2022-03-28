@@ -25,9 +25,9 @@ extension MyController {
     
     var cartridgeSwitch: NSImage? {
         
-        if !c64.expansionport.hasSwitch() { return nil }
+        if !c64.expansionport.hasSwitch { return nil }
         
-        let pos = c64.expansionport.switchPosition()
+        let pos = c64.expansionport.switchPosition
         
         if pos < 0 { return NSImage(named: "crtSwitchLeftTemplate") }
         if pos > 0 { return NSImage(named: "crtSwitchRightTemplate") }
@@ -36,17 +36,17 @@ extension MyController {
     
     public func refreshStatusBar() {
                         
-        let connected8 = c64.drive8.isConnected()
-        let connected9 = c64.drive9.isConnected()
-        let on8 = c64.drive8.isSwitchedOn()
-        let on9 = c64.drive9.isSwitchedOn()
+        let connected8 = c64.drive8.isConnected
+        let connected9 = c64.drive9.isConnected
+		let on8 = c64.drive8.isSwitchedOn
+        let on9 = c64.drive9.isSwitchedOn
 
         let running = c64.running
         let debug = c64.debugMode
-        let jammed = c64.cpu.isJammed()
+        let jammed = c64.cpu.isJammed
         let warp = c64.warpMode
         
-        let hasCrt = c64.expansionport.cartridgeAttached()
+        let hasCrt = c64.expansionport.cartridgeAttached
             
         // Floppy drives
         refreshStatusBarDriveItems(drive: .DRIVE8)
@@ -119,13 +119,13 @@ extension MyController {
 
         if drive == .DRIVE8 {
             
-            trackNumber8.integerValue = Int((c64.drive8.halftrack() + 1) / 2)
-            trackNumber8.textColor = c64.drive8.writeMode() ? .red : .secondaryLabelColor
+            trackNumber8.integerValue = Int((c64.drive8.halftrack + 1) / 2)
+            trackNumber8.textColor = c64.drive8.writeMode ? .red : .secondaryLabelColor
             
         } else {
             
-            trackNumber9.integerValue = Int((c64.drive9.halftrack() + 1) / 2)
-            trackNumber9.textColor = c64.drive9.writeMode() ? .red : .secondaryLabelColor
+            trackNumber9.integerValue = Int((c64.drive9.halftrack + 1) / 2)
+            trackNumber9.textColor = c64.drive9.writeMode ? .red : .secondaryLabelColor
         }
     }
     
@@ -135,10 +135,10 @@ extension MyController {
 
         if drive == .DRIVE8 {
             diskIcon8.image = c64.drive8.icon
-            diskIcon8.isHidden = !c64.drive8.isConnected() || !c64.drive8.hasDisk() || !statusBar
+            diskIcon8.isHidden = !c64.drive8.isConnected || !c64.drive8.hasDisk || !statusBar
         } else {
             diskIcon9.image = c64.drive9.icon
-            diskIcon9.isHidden = !c64.drive9.isConnected() || !c64.drive9.hasDisk() || !statusBar
+            diskIcon9.isHidden = !c64.drive9.isConnected || !c64.drive9.hasDisk || !statusBar
         }
     }
     
@@ -155,7 +155,7 @@ extension MyController {
         if drive == .DRIVE8 {
             
             // if c64.iec.transferring && c64.drive8.isRotating() {
-            if c64.drive8.isRotating() {
+            if c64.drive8.isRotating {
                 spinning8.startAnimation(self)
                 spinning8.isHidden = !statusBar
             } else {
@@ -166,7 +166,7 @@ extension MyController {
         } else {
             
             // if c64.iec.transferring && c64.drive9.isRotating() {
-            if c64.drive9.isRotating() {
+            if c64.drive9.isRotating {
                 spinning9.startAnimation(self)
                 spinning9.isHidden = !statusBar
             } else {

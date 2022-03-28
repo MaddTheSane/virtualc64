@@ -67,7 +67,7 @@ extension MyController: NSMenuItemValidation {
             
         // Keyboard menu
         case #selector(MyController.shiftLockAction(_:)):
-            item.state = c64.keyboard.shiftLockIsPressed() ? .on : .off
+            item.state = c64.keyboard.shiftLockIsPressed ? .on : .off
             return true
             
         // Drive menu
@@ -76,13 +76,13 @@ extension MyController: NSMenuItemValidation {
             
         case  #selector(MyController.ejectDiskAction(_:)),
               #selector(MyController.exportDiskAction(_:)):
-            return drive.hasDisk()
+            return drive.hasDisk
             
         case #selector(MyController.exportRecentDiskDummyAction8(_:)):
-            return c64.drive8.hasDisk()
+            return c64.drive8.hasDisk
             
         case #selector(MyController.exportRecentDiskDummyAction9(_:)):
-            return c64.drive9.hasDisk()
+            return c64.drive9.hasDisk
                         
         case #selector(MyController.exportRecentDiskAction(_:)):
             switch item.tag {
@@ -92,12 +92,12 @@ extension MyController: NSMenuItemValidation {
             }
             
         case #selector(MyController.writeProtectAction(_:)):
-            item.state = drive.hasWriteProtectedDisk() ? .on : .off
-            return drive.hasDisk()
+            item.state = drive.hasWriteProtectedDisk ? .on : .off
+            return drive.hasDisk
             
         case #selector(MyController.drivePowerAction(_:)):
             track()
-            item.title = drive.isSwitchedOn() ? "Switch off" : "Switch on"
+            item.title = drive.isSwitchedOn ? "Switch off" : "Switch on"
             return true
             
         // Tape menu
@@ -119,24 +119,24 @@ extension MyController: NSMenuItemValidation {
             return validateURLlist(myAppDelegate.recentlyAttachedCartridgeURLs, image: smallCart)
             
         case #selector(MyController.attachGeoRamDummyAction(_:)):
-            item.state = (c64.expansionport.cartridgeType() == .GEO_RAM) ? .on : .off
+            item.state = (c64.expansionport.cartridgeType == .GEO_RAM) ? .on : .off
             
         case #selector(MyController.attachGeoRamAction(_:)):
-            item.state = (c64.expansionport.cartridgeType() == .GEO_RAM &&
+            item.state = (c64.expansionport.cartridgeType == .GEO_RAM &&
                             c64.expansionport.ramCapacity == item.tag * 1024) ? .on : .off
             
         case #selector(MyController.geoRamBatteryAction(_:)):
-            item.state = c64.expansionport.hasBattery() ? .on : .off
-            return c64.expansionport.cartridgeType() == .GEO_RAM
+            item.state = c64.expansionport.hasBattery ? .on : .off
+            return c64.expansionport.cartridgeType == .GEO_RAM
 
         case #selector(MyController.attachIsepicAction(_:)):
-            item.state = (c64.expansionport.cartridgeType() == .ISEPIC) ? .on : .off
+            item.state = (c64.expansionport.cartridgeType == .ISEPIC) ? .on : .off
             
         case #selector(MyController.detachCartridgeAction(_:)):
-            return c64.expansionport.cartridgeAttached()
+            return c64.expansionport.cartridgeAttached
             
         case #selector(MyController.pressButtonDummyAction(_:)):
-            return c64.expansionport.numButtons() > 0
+            return c64.expansionport.numButtons > 0
             
         case #selector(MyController.pressCartridgeButton1Action(_:)):
             let title = c64.expansionport.getButtonTitle(1)!
@@ -151,27 +151,27 @@ extension MyController: NSMenuItemValidation {
             return title != ""
             
         case #selector(MyController.setSwitchDummyAction(_:)):
-            return c64.expansionport.hasSwitch()
+            return c64.expansionport.hasSwitch
             
         case #selector(MyController.setSwitchNeutralAction(_:)):
             let title = c64.expansionport.switchDescription(0)
             item.title = title ?? ""
             item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsNeutral() ? .on : .off
+            item.state = c64.expansionport.switchIsNeutral ? .on : .off
             return title != nil
             
         case #selector(MyController.setSwitchLeftAction(_:)):
             let title = c64.expansionport.switchDescription(-1)
             item.title = title ?? ""
             item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsLeft() ? .on : .off
+            item.state = c64.expansionport.switchIsLeft ? .on : .off
             return title != nil
             
         case #selector(MyController.setSwitchRightAction(_:)):
             let title = c64.expansionport.switchDescription(1)
             item.title = title ?? ""
             item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsRight() ? .on : .off
+            item.state = c64.expansionport.switchIsRight ? .on : .off
             return title != nil
 
         default:
@@ -920,7 +920,7 @@ extension MyController: NSMenuItemValidation {
     }
     
     @IBAction func geoRamBatteryAction(_ sender: Any!) {
-        c64.expansionport.setBattery(!c64.expansionport.hasBattery())
+        c64.expansionport.setBattery(!c64.expansionport.hasBattery)
     }
     
     @IBAction func pressCartridgeButton1Action(_ sender: NSButton!) {
@@ -947,7 +947,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func setSwitchNeutralAction(_ sender: Any!) {
         
-        c64.expansionport.setSwitchPosition(0)
+        c64.expansionport.switchPosition = 0
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             // TODO: Delete or call a method here if it is really needed.
@@ -956,7 +956,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func setSwitchLeftAction(_ sender: Any!) {
         
-        c64.expansionport.setSwitchPosition(-1)
+        c64.expansionport.switchPosition = -1
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             // TODO: Delete or call a method here if it is really needed.
@@ -965,7 +965,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func setSwitchRightAction(_ sender: Any!) {
         
-        c64.expansionport.setSwitchPosition(1)
+        c64.expansionport.switchPosition = 1
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             // TODO: Delete or call a method here if it is really needed.

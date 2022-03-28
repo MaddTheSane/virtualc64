@@ -65,7 +65,7 @@ public class MacAudio: NSObject {
         }
         
         // Inform SID about the sample rate
-        sid.setSampleRate(sampleRate)
+        sid.sampleRate = sampleRate
         
         // Register render callback
         if stereo {

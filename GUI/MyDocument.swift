@@ -269,7 +269,7 @@ class MyDocument: NSDocument {
         let drive = c64.drive(id)
         try export(disk: drive.disk, to: url)
         
-        drive.setModifiedDisk(false)
+        drive.hasModifiedDisk = false
     }
  
     func export(disk: DiskProxy, to url: URL) throws {

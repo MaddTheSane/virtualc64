@@ -197,7 +197,7 @@ class GamePadManager {
     func addDevice(slot: Int, device: IOHIDDevice) {
         
         // Open device
-        if !device.open() { return }
+        guard device.open() else { return }
         
         // Create a GamePad object
         gamePads[slot] = GamePad(manager: self, device: device, type: .JOYSTICK)

@@ -92,11 +92,11 @@ class VirtualKeyboardController: DialogController, NSWindowDelegate {
         
         var newModifiers: Modifier = []
         
-        if keyboard.leftShiftIsPressed() { newModifiers.insert(.shift) }
-        if keyboard.rightShiftIsPressed() { newModifiers.insert(.shift) }
-        if keyboard.shiftLockIsPressed() { newModifiers.insert(.shift) }
-        if keyboard.controlIsPressed() { newModifiers.insert(.control) }
-        if keyboard.commodoreIsPressed() { newModifiers.insert(.commodore) }
+        if keyboard.leftShiftIsPressed { newModifiers.insert(.shift) }
+        if keyboard.rightShiftIsPressed { newModifiers.insert(.shift) }
+        if keyboard.shiftLockIsPressed { newModifiers.insert(.shift) }
+        if keyboard.controlIsPressed { newModifiers.insert(.control) }
+        if keyboard.commodoreIsPressed { newModifiers.insert(.commodore) }
         if lowercase { newModifiers.insert(.lowercase) }
                 
         // Update images if the modifier flags have changed

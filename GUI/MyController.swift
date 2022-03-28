@@ -261,8 +261,8 @@ extension MyController {
         if inspector?.window?.isVisible == true { inspector!.continuousRefresh() }
         
         // Update the cartridge LED
-        if c64.expansionport.hasLed() {
-            let led = c64.expansionport.led() ? 1 : 0
+        if c64.expansionport.hasLed {
+            let led = c64.expansionport.led ? 1 : 0
             if crtIcon.tag != led {
                 crtIcon.tag = led
                 crtIcon.image = NSImage(named: led == 1 ? "crtLedOnTemplate" : "crtTemplate")
