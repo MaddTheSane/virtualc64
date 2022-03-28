@@ -11,62 +11,85 @@
 // Factory extensions
 //
 
-extension Proxy {
+extension MakeWithBuffer {
     
-    static func make<T: MakeWithBuffer>(buffer: UnsafeRawPointer, length: Int) throws -> T {
-        
+    static func make(with data: Data) throws -> Self {
         track()
         
         let exception = ExceptionWrapper()
-        let obj = T.make(withBuffer: buffer, length: length, exception: exception)
+        let obj = make(with: data, exception: exception)
         if exception.errorCode != .OK { throw VC64Error(exception) }
         return obj!
     }
 
-    static func make<T: MakeWithFile>(url: URL) throws -> T {
-        
-        let exception = ExceptionWrapper()
-        let obj = T.make(withFile: url.path, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
-        return obj!
+    static func make(with data: Data, exception: ExceptionWrapper) -> Self? {
+        return data.withUnsafeBytes { uwbp -> Self? in
+            return make(withBuffer: uwbp.baseAddress!, length: uwbp.count, exception: exception)
+        }
     }
-    
-    static func make<T: MakeWithDisk>(disk: DiskProxy) throws -> T {
-        
-        let exception = ExceptionWrapper()
-        let obj = T.make(withDisk: disk, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
-        return obj!
-    }
-    
-    static func make<T: MakeWithFileSystem>(fs: FSDeviceProxy) throws -> T {
-        
-        let exception = ExceptionWrapper()
-        let obj = T.make(withFileSystem: fs, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
-        return obj!
-    }
-    
-    static func make<T: MakeWithCollection>(collection: AnyCollectionProxy) throws -> T {
-        
-        let exception = ExceptionWrapper()
-        let obj = T.make(withCollection: collection, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
-        return obj!
-    }
-    
-    static func make<T: MakeWithD64>(d64: D64FileProxy) throws -> T {
+}
 
+extension MakeWithFile {
+    
+    static func make(with url: URL) throws -> Self {
+        
         let exception = ExceptionWrapper()
-        let obj = T.make(withD64: d64, exception: exception)
+        let obj = make(withFile: url.path, exception: exception)
         if exception.errorCode != .OK { throw VC64Error(exception) }
         return obj!
     }
+}
+
+extension MakeWithDisk {
     
-    static func make<T: MakeWithFolder>(folder: URL) throws -> T {
+    static func make(with disk: DiskProxy) throws -> Self {
         
         let exception = ExceptionWrapper()
-        let obj = T.make(withFolder: folder.path, exception: exception)
+        let obj = make(withDisk: disk, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+        return obj!
+    }
+}
+
+extension MakeWithFileSystem {
+    
+    static func make(withFileSystem fs: FSDeviceProxy) throws -> Self {
+        
+        let exception = ExceptionWrapper()
+        let obj = make(withFileSystem: fs, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+        return obj!
+    }
+}
+
+extension MakeWithCollection {
+    
+    static func make(withCollection collection: AnyCollectionProxy) throws -> Self {
+        
+        let exception = ExceptionWrapper()
+        let obj = make(withCollection: collection, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+        return obj!
+    }
+}
+
+extension MakeWithD64 {
+    
+    static func make(withD64 d64: D64FileProxy) throws -> Self {
+        
+        let exception = ExceptionWrapper()
+        let obj = make(withD64: d64, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+        return obj!
+    }
+}
+
+extension MakeWithFolder {
+    
+    static func make(withFolder folder: URL) throws -> Self {
+        
+        let exception = ExceptionWrapper()
+        let obj = make(withFolder: folder.path, exception: exception)
         if exception.errorCode != .OK { throw VC64Error(exception) }
         return obj!
     }

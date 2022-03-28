@@ -59,13 +59,13 @@ class RomDropView: NSImageView {
     
     func performDrag(type: RomType, url: URL?) -> Bool {
         
-        if url != nil {
+        if let url = url {
             do {
-                let rom = try Proxy.make(url: url!) as RomFileProxy
+                let rom = try RomFileProxy.make(with: url)
                 c64.loadRom(rom)
                 return true
             } catch {
-                let name = url!.lastPathComponent
+                let name = url.lastPathComponent
                 (error as? VC64Error)?.warning("Cannot open Rom file \"\(name)\"")
             }
         }

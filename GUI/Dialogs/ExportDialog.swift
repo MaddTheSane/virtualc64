@@ -193,7 +193,7 @@ class ExportDialog: DialogController {
         disk = c64.drive(nr).disk
                 
         // Try to extract the file system
-        if disk != nil { volume = try? FSDeviceProxy.make(disk: disk!) }
+        if let disk = disk { volume = try? FSDeviceProxy.make(with: disk) }
         
         // volume?.printDirectory()
                         

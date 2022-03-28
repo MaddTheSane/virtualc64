@@ -722,7 +722,7 @@
 // AnyFile
 //
 
-@interface AnyFileProxy : Proxy { }
+@interface AnyFileProxy : Proxy
 
 + (FileType) typeOfUrl:(NSURL *)url;
 
@@ -739,7 +739,7 @@
 // AnyCollection
 //
 
-@interface AnyCollectionProxy : AnyFileProxy { }
+@interface AnyCollectionProxy : AnyFileProxy
 
 @end
 
@@ -795,7 +795,7 @@
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
  
 @property (readonly) CartridgeType cartridgeType;
-@property (readonly) BOOL isSupported;
+@property (readonly, getter=isSupported) BOOL supported;
 @property (readonly) NSInteger initialExromLine;
 @property (readonly) NSInteger initialGameLine;
 @property (readonly) NSInteger chipCount;

@@ -7,6 +7,7 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
+import simd
 import Metal
 import MetalKit
 import MetalPerformanceShaders
