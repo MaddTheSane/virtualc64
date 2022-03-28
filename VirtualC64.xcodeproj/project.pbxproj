@@ -710,7 +710,7 @@
 		50E2D9AA25991E4B009A986B /* AnyCollection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnyCollection.cpp; sourceTree = "<group>"; };
 		50E2D9AB25991E4B009A986B /* AnyCollection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnyCollection.h; sourceTree = "<group>"; };
 		50E5FFAF227964F20025C73D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
-		50E5FFB0227964F20025C73D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		50E5FFB0227964F20025C73D /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		50E5FFB3227964FA0025C73D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		50E5FFB4227964FA0025C73D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MyDocument.xib; sourceTree = "<group>"; };
 		50E806BE25A1C2B800F08732 /* Reflection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Reflection.h; sourceTree = "<group>"; };
