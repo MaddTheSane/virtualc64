@@ -349,7 +349,7 @@ class Inspector: DialogController {
                     stopAndGoButton.image = NSImage(systemSymbolName: "pause.fill",
                                                     accessibilityDescription: "Two parallel vertical lines enclosed by a circle.")
                 } else {
-                    stopAndGoButton.image = NSImage(named: "pauseTemplate")
+                    stopAndGoButton.image = NSImage(named: "pause.fill")
                 }
                 stopAndGoButton.toolTip = "Pause"
                 stepIntoButton.isEnabled = false
