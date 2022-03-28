@@ -38,7 +38,7 @@ extension MyController {
                         
         let connected8 = c64.drive8.isConnected
         let connected9 = c64.drive9.isConnected
-		let on8 = c64.drive8.isSwitchedOn
+        let on8 = c64.drive8.isSwitchedOn
         let on9 = c64.drive9.isSwitchedOn
 
         let running = c64.running
