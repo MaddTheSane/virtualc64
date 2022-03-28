@@ -133,7 +133,7 @@ extension ExpansionPortProxy {
 
 extension AnyFileProxy {
     
-    func writeToFile(url: URL) throws {
+    func writeTo(_ url: URL) throws {
         
         let exception = ExceptionWrapper()
         write(toFile: url.path, exception: exception)
@@ -143,7 +143,7 @@ extension AnyFileProxy {
 
 extension FSDeviceProxy {
         
-    func exportDirectory(url: URL) throws {
+    func exportDirectory(to url: URL) throws {
             
         let exception = ExceptionWrapper()
         exportDirectory(url.path, exception: exception)

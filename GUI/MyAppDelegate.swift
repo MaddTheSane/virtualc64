@@ -198,17 +198,17 @@ extension MyAppDelegate {
         }
     }
     
-    // Callen when a HID device has been added
+    /// Callen when a HID device has been added
     func deviceAdded() {
         prefController?.refresh()
     }
     
-    // Callen when a HID device has been removed
+    /// Callen when a HID device has been removed
     func deviceRemoved() {
         prefController?.refresh()
     }
 
-    // Callen when a HID device has been pulled
+    /// Callen when a HID device has been pulled
     func devicePulled(events: [GamePadAction]) {
         prefController?.refreshDeviceEvents(events: events)
     }

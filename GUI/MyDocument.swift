@@ -250,7 +250,7 @@ class MyDocument: NSDocument {
 
                 // Write to data buffer
                 do {
-                    try snapshot.writeToFile(url: url)
+                    try snapshot.writeTo(url)
                 } catch {
                     throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
                 }
@@ -327,7 +327,7 @@ class MyDocument: NSDocument {
     
     func export(file: AnyFileProxy, to url: URL) throws {
         
-        try file.writeToFile(url: url)
+        try file.writeTo(url)
     }
 
     //
