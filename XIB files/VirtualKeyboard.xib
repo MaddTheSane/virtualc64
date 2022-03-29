@@ -790,7 +790,7 @@
     <resources>
         <image name="instructions2Template" width="289" height="296"/>
         <image name="instructionsTemplate" width="287" height="296"/>
-        <image name="shape100x100" width="13" height="36"/>
+        <image name="shape100x100" width="36" height="36"/>
         <image name="shape150x100" width="54" height="36"/>
         <image name="shape200x100" width="72" height="36"/>
         <image name="shape900x100" width="325" height="36"/>

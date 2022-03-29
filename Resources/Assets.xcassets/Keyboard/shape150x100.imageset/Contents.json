@@ -1,19 +1,6 @@
 {
   "images" : [
     {
-      "idiom" : "universal"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "shape150x100_dark.pdf",
-      "idiom" : "universal"
-    },
-    {
       "filename" : "shape150x100.png",
       "idiom" : "universal",
       "scale" : "1x"
@@ -25,6 +12,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "shape150x100_dark.pdf",
       "idiom" : "universal",
       "scale" : "1x"
     },

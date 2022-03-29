@@ -303,7 +303,7 @@
                         <popUpButton key="view" tag="10" id="L2b-nG-yBo" userLabel="Port 1">
                             <rect key="frame" x="0.0" y="14" width="41" height="20"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <popUpButtonCell key="cell" type="roundTextured" title="None" bezelStyle="texturedRounded" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" state="on" tag="-1" imageScaling="proportionallyUpOrDown" inset="2" autoenablesItems="NO" selectedItem="VD3-Wr-Ufe" id="Oxd-8A-P5o" userLabel="PopupButtonCell">
+                            <popUpButtonCell key="cell" type="roundTextured" title="None" bezelStyle="texturedRounded" image="devNoneTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" state="on" tag="-1" imageScaling="proportionallyUpOrDown" inset="2" autoenablesItems="NO" selectedItem="VD3-Wr-Ufe" id="Oxd-8A-P5o" userLabel="PopupButtonCell">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="menu"/>
                                 <menu key="menu" autoenablesItems="NO" id="zHf-yH-YTM">
@@ -353,11 +353,11 @@
                             </connections>
                         </popUpButton>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="D53F1F08-FE98-44C2-80A3-C1D345277E01" label="Keyboard" paletteLabel="Keyboard" toolTip="Open the virtual keyboard" image="keyboardTemplate" sizingBehavior="auto" id="Ckl-d3-vFW">
+                    <toolbarItem implicitItemIdentifier="D53F1F08-FE98-44C2-80A3-C1D345277E01" label="Keyboard" paletteLabel="Keyboard" toolTip="Open the virtual keyboard" image="keyboard" catalog="system" sizingBehavior="auto" id="Ckl-d3-vFW">
                         <button key="view" toolTip="Open the virtual keyboard" verticalHuggingPriority="750" id="rao-xk-L5n">
-                            <rect key="frame" x="14" y="14" width="30" height="23"/>
+                            <rect key="frame" x="13" y="14" width="31" height="23"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="keyboardTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="wG4-oJ-FGJ">
+                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="keyboard" catalog="system" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="wG4-oJ-FGJ">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -454,7 +454,7 @@
         <image name="diskTemplate" width="241" height="241"/>
         <image name="haltTemplate" width="240" height="241"/>
         <image name="hourglass1Template" width="241" height="241"/>
-        <image name="keyboardTemplate" width="36" height="36"/>
+        <image name="keyboard" catalog="system" width="19" height="13"/>
         <image name="magnifyingglass" width="36" height="36"/>
         <image name="monitorTemplate" width="36" height="36"/>
         <image name="pause.circle" catalog="system" width="15" height="15"/>
