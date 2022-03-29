@@ -303,7 +303,7 @@
                         <popUpButton key="view" tag="10" id="L2b-nG-yBo" userLabel="Port 1">
                             <rect key="frame" x="0.0" y="14" width="41" height="20"/>
                             <autoresizingMask key="autoresizingMask"/>
-                            <popUpButtonCell key="cell" type="roundTextured" title="None" bezelStyle="texturedRounded" image="devNoneTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" state="on" tag="-1" imageScaling="proportionallyUpOrDown" inset="2" autoenablesItems="NO" selectedItem="VD3-Wr-Ufe" id="Oxd-8A-P5o" userLabel="PopupButtonCell">
+                            <popUpButtonCell key="cell" type="roundTextured" title="None" bezelStyle="texturedRounded" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" state="on" tag="-1" imageScaling="proportionallyUpOrDown" inset="2" autoenablesItems="NO" selectedItem="VD3-Wr-Ufe" id="Oxd-8A-P5o" userLabel="PopupButtonCell">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="menu"/>
                                 <menu key="menu" autoenablesItems="NO" id="zHf-yH-YTM">
@@ -336,7 +336,7 @@
                                 <menu key="menu" autoenablesItems="NO" id="L3K-on-eyR">
                                     <items>
                                         <menuItem title="None" state="on" image="devNoneTemplate" tag="-1" id="xyt-eC-0im"/>
-                                        <menuItem title="Mouse" image="devMouseTemplate" id="JM3-8Y-xZU"/>
+                                        <menuItem title="Mouse" image="computermouse.fill" catalog="system" id="JM3-8Y-xZU"/>
                                         <menuItem title="Keyset 1" image="devKeyset1Template" tag="1" id="PAa-za-K8O"/>
                                         <menuItem title="Keyset 2" image="devKeyset2Template" tag="2" id="1M8-Dz-dop"/>
                                         <menuItem title="USB Joystick 1" image="devGamepad1Template" tag="3" id="Ahc-WA-2jp">
@@ -450,7 +450,6 @@
         <image name="devGamepad2Template" width="20" height="21"/>
         <image name="devKeyset1Template" width="20" height="20"/>
         <image name="devKeyset2Template" width="20" height="20"/>
-        <image name="devMouseTemplate" width="20" height="20"/>
         <image name="devNoneTemplate" width="20" height="20"/>
         <image name="diskTemplate" width="241" height="241"/>
         <image name="haltTemplate" width="240" height="241"/>

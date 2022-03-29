@@ -1089,7 +1089,7 @@ Gw
                                                         <menuItem title="Joystick Keyset 2" image="devKeyset2Template" tag="1" id="YfE-iu-J5c">
                                                             <modifierMask key="keyEquivalentModifierMask"/>
                                                         </menuItem>
-                                                        <menuItem title="Mouse" image="devMouseTemplate" tag="2" id="hqu-vR-brj">
+                                                        <menuItem title="Mouse" image="computermouse.fill" catalog="system" tag="2" id="hqu-vR-brj">
                                                             <modifierMask key="keyEquivalentModifierMask"/>
                                                         </menuItem>
                                                         <menuItem title="USB Device 1" image="devGamepad1Template" tag="3" id="AY6-XX-k5w">
@@ -3004,7 +3004,6 @@ Gw
         <image name="devGamepad2Template" width="20" height="21"/>
         <image name="devKeyset1Template" width="20" height="20"/>
         <image name="devKeyset2Template" width="20" height="20"/>
-        <image name="devMouseTemplate" width="20" height="20"/>
         <image name="devNoneTemplate" width="20" height="20"/>
         <image name="energy" width="128" height="128"/>
         <image name="lockIcon" width="121" height="171"/>
