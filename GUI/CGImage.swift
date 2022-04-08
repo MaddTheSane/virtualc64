@@ -9,7 +9,7 @@
 
 public extension CGImage {
     
-    static func bitmapInfo() -> CGBitmapInfo {
+    private static func bitmapInfo() -> CGBitmapInfo {
         
         let noAlpha = CGImageAlphaInfo.noneSkipLast.rawValue
         let bigEn32 = CGBitmapInfo.byteOrder32Big.rawValue
@@ -17,14 +17,13 @@ public extension CGImage {
         return CGBitmapInfo(rawValue: noAlpha | bigEn32)
     }
     
-    static func dataProvider(data: UnsafeMutableRawPointer, size: CGSize) -> CGDataProvider? {
+    private static func dataProvider(data: UnsafeMutableRawPointer, size: CGSize) -> CGDataProvider? {
         
         let dealloc: CGDataProviderReleaseDataCallback = {
             
             (info: UnsafeMutableRawPointer?, data: UnsafeRawPointer, size: Int) -> Void in
             
-            // Core Foundation objects are memory managed, aren't they?
-            return
+            free(UnsafeMutableRawPointer(mutating: data))
         }
         
         return CGDataProvider(dataInfo: nil,
