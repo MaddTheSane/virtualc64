@@ -10,7 +10,7 @@
 struct Keycap {
     
     // Fonts
-    static let proMono = NSFont(name: "C64ProMono", size: 9)
+    static let proMono = NSFont(name: "C64ProMono", size: 9)!
     static let systemLarge = NSFont.systemFont(ofSize: 15)
     static let systemSmall = NSFont.systemFont(ofSize: 9)
 
@@ -52,7 +52,7 @@ struct Keycap {
             
             // Generate a standard label
             if font == "C64" {
-                image?.imprint(label1, dx: 0, dy: 0, font: Keycap.proMono!)
+                image?.imprint(label1, dx: 0, dy: 0, font: Keycap.proMono)
             } else if label1.count == 1 {
                 image?.imprint(label1, dx: 0, dy: 0, font: Keycap.systemLarge)
             } else {

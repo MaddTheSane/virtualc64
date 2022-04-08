@@ -14,6 +14,7 @@
 extension MakeWithBuffer {
     
     static func make(with data: Data) throws -> Self {
+        
         track()
         
         let exception = ExceptionWrapper()
@@ -23,7 +24,9 @@ extension MakeWithBuffer {
     }
 
     static func make(with data: Data, exception: ExceptionWrapper) -> Self? {
+        
         return data.withUnsafeBytes { uwbp -> Self? in
+            
             return make(withBuffer: uwbp.baseAddress!, length: uwbp.count, exception: exception)
         }
     }
@@ -219,7 +222,7 @@ public extension C64Proxy {
                                         bytesPerRow: 4 * width,
                                         bitsPerPixel: 32)
         
-        let image = NSImage(size: (imageRep?.size)!)
+        let image = NSImage(size: imageRep!.size)
         image.addRepresentation(imageRep!)
         image.makeGlossy()
         

@@ -258,14 +258,13 @@ extension NSImage {
             .foregroundColor: NSColor.secondaryLabelColor
         ]
 
-        let nsstr = text as NSString
-        let s = nsstr.size(withAttributes: attributes)
+        let s = text.size(withAttributes: attributes)
 
         let px = dx + (size.width - 4 - s.width) / 2
         let py = dy + (size.height + 4 - s.height) / 2
     
         lockFocus()
-        nsstr.draw(at: CGPoint(x: px, y: py), withAttributes: attributes)
+        text.draw(at: CGPoint(x: px, y: py), withAttributes: attributes)
         unlockFocus()
     }
     
