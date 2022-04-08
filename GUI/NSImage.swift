@@ -28,9 +28,9 @@ extension NSImage {
         return NSImage(cgImage: cgImage, size: size)
     }
 
-    static func make(data: UnsafeMutableRawPointer, rect: CGSize) -> NSImage? {
+    static func make(with data: Data, rect: CGSize) -> NSImage? {
         
-        guard let cgImage = CGImage.make(data: data, size: rect) else {
+        guard let cgImage = CGImage.make(with: data, size: rect) else {
             track("Failed to create CGImage.")
             return nil
         }

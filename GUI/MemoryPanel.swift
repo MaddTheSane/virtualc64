@@ -248,53 +248,57 @@ extension Inspector {
         // Create image representation in memory
         let size = CGSize(width: 256, height: 16)
         let cap = Int(size.width) * Int(size.height)
-        let mask = calloc(cap, MemoryLayout<UInt32>.size)!
-        let ptr = mask.bindMemory(to: UInt32.self, capacity: cap)
+        var mask = Data(count: cap * MemoryLayout<UInt32>.size)
         let c = 3
 
-        // Create image data
-        for bank in 0...15 {
+        mask.withUnsafeMutableBytes { umrbp in
             
-            var color: NSColor
-            switch bankType[bank] {
-            case .NONE: color = MemColors.unmapped
-            case .PP: color = MemColors.ram
-            case .RAM: color = MemColors.ram
-            case .BASIC: color = MemColors.basic
-            case .CHAR: color = MemColors.char
-            case .KERNAL: color = MemColors.kernal
-            case .IO: color = MemColors.io
-            case .CRTLO: color = MemColors.cartlo
-            case .CRTHI: color = MemColors.carthi
-            default: color = MemColors.unmapped
+            let ptr = umrbp.bindMemory(to: UInt32.self)
+
+            // Create image data
+            for bank in 0...15 {
+                
+                var color: NSColor
+                switch bankType[bank] {
+                case .NONE: color = MemColors.unmapped
+                case .PP: color = MemColors.ram
+                case .RAM: color = MemColors.ram
+                case .BASIC: color = MemColors.basic
+                case .CHAR: color = MemColors.char
+                case .KERNAL: color = MemColors.kernal
+                case .IO: color = MemColors.io
+                case .CRTLO: color = MemColors.cartlo
+                case .CRTHI: color = MemColors.carthi
+                default: color = MemColors.unmapped
+                }
+                
+                let ciColor = CIColor(color: color)!
+                for y in 0...15 {
+                    for i in 0...15 {
+                        let r = Int(ciColor.red * CGFloat(255 - y*c))
+                        let g = Int(ciColor.green * CGFloat(255 - y*c))
+                        let b = Int(ciColor.blue * CGFloat(255 - y*c))
+                        let a = Int(ciColor.alpha)
+                        ptr[256*y+16*bank+i] = UInt32(r | g << 8 | b << 16 | a << 24)
+                    }
+                }
             }
-            
-            let ciColor = CIColor(color: color)!
-            for y in 0...15 {
-                for i in 0...15 {
+
+            // Mark the processor port area
+            if bankType[0] == .PP {
+                let ciColor = CIColor(color: MemColors.pp)!
+                for y in 0...15 {
                     let r = Int(ciColor.red * CGFloat(255 - y*c))
                     let g = Int(ciColor.green * CGFloat(255 - y*c))
                     let b = Int(ciColor.blue * CGFloat(255 - y*c))
                     let a = Int(ciColor.alpha)
-                    ptr[256*y+16*bank+i] = UInt32(r | g << 8 | b << 16 | a << 24)
+                    ptr[256*y] = UInt32(r | g << 8 | b << 16 | a << 24)
                 }
-            }
-        }
-
-        // Mark the processor port area
-        if bankType[0] == .PP {
-            let ciColor = CIColor(color: MemColors.pp)!
-            for y in 0...15 {
-                let r = Int(ciColor.red * CGFloat(255 - y*c))
-                let g = Int(ciColor.green * CGFloat(255 - y*c))
-                let b = Int(ciColor.blue * CGFloat(255 - y*c))
-                let a = Int(ciColor.alpha)
-                ptr[256*y] = UInt32(r | g << 8 | b << 16 | a << 24)
             }
         }
         
         // Create image
-        let image = NSImage.make(data: mask, rect: size)
+        let image = NSImage.make(with: mask, rect: size)
         let resizedImage = image?.resizeSharp(width: 512, height: 16)
         return resizedImage
     }

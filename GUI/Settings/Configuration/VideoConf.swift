@@ -88,21 +88,24 @@ extension ConfigurationController {
         // Create image representation in memory
         let size = CGSize(width: 16, height: 1)
         let cap = Int(size.width) * Int(size.height)
-        let mask = calloc(cap, MemoryLayout<UInt32>.size)!
-        let ptr = mask.bindMemory(to: UInt32.self, capacity: cap)
+        var mask = Data(count: cap * MemoryLayout<UInt32>.size)
         
         // For all palettes ...
         for palette: Int in 0 ... 5 {
             
-            // Create image data
-            for n in 0 ... 15 {
-                let p = Palette(rawValue: palette)!
-                let rgba = c64.vic.rgbaColor(n, palette: p)
-                ptr[n] = rgba
+            mask.withUnsafeMutableBytes { umrbp in
+                
+                let ptr = umrbp.bindMemory(to: UInt32.self)
+                // Create image data
+                for n in 0 ... 15 {
+                    let p = Palette(rawValue: palette)!
+                    let rgba = c64.vic.rgbaColor(n, palette: p)
+                    ptr[n] = rgba
+                }
             }
             
             // Create image
-            let image = NSImage.make(data: mask, rect: size)
+            let image = NSImage.make(with: mask, rect: size)
             let resizedImage = image?.resizeSharp(width: 64, height: 12)
             vidPalettePopUp.item(at: palette)?.image = resizedImage
         }

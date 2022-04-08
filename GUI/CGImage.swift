@@ -17,23 +17,8 @@ public extension CGImage {
         return CGBitmapInfo(rawValue: noAlpha | bigEn32)
     }
     
-    private static func dataProvider(data: UnsafeMutableRawPointer, size: CGSize) -> CGDataProvider? {
-        
-        let dealloc: CGDataProviderReleaseDataCallback = {
-            
-            (info: UnsafeMutableRawPointer?, data: UnsafeRawPointer, size: Int) -> Void in
-            
-            free(UnsafeMutableRawPointer(mutating: data))
-        }
-        
-        return CGDataProvider(dataInfo: nil,
-                              data: data,
-                              size: 4 * Int(size.width) * Int(size.height),
-                              releaseData: dealloc)
-    }
-    
-    // Creates a CGImage from a raw data stream in 32 bit big endian format
-    static func make(data: UnsafeMutableRawPointer, size: CGSize) -> CGImage? {
+    /// Creates a CGImage from a Swift `Data` struct in 32 bit big endian format
+    static func make(with data: Data, size: CGSize) -> CGImage? {
         
         let w = Int(size.width)
         let h = Int(size.height)
@@ -44,7 +29,7 @@ public extension CGImage {
                        bytesPerRow: 4 * w,
                        space: CGColorSpaceCreateDeviceRGB(),
                        bitmapInfo: bitmapInfo(),
-                       provider: dataProvider(data: data, size: size)!,
+                       provider: CGDataProvider(data: data as NSData)!,
                        decode: nil,
                        shouldInterpolate: false,
                        intent: CGColorRenderingIntent.defaultIntent)
@@ -62,12 +47,15 @@ public extension CGImage {
         let h = Int(CGFloat(texture.height) * rect.height)
         
         // Get texture data as a byte stream
-        guard let data = malloc(4 * w * h) else { return nil; }
-        texture.getBytes(data,
-                         bytesPerRow: 4 * w,
-                         from: MTLRegionMake2D(x, y, w, h),
-                         mipmapLevel: 0)
+        var data = Data(count: 4 * w * h)
+        data.withUnsafeMutableBytes { umrbp in
+            
+            texture.getBytes(umrbp.baseAddress!,
+                             bytesPerRow: 4 * w,
+                             from: MTLRegionMake2D(x, y, w, h),
+                             mipmapLevel: 0)
+        }
         
-        return make(data: data, size: CGSize(width: w, height: h))
+        return make(with: data, size: CGSize(width: w, height: h))
     }
 }

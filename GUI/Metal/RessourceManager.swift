@@ -157,14 +157,17 @@ class RessourceManager {
             
             // Create image representation in memory
             let cap = Int(maskSize[n].width) * Int(maskSize[n].height)
-            let mask = calloc(cap, MemoryLayout<UInt32>.size)!
-            let ptr = mask.bindMemory(to: UInt32.self, capacity: cap)
-            for i in 0 ... cap - 1 {
-                ptr[i] = maskData[n][i]
+            var mask = Data(count: cap * MemoryLayout<UInt32>.size)
+            mask.withUnsafeMutableBytes { umrbp in
+                
+                let ptr = umrbp.bindMemory(to: UInt32.self)
+                for i in 0 ... cap - 1 {
+                    ptr[i] = maskData[n][i]
+                }
             }
             
             // Create image
-            let image = NSImage.make(data: mask, rect: maskSize[n])
+            let image = NSImage.make(with: mask, rect: maskSize[n])
             
             // Convert image into a texture
             dotMaskGallery[n] = image?.toTexture(device: device)
