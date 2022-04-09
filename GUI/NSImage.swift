@@ -73,6 +73,7 @@ extension NSImage {
         return newImage
     }
     
+    private
     func resizeImage(width: CGFloat, height: CGFloat,
                      cutout: NSRect,
                      interpolation: NSImageInterpolation = .high) -> NSImage {
@@ -83,7 +84,7 @@ extension NSImage {
         let ctx = NSGraphicsContext.current
         ctx?.imageInterpolation = interpolation
         self.draw(in: cutout,
-                  from: NSRect(x: 0, y: 0, width: size.width, height: size.height),
+                  from: .zero,
                   operation: .sourceOver,
                   fraction: 1)
         img.unlockFocus()

@@ -74,7 +74,7 @@ class MyController: NSWindowController, MessageReceiver {
     // These flags tell us if one of the special keysare currently pressed.
     // The flags are utilized, e.g., to alter behaviour when a key on the
     // TouchBar is pressed.
-    var modifierFlags: NSEvent.ModifierFlags = .init(rawValue: 0)
+    var modifierFlags: NSEvent.ModifierFlags = []
         
     // Indicates if the mouse is currently hidden
     var hideMouse = false
@@ -310,7 +310,7 @@ extension MyController {
         var pan: Int { return (msg.data >> 24) & 0xFF; }
 
         // Only proceed if the proxy object is still alive
-        if c64 == nil { return }
+        guard let c64 = c64 else { return }
                         
         switch msg.type {
     

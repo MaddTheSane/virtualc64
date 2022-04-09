@@ -178,7 +178,7 @@ public class MacAudio: NSObject {
         playSound(name: "1541_door_open_1", volume: volume, pan: pan)
     }
     
-    func playSound(name: String, volume: Int, pan: Int) {
+    private func playSound(name: String, volume: Int, pan: Int) {
         
         // track("playIntSound: \(name) \(volume) \(pan)")
 
