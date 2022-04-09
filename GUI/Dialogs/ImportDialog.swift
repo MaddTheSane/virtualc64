@@ -163,10 +163,10 @@ class ImportDialog: DialogController {
             }
         }
         
-        if volume != nil {
+        if let volume = volume {
             track("Volume created successfully")
-            volume?.info()
-            volume?.printDirectory()
+            volume.info()
+            volume.printDirectory()
         }
         
         super.showSheet(completionHandler: handler)
@@ -311,12 +311,12 @@ class ImportDialog: DialogController {
         
         track("insertAction: \(sender.tag)")
 
-        if volume != nil {
+        if let volume = volume {
             
             track("Inserting Volume (wp: \(writeProtect))")
             drive.insertFileSystem(volume, protected: writeProtect)
         
-        } else if tap != nil {
+        } else if let tap = tap {
             
             track("Inserting Tape")
             c64.datasette.insertTape(tap)
@@ -326,12 +326,12 @@ class ImportDialog: DialogController {
                 c64.datasette.pressPlay()
             }
         
-        } else if crt != nil {
+        } else if let crt = crt {
             
             track("Inserting Cartridge")
-            try? c64.expansionport.attachCartridge(crt!, reset: true)
+            try? c64.expansionport.attachCartridge(crt, reset: true)
             
-        } else if g64 != nil {
+        } else if let g64 = g64 {
             
             track("Inserting G64")
             drive.insertG64(g64, protected: writeProtect)

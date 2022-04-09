@@ -36,11 +36,11 @@ class SectorTableView: NSTableView, NSTableViewDelegate {
         // Map row numbers to sector numbers
         sectorForRow = [:]
         
-        if halftrack != nil && analyzer != nil {
+        if let halftrack = halftrack, let analyzer = analyzer {
             
             var row = 0
             for i in 0 ... Int(highestSector) {
-                let info = analyzer!.sectorInfo(halftrack!, sector: Sector(i))
+                let info = analyzer.sectorInfo(halftrack, sector: Sector(i))
                 if info.headerBegin != info.headerEnd {
                     sectorForRow[row] = i
                     row += 1

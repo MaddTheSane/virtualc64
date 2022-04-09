@@ -312,8 +312,8 @@ class KeyboardController: NSObject {
         keyboard.pressKey(key.nr)
 
         // Schedule the key release
-        if numFrames != nil {
-            keyboard.scheduleKeyRelease(key.nr, delay: numFrames!)
+        if let numFrames = numFrames {
+            keyboard.scheduleKeyRelease(key.nr, delay: numFrames)
         }
     }
 
@@ -325,9 +325,9 @@ class KeyboardController: NSObject {
         }
         
         // Schedule the key releases
-        if numFrames != nil {
+        if let numFrames = numFrames {
             for key in keys {
-                keyboard.scheduleKeyRelease(key.nr, delay: numFrames!)
+                keyboard.scheduleKeyRelease(key.nr, delay: numFrames)
             }
         }
     }

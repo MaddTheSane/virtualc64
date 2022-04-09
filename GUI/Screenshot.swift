@@ -101,10 +101,10 @@ class Screenshot {
     
     static func url(forItem item: Int, in folder: URL?) -> URL? {
         
-        if folder == nil { return nil }
+        guard let folder = folder else { return nil }
 
         let types: [NSBitmapImageRep.FileType] = [ .tiff, .bmp, .gif, .jpeg, .png ]
-        let url = folder!.appendingPathComponent(String(format: "%03d", item))
+        let url = folder.appendingPathComponent(String(format: "%03d", item))
         
         for type in types {
             if let url = fileExists(name: url, type: type) { return url }
@@ -123,9 +123,9 @@ class Screenshot {
     static func newUrl(in folder: URL?,
                        using format: NSBitmapImageRep.FileType = .jpeg) -> URL? {
                 
-        if folder == nil { return nil }
+        guard let folder = folder else { return nil }
         
-        track("Determining next free URL in \(folder!)")
+        track("Determining next free URL in \(folder)")
 
         // Get a list of all filenames without extensions
         let files = collectFiles(in: folder)
@@ -137,7 +137,7 @@ class Screenshot {
         for i in 0...999 {
             let name = String(format: "%03d", i)
             if !names.contains(name) {
-                let url = folder!.appendingPathComponent(name)
+                let url = folder.appendingPathComponent(name)
                 return url.byAddingExtension(for: format)
             } else {
                 track("\(name) already exists")

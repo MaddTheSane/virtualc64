@@ -402,9 +402,9 @@ class ExportDialog: DialogController {
         var text = "No compatible file system"
         var color = NSColor.warningColor
         
-        if volume != nil {
+        if let volume = volume {
             
-            text = volume!.dos.description
+            text = volume.dos.description
             color = .secondaryLabelColor
             
             if let errors = errorReport?.corruptedBlocks, errors > 0 {
@@ -424,10 +424,10 @@ class ExportDialog: DialogController {
         var text = ""
         let color = NSColor.secondaryLabelColor
 
-        if volume != nil {
+        if let volume = volume {
             
-            let num = volume!.numFiles
-            let free = volume!.numUsedBlocks
+            let num = volume.numFiles
+            let free = volume.numUsedBlocks
             
             let files = num == 1 ? "file" : "files"
             text = "\(num) \(files), \(free) blocks used"

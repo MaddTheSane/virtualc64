@@ -32,7 +32,7 @@ extension MyController: NSWindowDelegate {
     public func windowDidResignMain(_ notification: Notification) {
                 
         // Stop the emulator if it is supposed to pause in background
-        if c64 != nil {
+        if let c64 = c64 {
             pauseInBackgroundSavedState = c64.running
             if pref.pauseInBackground { c64.pause() }
         }        

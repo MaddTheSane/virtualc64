@@ -68,10 +68,10 @@ extension PreferencesController {
         }
 
         // Update key description
-        if selectedKey != nil {
+        if let selectedKey = selectedKey {
 
             keyMapText.isHidden = false
-            if let macKey = reverseMap[selectedKey!] {
+            if let macKey = reverseMap[selectedKey] {
                 keyMapText.stringValue = "Mapped to Mac key \(macKey.keyCode)"
                 if macKey.stringValue != "" {
                     keyMapText.stringValue.append(" ('\(macKey.stringValue)')")
@@ -129,7 +129,7 @@ extension PreferencesController {
         track()
         
         // Only proceed if a key has been selected
-        if selectedKey == nil { return false }
+        guard let selectedKey = selectedKey else { return false }
         
         track()
         

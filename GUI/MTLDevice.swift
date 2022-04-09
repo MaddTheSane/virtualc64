@@ -100,8 +100,8 @@ extension MTLDevice {
          
          // Create image
          var wallpaper: NSImage?
-         if cgImage != nil {
-             wallpaper = NSImage(cgImage: cgImage!, size: NSSize.zero)
+         if let cgImage = cgImage {
+             wallpaper = NSImage(cgImage: cgImage, size: NSSize.zero)
              wallpaper = wallpaper?.expand(toSize: NSSize(width: 1024, height: 512))
          } else {
              // Fall back to an opaque gray background

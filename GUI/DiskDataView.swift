@@ -59,21 +59,21 @@ class DiskDataView: NSScrollView {
             if dataIsDirty {
                 
                 var gcr = ""
-                if analyzer != nil, let ht = halftrack {
+                if let analyzer = analyzer, let ht = halftrack {
 
                     track("Displaying ht \(ht)")
                     
                     if inspector.rawGcr || sector == nil {
                         
                         // Show the raw GCR stream
-                        gcr = String(cString: analyzer!.trackBits(asString: ht))
+                        gcr = String(cString: analyzer.trackBits(asString: ht))
                         
                     } else {
                         
                         // Show the decoded GCR data of the currently selected sector
-                        gcr = String(cString: analyzer!.sectorHeaderBytes(asString: ht, sector: sector!, hex: hex))
+                        gcr = String(cString: analyzer.sectorHeaderBytes(asString: ht, sector: sector!, hex: hex))
                         gcr.append("\n\n")
-                        gcr.append(String(cString: analyzer!.sectorDataBytes(asString: ht, sector: sector!, hex: hex)))
+                        gcr.append(String(cString: analyzer.sectorDataBytes(asString: ht, sector: sector!, hex: hex)))
                     }
                 }
                 
@@ -162,8 +162,8 @@ class DiskDataView: NSScrollView {
     
     func scrollToFirstMarkedRange() {
         
-        if firstHeaderRange != nil {
-            textView?.scrollRangeToVisible(firstHeaderRange!)
+        if let firstHeaderRange = firstHeaderRange {
+            textView?.scrollRangeToVisible(firstHeaderRange)
         }
     }
 }

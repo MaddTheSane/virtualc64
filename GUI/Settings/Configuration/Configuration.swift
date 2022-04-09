@@ -455,9 +455,9 @@ class Configuration {
         
         func save(_ type: RomType) throws {
             
-            if url == nil { throw VC64Error(ErrorCode.FILE_CANT_WRITE) }
-            try? FileManager.default.removeItem(at: url!)
-            try c64.saveRom(type, url: url!)
+            guard let url = url else { throw VC64Error(ErrorCode.FILE_CANT_WRITE) }
+            try? FileManager.default.removeItem(at: url)
+            try c64.saveRom(type, url: url)
         }
         
         c64.suspend()

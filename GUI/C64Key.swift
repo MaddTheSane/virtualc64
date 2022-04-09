@@ -206,9 +206,9 @@ extension C64Key {
      */
     static func translate(char: String?) -> [C64Key] {
         
-        if char == nil { return [] }
+        guard let char = char else { return [] }
         
-        switch char! {
+        switch char {
             
         // First physical row
         case "ü": return [C64Key.leftArrow]

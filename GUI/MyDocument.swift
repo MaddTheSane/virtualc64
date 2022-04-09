@@ -143,7 +143,7 @@ class MyDocument: NSDocument {
     func mountAttachment() throws {
 
         // Only proceed if an attachment is present
-        if attachment == nil { return }
+        guard let attachment = attachment else { return }
         
         if let proxy = attachment as? SnapshotProxy {
             try c64.flash(proxy)
