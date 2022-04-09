@@ -88,7 +88,7 @@ C64Key::C64Key(isize nr)
 {
     assert(nr >= 0 && nr <= 65);
     
-    isize rowcol[66][2] = {
+    static const isize rowcol[66][2] = {
 
         // First physical row
         {7, 1}, {7, 0}, {7, 3}, {1, 0}, {1, 3}, {2, 0}, {2, 3}, {3, 0},
@@ -125,7 +125,7 @@ C64Key::C64Key(isize row, isize col)
     assert(row >= 0 && row < 8);
     assert(col >= 0 && col < 8);
     
-    isize nr[64] {
+    static const isize nr[64] {
         15, 47, 63, 64, 16, 32, 48, 62,
         3, 19, 35, 4, 51, 36, 20, 50,
         5, 21, 37, 6, 53, 38, 22, 52,
