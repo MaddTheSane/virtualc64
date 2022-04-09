@@ -16,8 +16,8 @@ class GuardTableView: NSTableView {
 
     // Symbols
     var symEnabled = "⛔"  // "\u{26D4}"
-    var symDisabled = "⚪" // "\u{26AA}"
-    var symTrash = "🗑" // "\u{1F5D1}"
+    let symDisabled = "⚪" // "\u{26AA}"
+    let symTrash = "🗑" // "\u{1F5D1}"
 
     // Data caches
     var disabledCache: [Int: Bool] = [:]
@@ -70,7 +70,7 @@ extension GuardTableView: NSTableViewDataSource {
         case "break":
             return last ? "" : symEnabled
         case "addr":
-            return last ? "Add..." : addrCache[row]!
+            return last ? "Add…" : addrCache[row]!
         case "delete":
             return last ? "" : symTrash
 

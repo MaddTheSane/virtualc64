@@ -88,7 +88,7 @@ class VirtualKeyboardController: DialogController, NSWindowDelegate {
     func refresh() {
                 
         // Only proceed if the keyboard is visible
-        guard let window = window,  window.isVisible else { return }
+        guard let window = window, window.isVisible else { return }
         
         var newModifiers: Modifier = []
         

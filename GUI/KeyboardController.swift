@@ -338,7 +338,7 @@ class KeyboardController: NSObject {
             
             // Shorten string if it is too large
             if truncated.count > 2048 {
-                truncated = truncated.prefix(2048) + "..."
+                truncated = truncated.prefix(2048) + "…"
             }
 
             // Set the initial delay for the first key (in frames)
