@@ -50,11 +50,17 @@ Datasette::_reset(bool hard)
 }
 
 void
-Datasette::_dump(dump::Category category, std::ostream& os) const
+Datasette::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
 
-    if (category & dump::State) {
+    if (category == Category::Config) {
+
+        os << tab("Model") << DatasetteModelEnum::key(config.model) << std::endl;
+        os << tab("Connected") << bol(config.connected) << std::endl;
+    }
+
+    if (category == Category::State) {
         
         os << tab("TAP type");
         os << dec(type) << std::endl;
@@ -127,6 +133,57 @@ Datasette::didSaveToBuffer(u8 *buffer)
     return (isize)(writer.ptr - buffer);
 }
 
+void
+Datasette::resetConfig()
+{
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
+
+    std::vector <Option> options = {
+
+        OPT_DAT_MODEL,
+        OPT_DAT_CONNECT
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
+}
+
+i64
+Datasette::getConfigItem(Option option) const
+{
+    switch (option) {
+
+        case OPT_DAT_MODEL:     return config.model;
+        case OPT_DAT_CONNECT:   return config.connected;
+
+        default:
+            fatalError;
+    }
+}
+
+void
+Datasette::setConfigItem(Option option, i64 value)
+{
+    switch (option) {
+
+        case OPT_DAT_MODEL:
+
+            config.model = DatasetteModel(value);
+            return;
+
+        case OPT_DAT_CONNECT:
+
+            config.connected = bool(value);
+            msgQueue.put(value ? MSG_VC1530_CONNECT : MSG_VC1530_DISCONNECT);
+            return;
+
+        default:
+            return;
+    }
+}
+
 util::Time
 Datasette::tapeDuration(isize pos)
 {
@@ -142,13 +199,13 @@ Datasette::tapeDuration(isize pos)
 void
 Datasette::insertTape(TAPFile &file)
 {
-    suspended {
+    {   SUSPENDED
                 
         // Allocate pulse buffer
         isize numPulses = file.numPulses();
         alloc(numPulses);
         
-        debug(TAP_DEBUG, "Inserting tape (%zd pulses)...\n", numPulses);
+        debug(TAP_DEBUG, "Inserting tape (%ld pulses)...\n", numPulses);
         
         // Read pulses
         file.seek(0);
@@ -172,7 +229,7 @@ Datasette::ejectTape()
     // Only proceed if a tape is present
     if (!hasTape()) return;
 
-    suspended {
+    {   SUSPENDED
         
         debug(TAP_DEBUG, "Ejecting tape...\n");
         
@@ -225,6 +282,9 @@ Datasette::pressPlay()
 {
     debug(TAP_DEBUG, "pressPlay\n");
 
+    // Only proceed if the device is connected
+    if (!config.connected) return;
+
     // Only proceed if a tape is present
     if (!hasTape()) return;
     
@@ -241,7 +301,10 @@ void
 Datasette::pressStop()
 {
     debug(TAP_DEBUG, "pressStop\n");
-    
+
+    // Only proceed if the device is connected
+    if (!config.connected) return;
+
     playKey = false;
     motor = false;
 
@@ -252,6 +315,9 @@ void
 Datasette::setMotor(bool value)
 {
     if (motor != value) {
+
+        // Only proceed if the device is connected
+        if (!config.connected) return;
 
         motor = value;
         

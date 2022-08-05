@@ -74,7 +74,7 @@ public extension MetalView {
             if DispatchTime.diffMilliSec(lastShake) > UInt64(500) {
                 retainMouse()
             } else {
-                track("Last shake too recent")
+                debug(.events, "Last shake too recent")
             }
         }
     }
@@ -121,7 +121,7 @@ public extension MetalView {
         if !gotMouse { return }
         
         let dx = event.deltaX
-        let dy = -event.deltaY
+        let dy = event.deltaY
         
         // Make coordinate independent of window size
         let scaleX = (256.0 * 400.0) / frame.width
@@ -150,7 +150,6 @@ public extension MetalView {
             case 0 where event.modifierFlags.contains([.option, .command]),
                  1 where event.modifierFlags.contains([.option, .control]):
                 
-                track()
                 retainMouse()
                 return true
                 
@@ -164,7 +163,6 @@ public extension MetalView {
             case 0 where event.modifierFlags.contains([.option, .command]),
                  1 where event.modifierFlags.contains([.option, .control]):
                 
-                track()
                 releaseMouse()
                 return true
                 

@@ -77,7 +77,7 @@ private:
     u8 *externalRam = nullptr;
     
     // RAM capacity in bytes
-    i64 ramCapacity = 0;
+    isize ramCapacity = 0;
     
     // Indicates whether RAM data is preserved during a reset
     bool battery = false;
@@ -156,7 +156,7 @@ public:
 protected:
     
     const char *getDescription() const override { return "Cartridge"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -198,6 +198,7 @@ protected:
 protected:
     
     isize _size() override;
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override;
     isize _save(u8 *buffer) override;
         
@@ -207,7 +208,10 @@ protected:
     //
 
 public:
-    
+
+    CartridgeInfo getInfo() const;
+    CartridgeRomInfo getRomInfo(isize nr) const;
+
     // Returns the cartridge type
     virtual CartridgeType getCartridgeType() const { return CRT_NORMAL; }
     

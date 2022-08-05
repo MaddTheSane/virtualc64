@@ -13,31 +13,40 @@
 void
 MsgQueue::setListener(const void *listener, Callback *callback)
 {
-    synchronized {
-        
+    {   SYNCHRONIZED
+
         this->listener = listener;
         this->callback = callback;
-        
+
         // Send all pending messages
         while (!queue.isEmpty()) {
+
             Message &msg = queue.read();
-            callback(listener, msg.type, msg.data);
+            callback(listener,
+                     msg.type, msg.data1, msg.data2, msg.data3, msg.data4);
         }
+        
         put(MSG_REGISTER);
     }
 }
 
 void
-MsgQueue::put(MsgType type, long data)
+MsgQueue::put(MsgType type, isize d1, isize d2, isize d3, isize d4)
 {
-    synchronized {
-        
-        debug(QUEUE_DEBUG, "%s [%ld]\n", MsgTypeEnum::key(type), data);
-        
+    {   SYNCHRONIZED
+
+        auto i1 = i32(d1);
+        auto i2 = i32(d2);
+        auto i3 = i32(d3);
+        auto i4 = i32(d4);
+
+        debug(QUEUE_DEBUG,
+              "%s [%d:%d:%d:%d]\n", MsgTypeEnum::key(type), i1, i2, i3, i4);
+
         // Send the message immediately if a lister has been registered
-        if (listener) { callback(listener, type, data); return; }
-        
+        if (listener) { callback(listener, type, i1, i2, i3, i4); return; }
+
         // Otherwise, store it in the ring buffer
-        Message msg = { type, data }; queue.write(msg);
+        Message msg = { type, i1, i2, i3, i4 }; queue.write(msg);
     }
 }

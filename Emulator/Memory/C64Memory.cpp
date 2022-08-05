@@ -10,7 +10,7 @@
 #include "config.h"
 #include "C64Memory.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 #include <random>
 
@@ -118,6 +118,62 @@ C64Memory::_reset(bool hard)
     }
 }
 
+isize
+C64Memory::_size()
+{
+    util::SerCounter counter;
+    bool saveRoms = config.saveRoms;
+
+    applyToPersistentItems(counter);
+    applyToResetItems(counter);
+
+    counter << saveRoms;
+    if (saveRoms) applyToRoms(counter);
+
+    return counter.count;
+}
+
+u64
+C64Memory::_checksum()
+{
+    util::SerChecker checker;
+
+    applyToPersistentItems(checker);
+    applyToResetItems(checker);
+
+    return checker.hash;
+}
+
+isize
+C64Memory::_load(const u8 *buffer)
+{
+    util::SerReader reader(buffer);
+    bool saveRoms;
+
+    reader << saveRoms;
+    applyToPersistentItems(reader);
+    applyToResetItems(reader);
+    if (saveRoms) applyToRoms(reader);
+
+    debug(SNP_DEBUG, "Recreated from %zu bytes\n", reader.ptr - buffer); \
+    return (isize)(reader.ptr - buffer);
+}
+
+isize
+C64Memory::_save(u8 *buffer)
+{
+    util::SerWriter writer(buffer);
+    bool saveRoms = config.saveRoms;
+
+    writer << saveRoms;
+    applyToPersistentItems(writer);
+    applyToResetItems(writer);
+    if (saveRoms) applyToRoms(writer);
+
+    debug(SNP_DEBUG, "Serialized to %zu bytes\n", writer.ptr - buffer);
+    return (isize)(writer.ptr - buffer);
+}
+
 MemConfig
 C64Memory::getDefaultConfig()
 {
@@ -131,9 +187,18 @@ C64Memory::getDefaultConfig()
 void
 C64Memory::resetConfig()
 {
-    MemConfig defaults = getDefaultConfig();
-    
-    setConfigItem(OPT_RAM_PATTERN, defaults.ramPattern);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
+
+    std::vector <Option> options = {
+
+        OPT_RAM_PATTERN,
+        OPT_SAVE_ROMS
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
 }
 
 i64
@@ -141,8 +206,9 @@ C64Memory::getConfigItem(Option option) const
 {
     switch (option) {
             
-        case OPT_RAM_PATTERN:  return config.ramPattern;
-            
+        case OPT_RAM_PATTERN:   return config.ramPattern;
+        case OPT_SAVE_ROMS:     return config.saveRoms;
+
         default:
             fatalError;
     }
@@ -161,7 +227,12 @@ C64Memory::setConfigItem(Option option, i64 value)
             
             config.ramPattern = (RamPattern)value;
             return;
-            
+
+        case OPT_SAVE_ROMS:
+
+            config.saveRoms = value;
+            return;
+
         default:
             fatalError;
     }
@@ -170,7 +241,7 @@ C64Memory::setConfigItem(Option option, i64 value)
 void
 C64Memory::_inspect() const
 {
-    synchronized {
+    {   SYNCHRONIZED
         
         info.exrom = expansionport.getExromLine();
         info.game = expansionport.getGameLine();
@@ -188,17 +259,19 @@ C64Memory::_inspect() const
 }
 
 void
-C64Memory::_dump(dump::Category category, std::ostream& os) const
+C64Memory::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::Config) {
+    if (category == Category::Config) {
         
         os << tab("Ram pattern");
         os << RamPatternEnum::key(config.ramPattern) << std::endl;
+        os << tab("Save Roms in snapshots");
+        os << bol(config.saveRoms) << std::endl;
     }
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Basic ROM");
         os << bol(c64.hasRom(ROM_TYPE_BASIC)) << std::endl;

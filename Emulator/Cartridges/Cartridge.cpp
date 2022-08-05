@@ -150,7 +150,7 @@ Cartridge::makeWithCRTFile(C64 &c64, CRTFile &file)
         cart->loadChip(i, file);
     }
     
-    if constexpr (CRT_DEBUG) cart->dump();
+    if constexpr (CRT_DEBUG) cart->dump(Category::State);
     return cart;
 }
 
@@ -205,11 +205,11 @@ Cartridge::_reset(bool hard)
 }
 
 void
-Cartridge::_dump(dump::Category category, std::ostream& os) const
+Cartridge::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Cartridge type");
         os << getCartridgeType() << std::endl;
@@ -269,8 +269,8 @@ Cartridge::_load(const u8 *buffer)
         for (isize i = 0; i < ramCapacity; i++) externalRam[i] = util::read8(reader.ptr);
     }
 
-    trace(SNP_DEBUG, "Recreated from %ld bytes\n", reader.ptr - buffer);
-    return reader.ptr - buffer;
+    trace(SNP_DEBUG, "Recreated from %ld bytes\n", isize(reader.ptr - buffer));
+    return isize(reader.ptr - buffer);
 }
 
 isize
@@ -294,8 +294,40 @@ Cartridge::_save(u8 *buffer)
         }
     }
     
-    trace(SNP_DEBUG, "Serialized %ld bytes\n", writer.ptr - buffer);
-    return writer.ptr - buffer;
+    trace(SNP_DEBUG, "Serialized %ld bytes\n", isize(writer.ptr - buffer));
+    return isize(writer.ptr - buffer);
+}
+
+CartridgeInfo
+Cartridge::getInfo() const
+{
+    CartridgeInfo result = { };
+
+    result.type = getCartridgeType();
+    result.supported = isSupported();
+    result.gameLineInCrtFile = gameLineInCrtFile;
+    result.exromLineInCrtFile = exromLineInCrtFile;
+    result.numPackets = numPackets;
+
+    return result;
+}
+
+CartridgeRomInfo
+Cartridge::getRomInfo(isize nr) const
+{
+    CartridgeRomInfo result = { };
+
+    if (nr >= 0 && nr < numPackets) {
+
+        result.size = packet[nr]->size;
+        result.loadAddress = packet[nr]->loadAddress;
+
+    } else {
+
+        warn("Packet %ld does not exist\n", nr);
+    }
+
+    return result;
 }
 
 u8
@@ -443,11 +475,11 @@ Cartridge::loadChip(isize nr, const CRTFile &crt)
     
     // Perform some consistency checks
     if (start < 0x8000) {
-        warn("Ignoring chip %zd: Start address too low (%04X)\n", nr, start);
+        warn("Ignoring chip %ld: Start address too low (%04X)\n", nr, start);
         return;
     }
     if (0x10000 - start < size) {
-        warn("Ignoring chip %zd: Invalid size (start: %04X size: %04X)/n", nr, start, size);
+        warn("Ignoring chip %ld: Invalid size (start: %04X size: %04X)/n", nr, start, size);
         return;
     }
     
@@ -464,16 +496,16 @@ Cartridge::loadChip(isize nr, const CRTFile &crt)
             break;
             
         case 1: // RAM
-            warn("Ignoring chip %zd, because it has type RAM.\n", nr);
+            warn("Ignoring chip %ld, because it has type RAM.\n", nr);
             return;
             
         case 2: // Flash ROM
-            warn("Chip %zd is a Flash Rom. Creating a Rom instead.\n", nr);
+            warn("Chip %ld is a Flash Rom. Creating a Rom instead.\n", nr);
             packet[nr] = new CartridgeRom(c64, size, start, crt.chipData(nr));
             break;
             
         default:
-            warn("Ignoring chip %zd, because it has unknown type %d.\n", nr, type);
+            warn("Ignoring chip %ld, because it has unknown type %d.\n", nr, type);
             return;
     }
     
@@ -510,21 +542,21 @@ Cartridge::bankIn(isize nr)
         
         bankInROML(nr, 0x2000, 0); // chip covers ROML and (part of) ROMH
         bankInROMH(nr, packet[nr]->size - 0x2000, 0x2000);
-        // trace(CRT_DEBUG, "Banked in chip %d in ROML and ROMH\n", nr);
+        debug(CRT_DEBUG, "Banked in chip %ld in ROML and ROMH\n", nr);
     
     } else if (packet[nr]->mapsToL()) {
         
         bankInROML(nr, packet[nr]->size, 0); // chip covers (part of) ROML
-        // trace(CRT_DEBUG, "Banked in chip %d in ROML\n", nr);
+        debug(CRT_DEBUG, "Banked in chip %ld in ROML\n", nr);
         
     } else if (packet[nr]->mapsToH()) {
         
         bankInROMH(nr, packet[nr]->size, 0); // chip covers (part of) ROMH
-        // trace(CRT_DEBUG, "Banked in chip %d to ROMH\n", nr);
+        debug(CRT_DEBUG, "Banked in chip %ld to ROMH\n", nr);
         
     } else {
 
-        warn("Cannot map chip %zd. Invalid start address.\n", nr);
+        warn("Cannot map chip %ld. Invalid start address.\n", nr);
     }
 }
 

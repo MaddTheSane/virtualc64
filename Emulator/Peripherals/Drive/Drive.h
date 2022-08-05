@@ -60,8 +60,8 @@ class Drive : public SubComponent {
         8125   // Density bits = 11: Carry pulse every 13/16 * 10^4 1/10 nsec
     };
 
-    // Device number of this disk drive (8 = first drive, 9 = second drive)
-    DriveID deviceNr;
+    // Number of this disk drive (DRIVE8 or DRIVE9)
+    isize deviceNr;
 
     // Current configuration
     DriveConfig config = { };
@@ -81,7 +81,6 @@ public:
     
     // The currently inserted disk (if any)
     std::unique_ptr<Disk> disk;
-    // Disk disk = Disk(c64);
     
 
     //
@@ -225,7 +224,7 @@ public:
     
 public:
     
-    Drive(DriveID id, C64 &ref);
+    Drive(isize nr, C64 &ref);
     
     
     //
@@ -235,7 +234,7 @@ public:
 private:
     
     const char *getDescription() const override;
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -295,6 +294,7 @@ private:
     }
     
     isize _size() override;
+    u64 _checksum() override;
     isize _load(const u8 *buffer) override;
     isize _save(u8 *buffer) override;
 
@@ -314,7 +314,8 @@ public:
 
     // Updates the current configuration according to the installed ROM
     void autoConfigure();
-    
+
+    bool canConnect();
     bool hasParCable() { return config.parCable != PAR_CABLE_NONE; }
     ParCableType getParCableType() const { return config.parCable; }
 
@@ -326,7 +327,7 @@ public:
 public:
     
     // Returns the device number
-    DriveID getDeviceNr() const { return deviceNr; }
+    isize getDeviceNr() const { return deviceNr; }
         
     // Returns true iff the red drive LED is on
     bool getRedLED() const { return redLED; };
@@ -355,17 +356,20 @@ public:
     //
 
 public:
-    
-    // Checks if a disk is present
-    bool hasDisk() const { return insertionStatus == DISK_FULLY_INSERTED; }
-    bool hasPartiallyRemovedDisk() const {
-        return insertionStatus == DISK_PARTIALLY_INSERTED || insertionStatus == DISK_PARTIALLY_EJECTED; }
-    bool hasWriteProtectedDisk() const { return hasDisk() && disk->isWriteProtected(); }
 
-    // Gets or sets the modification status
+    // Checks whether the drive contains a disk of a certain kind
+    bool hasDisk() const;
+    bool hasPartiallyRemovedDisk() const;
+    bool hasProtectedDisk() const { return hasDisk() && disk->isWriteProtected(); }
     bool hasModifiedDisk() const { return hasDisk() && disk->isModified(); }
-    void setModifiedDisk(bool value);
- 
+    bool hasUnmodifiedDisk() const { return hasDisk() && !hasModifiedDisk(); }
+    bool hasUnprotectedDisk() const { return hasDisk() && !hasProtectedDisk(); }
+
+    // Changes the modification state
+    void setModificationFlag(bool value);
+    void markDiskAsModified() { setModificationFlag(true); }
+    void markDiskAsUnmodified() { setModificationFlag(false); }
+
     /* Returns the current state of the write protection barrier. If the light
      * barrier is blocked, the drive head is unable to modify bits on disk.
      * Note: We block the write barrier on power up for about 1.5 sec, because
@@ -375,9 +379,9 @@ public:
      */
     bool getLightBarrier() const {
         return
-        (cpu.cycle < 1500000)
+        (cpu.clock < 1500000)
         || hasPartiallyRemovedDisk()
-        || hasWriteProtectedDisk();
+        || hasProtectedDisk();
     }
 
     /* Requests the emulator to inserts or eject a disk. Background: Many C64
@@ -390,12 +394,11 @@ public:
      */
     void insertDisk(const string &path, bool wp) throws;
     void insertDisk(std::unique_ptr<Disk> disk);
-    void insertNewDisk(DOSType fstype);
     void insertNewDisk(DOSType fstype, PETName<16> name);
     void insertD64(const D64File &d64, bool wp);
     void insertG64(const G64File &g64, bool wp);
     void insertCollection(AnyCollection &archive, bool wp) throws;
-    void insertFileSystem(const class FSDevice &device, bool wp);
+    void insertFileSystem(const class FileSystem &device, bool wp);
     void ejectDisk();
 
 

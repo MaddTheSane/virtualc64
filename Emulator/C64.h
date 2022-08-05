@@ -10,8 +10,9 @@
 #pragma once
 
 #include "C64Types.h"
+#include "Defaults.h"
 #include "MsgQueue.h"
-#include "SuspendableThread.h"
+#include "Thread.h"
 
 // Sub components
 #include "ExpansionPort.h"
@@ -41,7 +42,7 @@
 #include "Datasette.h"
 #include "Mouse.h"
 
-// Loading and saving
+// Media files
 #include "Snapshot.h"
 #include "T64File.h"
 #include "D64File.h"
@@ -52,7 +53,7 @@
 #include "RomFile.h"
 #include "TAPFile.h"
 #include "CRTFile.h"
-#include "FSDevice.h"
+#include "FileSystem.h"
 
 
 /* A complete virtual C64. This class is the most prominent one of all. To run
@@ -62,18 +63,24 @@
  * Please note that most subcomponents have their own public API. E.g., to
  * query information from VICII, you need to invoke a method on c64.vicii.
  */
-class C64 : public SuspendableThread {
+class C64 : public Thread {
                 
     // The component which is currently observed by the debugger
     InspectionTarget inspectionTarget;
 
+    // Counter used to trigger an auto-inspection
+    isize inspectionCounter = 0;
+    
 
     //
     // Sub components
     //
     
 public:
-    
+
+    // User settings
+    static Defaults defaults;
+
     // Core components
     C64Memory mem = C64Memory(*this);
     C64CPU cpu = C64CPU(*this, mem);
@@ -84,8 +91,8 @@ public:
 
     // Logic board
     PowerSupply supply = PowerSupply(*this);
-    ControlPort port1 = ControlPort(*this, PORT_ONE);
-    ControlPort port2 = ControlPort(*this, PORT_TWO);
+    ControlPort port1 = ControlPort(*this, PORT_1);
+    ControlPort port2 = ControlPort(*this, PORT_2);
     ExpansionPort expansionport = ExpansionPort(*this);
     IEC iec = IEC(*this);
     
@@ -165,6 +172,19 @@ private:
     i64 durationOfOneCycle;
     i64 nativeDurationOfOneCycle;
         
+	
+	//
+	// Static methods
+	//
+	
+public:
+	
+	// Returns a version string for this release
+	static string version();
+
+	// Returns a build number string for this release
+	static string build();
+
     
     //
     // Initializing
@@ -183,7 +203,8 @@ public:
     void softReset() { reset(false); }
 
 private:
-    
+
+    void _initialize() override;
     void _reset(bool hard) override;
 
     
@@ -222,14 +243,17 @@ private:
     
 public:
        
-    void inspect();
-    InspectionTarget getInspectionTarget() const;
+    void inspect() { inspect(inspectionTarget); }
+    void autoInspect();
+    InspectionTarget getInspectionTarget() const { return inspectionTarget; }
     void setInspectionTarget(InspectionTarget target);
     void removeInspectionTarget() { setInspectionTarget(INSPECTION_NONE); }
-        
+
 private:
-    
-    void _dump(dump::Category category, std::ostream& os) const override;
+
+    void inspect(InspectionTarget target);
+
+    void _dump(Category category, std::ostream& os) const override;
     
     
     //
@@ -260,8 +284,16 @@ private:
             << ultimax;
         }
     }
+
+public:
+
+    isize load(const u8 *buffer) override;
+    isize save(u8 *buffer) override;
+
+private:
     
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
 
@@ -443,5 +475,18 @@ public:
     // Flashes a single file into memory
     void flash(const AnyFile &file) throws;
     void flash(const AnyCollection &file, isize item) throws;
-    void flash(const FSDevice &fs, isize item) throws;
+    void flash(const FileSystem &fs, isize item) throws;
+
+    
+    //
+    // Miscellaneous
+    //
+
+public:
+
+    // Returns a path to a temporary folder
+    static fs::path tmp() throws;
+
+    // Assembles a path to a temporary file
+    static fs::path tmp(const string &name, bool unique = false) throws;
 };

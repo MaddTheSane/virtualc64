@@ -94,7 +94,7 @@ private:
 
     // Panning factors
     float pan[4] = { 0, 0, 0, 0 };
-        
+
 public:
         
 
@@ -132,8 +132,8 @@ public:
 private:
     
     const char *getDescription() const override { return "Muxer"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
-    void _dump(dump::Category category, std::ostream& os, isize nr) const;
+    void _dump(Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os, isize nr) const;
 
     
     //
@@ -183,6 +183,7 @@ private:
     }
     
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     isize didLoadFromBuffer(const u8 *buffer) override;
@@ -283,14 +284,7 @@ public:
     
     // Signals to ignore the next underflow or overflow condition.
     void ignoreNextUnderOrOverflow();
-    
-    /* Aligns the write pointer. This function puts the write pointer somewhat
-     * ahead of the read pointer. With a standard sample rate of 44100 Hz, 735
-     * samples is 1/60 sec.
-     */
-    // const u32 samplesAhead = 8 * 735;
-    // void alignWritePtr() { stream.clear(SamplePair {0,0} ); stream.align(samplesAhead); }
-    
+
     /* Executes SID until a certain cycle is reached. The function returns the
      * number of produced sound samples (not yet).
      */
@@ -338,4 +332,19 @@ public:
     
 	// Special poke function for the I/O memory range
 	void poke(u16 addr, u8 value);
+
+
+    //
+    // Visualizing the waveform
+    //
+
+public:
+
+    /* Plots a graphical representation of the waveform. Returns the highest
+     * amplitute that was found in the ringbuffer. To implement auto-scaling,
+     * pass the returned value as parameter maxAmp in the next call to this
+     * function.
+     */
+    float draw(u32 *buffer, isize width, isize height,
+               float maxAmp, u32 color, isize sid = -1) const;
 };

@@ -27,7 +27,10 @@ class MyController: NSWindowController, MessageReceiver {
     
     // C64 proxy (bridge between the Swift frontend and the C++ backend)
     var c64: C64Proxy!
-    
+
+    // Media manager (handles the import and export of media files)
+    var mm: MediaManager!
+
     // Inspector panel of this emulator instance
     var inspector: Inspector?
     
@@ -38,8 +41,8 @@ class MyController: NSWindowController, MessageReceiver {
     var configurator: ConfigurationController?
 
     // Snapshot and screenshot browsers
-    var snapshotBrowser: SnapshotDialog?
-    var screenshotBrowser: ScreenshotDialog?
+    var snapshotBrowser: SnapshotViewer?
+    var screenshotBrowser: ScreenshotViewer?
 
     // The current emulator configuration
     var config: Configuration!
@@ -57,7 +60,7 @@ class MyController: NSWindowController, MessageReceiver {
 
     // Virtual keyboard
     var virtualKeyboard: VirtualKeyboardController?
-        
+
     // Snapshot timers
     var snapshotTimer: Timer?
     
@@ -75,10 +78,10 @@ class MyController: NSWindowController, MessageReceiver {
     // The flags are utilized, e.g., to alter behaviour when a key on the
     // TouchBar is pressed.
     var modifierFlags: NSEvent.ModifierFlags = []
-        
+
     // Indicates if the mouse is currently hidden
     var hideMouse = false
-        
+
     // Indicates if a status bar is shown
     var statusBar = true
     
@@ -87,10 +90,10 @@ class MyController: NSWindowController, MessageReceiver {
     var smallDisk = NSImage(named: "diskTemplate")!.resize(size: iconSize)
     var smallTape = NSImage(named: "tapeTemplate")!.resize(size: iconSize)
     var smallCart = NSImage(named: "crtTemplate")!.resize(size: iconSize)
-        
+
     // Remembers the running state for the pauseInBackground feature
     var pauseInBackgroundSavedState = false
-            
+
     //
     // Outlets
     //
@@ -99,7 +102,7 @@ class MyController: NSWindowController, MessageReceiver {
     @IBOutlet weak var metal: MetalView!
     
     var renderer: Renderer!
-        
+
     // Status bar
     @IBOutlet weak var greenLED8: NSButton!
     @IBOutlet weak var greenLED9: NSButton!
@@ -133,7 +136,7 @@ extension MyController {
 
     // Provides the undo manager
     override open var undoManager: UndoManager? { return metal.undoManager }
-     
+
     // Indicates if the emulator needs saving
     var needsSaving: Bool {
         get {
@@ -153,14 +156,16 @@ extension MyController {
     //
 
     override open func awakeFromNib() {
-                
+
         mydocument = document as? MyDocument
         config = Configuration(with: self)
         macAudio = MacAudio(with: self)
     }
 
     override open func windowDidLoad() {
-         
+
+        debug(.lifetime)
+
         // Show the mouse
         hideMouse = false
         
@@ -176,24 +181,22 @@ extension MyController {
         renderer = Renderer(view: metal,
                             device: MTLCreateSystemDefaultDevice()!,
                             controller: self)
-        
+
+        // Apply all GUI related user defaults
+        pref.applyUserDefaults()
+        config.applyUserDefaults()
+
         // Setup window
         configureWindow()
-        
-        // Load user defaults
-        loadUserDefaults()
-        
+
         // Enable message processing
         registerAsListener()
-                
-        // Process attachment (if any)
-        try? mydocument.mountAttachment()
 
         do {
             // Let the C64 throw an exception if it is not ready to power on
             try c64.isReady()
             
-            // Switch on and launch the emulator thread
+            // Start emulation
             try c64.run()
 
         } catch {
@@ -213,7 +216,7 @@ extension MyController {
     }
     
     func configureWindow() {
-    
+
         // Add status bar
         window?.autorecalculatesContentBorderThickness(for: .minY)
         window?.setContentBorderThickness(32.0, for: .minY)
@@ -230,21 +233,19 @@ extension MyController {
     }
     
     func registerAsListener() {
-        
-        track()
-        
+
         // Convert 'self' to a void pointer
         let myself = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         
-        c64.setListener(myself) { (ptr, type, data) in
-            
+        c64.setListener(myself) { (ptr, type, d1, d2, d3, d4) in
+
             // Convert void pointer back to 'self'
             let myself = Unmanaged<MyController>.fromOpaque(ptr!).takeUnretainedValue()
-            
+
             // Process message in the main thread
             DispatchQueue.main.async {
-                let mType = MsgType(rawValue: type)
-                myself.processMessage(Message(type: mType!, data: data))
+                myself.processMessage(Message(type: MsgType(rawValue: type)!,
+                                              data1: d1, data2: d2, data3: d3, data4: d4))
             }
         }
     }
@@ -254,7 +255,7 @@ extension MyController {
     //
     
     func timerFunc() {
- 
+
         animationCounter += 1
 
         // Animate the inspector
@@ -269,7 +270,7 @@ extension MyController {
                 crtIcon.needsDisplay = true
             }
         }
-                
+
         // Do less frequently...
         if (animationCounter % 4) == 0 {
             
@@ -303,27 +304,31 @@ extension MyController {
 
     func processMessage(_ msg: Message) {
 
-        var driveNr: Int { return msg.data & 0xFF }
-        var driveId: DriveID { return DriveID(rawValue: driveNr)! }
-        var halftrack: Int { return (msg.data >> 8) & 0xFF; }
-        var vol: Int { return (msg.data >> 16) & 0xFF; }
-        var pan: Int { return (msg.data >> 24) & 0xFF; }
+        var data1: Int { return Int(msg.data1) }
+        var data2: Int { return Int(msg.data2) }
+        var data3: Int { return Int(msg.data3) }
+        var data4: Int { return Int(msg.data4) }
+
+        var driveNr: Int { return data1 }
+        var halftrack: Int { return data2; }
+        var vol: Int { return data3; }
+        var pan: Int { return data4; }
 
         // Only proceed if the proxy object is still alive
         guard let c64 = c64 else { return }
-                        
+
         switch msg.type {
-    
+
         case .REGISTER:
-            track("Registered to message queue")
-            
+            debug(.lifetime, "Registered to message queue")
+
         case .UNREGISTER:
-            track("Unregistered from message queue")
+            debug(.lifetime, "Unregistered from message queue")
 
         case .CONFIG:
             inspector?.fullRefresh()
             refreshStatusBar()
-            
+
         case .POWER_ON:
             renderer.canvas.open(delay: 2)
             virtualKeyboard = nil
@@ -333,13 +338,13 @@ extension MyController {
         case .POWER_OFF:
             toolbar.updateToolbar()
             inspector?.powerOff()
-            
+
         case .RUN:
             needsSaving = true
             toolbar.updateToolbar()
             inspector?.run()
             refreshStatusBar()
-    
+
         case .PAUSE:
             toolbar.updateToolbar()
             inspector?.pause()
@@ -350,29 +355,27 @@ extension MyController {
             inspector?.step()
 
         case .RESET:
-            mydocument.deleteBootDiskID()
-            mydocument.setBootDiskID(mydocument.attachment?.fnv ?? 0)
             updateWarp()
             inspector?.reset()
-            
+
         case .HALT:
             shutDown()
 
         case .MUTE_ON:
             muted = true
             refreshStatusBar()
-            
+
         case .MUTE_OFF:
             muted = false
             refreshStatusBar()
 
         case .WARP_ON,
-             .WARP_OFF:
+                .WARP_OFF:
             refreshStatusBar()
-            
+
         case .SCRIPT_DONE,
-             .SCRIPT_PAUSE,
-             .SCRIPT_ABORT:
+                .SCRIPT_PAUSE,
+                .SCRIPT_ABORT:
             renderer.console.isDirty = true
 
         case .SCRIPT_WAKEUP:
@@ -380,67 +383,65 @@ extension MyController {
             renderer.console.isDirty = true
 
         case .BASIC_ROM_LOADED,
-             .CHAR_ROM_LOADED,
-             .KERNAL_ROM_LOADED,
-             .DRIVE_ROM_LOADED:
+                .CHAR_ROM_LOADED,
+                .KERNAL_ROM_LOADED,
+                .DRIVE_ROM_LOADED:
             break
-            
+
         case .ROM_MISSING:
             break
-                
+
         case .CPU_OK:
             break
-            
+
         case .BREAKPOINT_REACHED:
-            inspector?.signalBreakPoint(pc: msg.data)
+            inspector?.signalBreakPoint(pc: Int(msg.data1))
 
         case .WATCHPOINT_REACHED:
-            inspector?.signalWatchPoint(pc: msg.data)
+            inspector?.signalWatchPoint(pc: Int(msg.data1))
 
         case .CPU_JAMMED:
             refreshStatusBar()
-            
-        case .PAL,
-             .NTSC:
+
+        case .PAL, .NTSC:
             renderer.canvas.updateTextureRect()
-    
+
         case .DRIVE_STEP:
             macAudio.playStepSound(volume: vol, pan: pan)
-            refreshStatusBarTracks(drive: driveId)
-                        
+            refreshStatusBarTracks(drive: driveNr)
+
         case .DISK_INSERT:
             macAudio.playInsertSound(volume: vol, pan: pan)
-            mydocument.setBootDiskID(mydocument.attachment?.fnv ?? 0)
-            refreshStatusBarDiskIcons(drive: driveId)
+            refreshStatusBarDiskIcons(drive: driveNr)
             inspector?.fullRefresh()
 
         case .DISK_EJECT:
             macAudio.playEjectSound(volume: vol, pan: pan)
-            refreshStatusBarDiskIcons(drive: driveId)
+            refreshStatusBarDiskIcons(drive: driveNr)
             inspector?.fullRefresh()
 
         case .FILE_FLASHED:
-            mydocument.setBootDiskID(mydocument.attachment?.fnv ?? 0)
-            
+            break
+
         case .DISK_PROTECT,
-             .DISK_SAVED,
-             .DISK_UNSAVED,
-             .DRIVE_LED_ON,
-             .DRIVE_LED_OFF:
+                .DISK_SAVED,
+                .DISK_UNSAVED,
+                .DRIVE_LED_ON,
+                .DRIVE_LED_OFF:
             refreshStatusBar()
-    
+
         case .IEC_BUS_BUSY,
-             .IEC_BUS_IDLE:
+                .IEC_BUS_IDLE:
             updateWarp()
             refreshStatusBarDriveActivity()
 
         case .DRIVE_MOTOR_ON,
-             .DRIVE_MOTOR_OFF:
+                .DRIVE_MOTOR_OFF:
             refreshStatusBarDriveActivity()
-            
+
         case .DRIVE_CONNECT,
-             .DRIVE_DISCONNECT,
-             .DRIVE_POWER_OFF:
+                .DRIVE_DISCONNECT,
+                .DRIVE_POWER_OFF:
             hideOrShowDriveMenus()
             refreshStatusBar()
 
@@ -448,15 +449,17 @@ extension MyController {
             macAudio.playPowerSound(volume: vol, pan: pan)
             hideOrShowDriveMenus()
             refreshStatusBar()
-            
+
         case .DRIVE_POWER_SAVE_ON,
-             .DRIVE_POWER_SAVE_OFF:
+                .DRIVE_POWER_SAVE_OFF:
             break
-            
+
+        case .VC1530_CONNECT,
+                .VC1530_DISCONNECT:
+            hideOrShowDriveMenus()
+            refreshStatusBar()
+
         case .VC1530_TAPE:
-            if msg.data == 1 {
-                mydocument.setBootDiskID(mydocument.attachment?.fnv ?? 0)
-            }
             refreshStatusBar()
 
         case .VC1530_PLAY:
@@ -467,24 +470,22 @@ extension MyController {
 
         case .VC1530_COUNTER:
             refreshStatusBar()
-            
+
         case .CRT_ATTACHED:
-            mydocument.setBootDiskID(mydocument.attachment?.fnv ?? 0)
             refreshStatusBar()
 
         case .CRT_DETACHED:
             refreshStatusBar()
-            
+
         case .CART_SWITCH:
             break
-            
+
         case .KB_AUTO_RELEASE:
             if virtualKeyboard?.window?.isVisible == true {
                 virtualKeyboard!.refresh()
             }
-            
+
         case .SHAKING:
-            track()
             metal.lastShake = DispatchTime(uptimeNanoseconds: 0)
             if pref.releaseMouseByShaking {
                 metal.releaseMouse()
@@ -496,7 +497,7 @@ extension MyController {
         case .USER_SNAPSHOT_TAKEN:
             mydocument.snapshots.append(c64.latestUserSnapshot)
             renderer.flash()
-            
+
         case .SNAPSHOT_RESTORED:
             renderer.rotateRight()
             renderer.canvas.updateTextureRect()
@@ -506,18 +507,21 @@ extension MyController {
         case .RECORDING_STARTED:
             window?.backgroundColor = .recordingColor
             refreshStatusBar()
-                
+
         case .RECORDING_STOPPED:
             window?.backgroundColor = .windowBackgroundColor
             refreshStatusBar()
 
         case .RECORDING_ABORTED:
             refreshStatusBar()
-            VC64Error.recordingAborted()
+            showAlert(.recorderAborted)
 
         case .CLOSE_CONSOLE:
             renderer.console.close(delay: 0.25)
-            
+
+        case .UPDATE_CONSOLE:
+            renderer.console.isDirty = true
+
         case .DMA_DEBUG_ON:
             renderer.zoomTextureOut()
 
@@ -525,8 +529,8 @@ extension MyController {
             renderer.zoomTextureIn()
 
         default:
-            track("Unknown message: \(msg)")
-            assert(false)
+            warn("Unknown message: \(msg)")
+            fatalError()
         }
     }
 

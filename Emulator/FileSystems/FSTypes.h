@@ -26,9 +26,9 @@ typedef DOS_TYPE DOSType;
 #ifdef __cplusplus
 struct DOSTypeEnum : util::Reflection<DOSTypeEnum, DOSType> {
     
-    static long min() { return 0; }
-    static long max() { return DOS_TYPE_CBM; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = DOS_TYPE_CBM;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "DOS_TYPE"; }
     static const char *key(DOSType value)
@@ -56,9 +56,9 @@ typedef FS_FILETYPE FSFileType;
 #ifdef __cplusplus
 struct FSFileTypeEnum : util::Reflection<FSFileTypeEnum, FSFileType> {
     
-    static long min() { return 0; }
-    static long max() { return FS_FILETYPE_REL; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = FS_FILETYPE_REL;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "FS_FILETYPE"; }
     static const char *key(FSFileType value)
@@ -79,6 +79,7 @@ struct FSFileTypeEnum : util::Reflection<FSFileTypeEnum, FSFileType> {
 enum_long(FS_BLOCKTYPE)
 {
     FS_BLOCKTYPE_UNKNOWN,
+    FS_BLOCKTYPE_EMPTY,
     FS_BLOCKTYPE_BAM,
     FS_BLOCKTYPE_DIR,
     FS_BLOCKTYPE_DATA
@@ -88,9 +89,9 @@ typedef FS_BLOCKTYPE FSBlockType;
 #ifdef __cplusplus
 struct FSBlockTypeEnum : util::Reflection<FSBlockTypeEnum, FSBlockType> {
     
-    static long min() { return 0; }
-    static long max() { return FS_BLOCKTYPE_DATA; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = FS_BLOCKTYPE_DATA;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "FS_BLOCKTYPE"; }
     static const char *key(FSBlockType value)
@@ -98,6 +99,7 @@ struct FSBlockTypeEnum : util::Reflection<FSBlockTypeEnum, FSBlockType> {
         switch (value) {
                 
             case FS_BLOCKTYPE_UNKNOWN:  return "UNKNOWN";
+            case FS_BLOCKTYPE_EMPTY:    return "EMPTY";
             case FS_BLOCKTYPE_BAM:      return "BAM";
             case FS_BLOCKTYPE_DIR:      return "DIR";
             case FS_BLOCKTYPE_DATA:     return "DATA";
@@ -137,9 +139,9 @@ typedef FS_USAGE FSUsage;
 #ifdef __cplusplus
 struct FSUsageEnum : util::Reflection<FSUsageEnum, FSUsage> {
     
-    static long min() { return 0; }
-    static long max() { return FS_USAGE_DATA; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = FS_USAGE_DATA;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "FS_USAGE"; }
     static const char *key(FSUsage value) { return "???"; }

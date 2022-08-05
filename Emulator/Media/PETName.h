@@ -85,8 +85,9 @@ public:
     PETName<len> stripped(u8 c)
     {
         PETName<len> name = *this;
-        
-        for (isize i = strlen(name.asc); i > 0 && name.asc[i - 1] == c; i--) {
+
+        auto length = isize(strlen(name.asc));
+        for (isize i = length; i > 0 && name.asc[i - 1] == c; i--) {
 
             name.asc[i - 1] = 0;
             name.pet[i - 1] = 0xA0;
@@ -94,18 +95,6 @@ public:
         
         return name;
     }
-
-    /*
-    void strip(u8 c)
-    {
-        if (isize length = strlen(asc); length > 0 && asc[length - 1] == c) {
-            
-            asc[length - 1] = 0;
-            pet[length - 1] = 0xA0;
-            strip(c);
-        }
-    }
-    */
     
     void write(u8 *p, isize length)
     {

@@ -11,7 +11,7 @@
 #include "DriveMemory.h"
 #include "C64.h"
 #include "Checksum.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 DriveMemory::DriveMemory(C64 &ref, Drive &dref) : SubComponent(ref), drive(dref)
 {
@@ -29,12 +29,68 @@ DriveMemory::_reset(bool hard)
     }
 }
 
+isize
+DriveMemory::_size()
+{
+    util::SerCounter counter;
+    bool saveRoms = mem.getConfig().saveRoms;
+
+    applyToPersistentItems(counter);
+    applyToResetItems(counter);
+
+    counter << saveRoms;
+    if (saveRoms) applyToRoms(counter);
+
+    return counter.count;
+}
+
+u64
+DriveMemory::_checksum()
+{
+    util::SerChecker checker;
+
+    applyToPersistentItems(checker);
+    applyToResetItems(checker);
+
+    return checker.hash;
+}
+
+isize
+DriveMemory::_load(const u8 *buffer)
+{
+    util::SerReader reader(buffer);
+    bool saveRoms;
+
+    reader << saveRoms;
+    applyToPersistentItems(reader);
+    applyToResetItems(reader);
+    if (saveRoms) applyToRoms(reader);
+
+    debug(SNP_DEBUG, "Recreated from %zu bytes\n", reader.ptr - buffer); \
+    return (isize)(reader.ptr - buffer);
+}
+
+isize
+DriveMemory::_save(u8 *buffer)
+{
+    util::SerWriter writer(buffer);
+    bool saveRoms = mem.getConfig().saveRoms;
+
+    writer << saveRoms;
+    applyToPersistentItems(writer);
+    applyToResetItems(writer);
+    if (saveRoms) applyToRoms(writer);
+
+    debug(SNP_DEBUG, "Serialized to %zu bytes\n", writer.ptr - buffer);
+    return (isize)(writer.ptr - buffer);
+}
+
 void
-DriveMemory::_dump(dump::Category category, std::ostream& os) const
+DriveMemory::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::BankMap) {
+    if (category == Category::BankMap) {
         
         DrvMemType oldsrc = usage[0];
         isize oldi = 0;
@@ -51,7 +107,7 @@ DriveMemory::_dump(dump::Category category, std::ostream& os) const
         }
     }
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Drive ROM");
         os << bol(c64.hasRom(ROM_TYPE_VC1541)) << std::endl;
@@ -105,7 +161,7 @@ DriveMemory::romFNV64() const
     isize size = romSize();
     isize offset = romAddr() & 0x7FFF;
     
-    return size ? util::fnv_1a_64(rom + offset, size) : 0;
+    return size ? util::fnv64(rom + offset, size) : 0;
 }
 
 void

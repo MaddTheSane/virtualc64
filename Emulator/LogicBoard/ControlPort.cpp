@@ -10,11 +10,11 @@
 #include "config.h"
 #include "ControlPort.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
-ControlPort::ControlPort(C64 &ref, PortId id) : SubComponent(ref), nr(id)
+ControlPort::ControlPort(C64 &ref, isize nr) : SubComponent(ref), nr(nr)
 {
-    assert_enum(PortId, id);
+    assert(nr == PORT_1 || nr == PORT_2);
     
     subComponents = std::vector<C64Component *> {
         
@@ -24,11 +24,11 @@ ControlPort::ControlPort(C64 &ref, PortId id) : SubComponent(ref), nr(id)
 }
 
 void
-ControlPort::_dump(dump::Category category, std::ostream& os) const
+ControlPort::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Nr");
         os << dec(nr) << std::endl;

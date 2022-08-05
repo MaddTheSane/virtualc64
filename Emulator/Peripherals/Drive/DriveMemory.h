@@ -56,7 +56,7 @@ public:
 private:
     
     const char *getDescription() const override { return "DriveMemory"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -64,7 +64,7 @@ private:
     //
 
 private:
-    
+
     void _reset(bool hard) override;
     
     template <class T>
@@ -73,7 +73,6 @@ private:
         worker
         
         << ram
-        << rom
         << usage;
     }
     
@@ -81,10 +80,19 @@ private:
     void applyToResetItems(T& worker, bool hard = true)
     {
     }
-    
-    isize _size() override { COMPUTE_SNAPSHOT_SIZE }
-    isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
-    isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
+
+    template <class T>
+    void applyToRoms(T& worker)
+    {
+        worker
+
+        << rom;
+    }
+
+    isize _size() override;
+    u64 _checksum() override;
+    isize _load(const u8 *buffer) override;
+    isize _save(u8 *buffer) override;
     
     
     //

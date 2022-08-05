@@ -10,7 +10,7 @@
 #include "config.h"
 #include "RetroShell.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 #include "Parser.h"
 
 #include <fstream>
@@ -24,31 +24,6 @@ template <> void
 RetroShell::exec <Token::clear> (Arguments &argv, long param)
 {
     clear();
-
-    /*
-    printf("Experimental code...\n");
-
-    // Create D64File from file
-    D64File d64 = D64File("/tmp/test.d64");
-
-    // Create D64File from buffer
-    D64File d64_2 = D64File(d64.data, d64.size);
-
-    // Create disk from D64File
-    auto disk = std::make_unique<Disk>(d64_2);
-
-    // Insert the disk into drive 8
-    drive8.insertDisk(std::move(disk));
-    */
-    /*
-    // Create a file system from the disk in drive 8
-    FSDevice fs = FSDevice(*drive8.disk);
-
-    // Convert it to a disk
-    D64File d64_3 = D64File(fs);
-    */
-
-    // printf("Done...\n");
 }
 
 template <> void
@@ -81,7 +56,7 @@ RetroShell::exec <Token::wait> (Arguments &argv, long param)
 {
     auto seconds = util::parseNum(argv.front());
     
-    Cycle limit = cpu.cycle + seconds * vic.getFrequency();
+    Cycle limit = cpu.clock + seconds * vic.getFrequency();
     wakeUp = limit;
     
     throw ScriptInterruption("");
@@ -100,7 +75,7 @@ RetroShell::exec <Token::regression, Token::setup> (Arguments &argv, long param)
     regressionTester.prepare(c64, model);
     
     // Pause the script to give the C64 some time to boot
-    wakeUp = cpu.cycle + 3 * vic.getFrequency();
+    wakeUp = cpu.clock + 3 * vic.getFrequency();
     throw ScriptInterruption("");
 }
 
@@ -147,7 +122,6 @@ RetroShell::exec <Token::screenshot, Token::save> (Arguments &argv, long param)
 template <> void
 RetroShell::exec <Token::screenshot> (Arguments &argv, long param)
 {
-    // std::ofstream file;
     std::vector<string> vec(argv.begin(), argv.end());
 
     auto path = vec[0];
@@ -160,17 +134,12 @@ RetroShell::exec <Token::screenshot> (Arguments &argv, long param)
     string rawFile = "/tmp/" + path + ".raw";
     string tiffFile = "/tmp/" + path + ".tiff";
 
-    // Open an output stream
-    // file.open(rawFile.c_str());
-    
     // Dump texture
     regressionTester.x1 = x1;
     regressionTester.y1 = y1;
     regressionTester.x2 = x2;
     regressionTester.y2 = y2;
     regressionTester.dumpTexture(c64, rawFile);
-    // dumpTexture(file, x1, y1, x2, y2);
-    // file.close();
     
     // Convert raw data into a TIFF file
     string cmd = "/usr/local/bin/raw2tiff";
@@ -193,21 +162,15 @@ RetroShell::exec <Token::screenshot> (Arguments &argv, long param)
 //
 
 template <> void
-RetroShell::exec <Token::c64, Token::inspect> (Arguments &argv, long param)
-{
-    dump(c64, dump::State);
-}
-
-template <> void
 RetroShell::exec <Token::c64, Token::config> (Arguments &argv, long param)
 {
-    dump(c64, dump::Config);
+    dump(c64, Category::Config);
 }
 
 template <> void
 RetroShell::exec <Token::c64, Token::power, Token::on> (Arguments &argv, long param)
 {
-    c64.powerOn();
+    c64.run();
 }
 
 template <> void
@@ -243,6 +206,18 @@ RetroShell::exec <Token::c64, Token::init> (Arguments &argv, long param)
     c64.configure(model);
 }
 
+template <> void
+RetroShell::exec <Token::c64, Token::inspect, Token::state> (Arguments &argv, long param)
+{
+    dump(c64, Category::State);
+}
+
+template <> void
+RetroShell::exec <Token::c64, Token::inspect, Token::defaults> (Arguments &argv, long param)
+{
+    dump(c64, Category::Defaults);
+}
+
 
 //
 // Memory
@@ -251,13 +226,19 @@ RetroShell::exec <Token::c64, Token::init> (Arguments &argv, long param)
 template <> void
 RetroShell::exec <Token::memory, Token::config> (Arguments& argv, long param)
 {
-    dump(mem, dump::Config);
+    dump(mem, Category::Config);
 }
 
 template <> void
 RetroShell::exec <Token::memory, Token::set, Token::raminitpattern> (Arguments& argv, long param)
 {
     c64.configure(OPT_RAM_PATTERN, util::parseEnum <RamPatternEnum> (argv.front()));
+}
+
+template <> void
+RetroShell::exec <Token::memory, Token::set, Token::saveroms> (Arguments& argv, long param)
+{
+    c64.configure(OPT_SAVE_ROMS, util::parseBool(argv.front()));
 }
 
 template <> void
@@ -279,7 +260,7 @@ RetroShell::exec <Token::memory, Token::flash> (Arguments& argv, long param)
 template <> void
 RetroShell::exec <Token::memory, Token::inspect> (Arguments& argv, long param)
 {
-    dump(mem, dump::State);
+    dump(mem, Category::State);
 }
 
 
@@ -291,7 +272,7 @@ template <> void
 RetroShell::exec <Token::drive, Token::config> (Arguments& argv, long param)
 {
     auto &drive = param ? drive9 : drive8;
-    dump(drive, dump::Config);
+    dump(drive, Category::Config);
 }
 
 template <> void
@@ -331,28 +312,28 @@ RetroShell::exec <Token::drive, Token::insert, Token::newdisk> (Arguments& argv,
 
     auto type = util::parseEnum <DOSTypeEnum> (argv.front());
     auto &drive = param ? drive9 : drive8;
-    drive.insertNewDisk(type);
+    drive.insertNewDisk(type, PETName<16>("NEW DISK"));
 }
 
 template <> void
 RetroShell::exec <Token::drive, Token::inspect, Token::state> (Arguments& argv, long param)
 {
     auto &drive = param ? drive9 : drive8;
-    dump(drive, dump::State);
+    dump(drive, Category::State);
 }
 
 template <> void
 RetroShell::exec <Token::drive, Token::inspect, Token::bankmap> (Arguments& argv, long param)
 {
     auto &drive = param ? drive9 : drive8;
-    dump(drive, dump::BankMap);
+    dump(drive, Category::BankMap);
 }
 
 template <> void
 RetroShell::exec <Token::drive, Token::inspect, Token::disk> (Arguments& argv, long param)
 {
     auto &drive = param ? drive9 : drive8;
-    dump(drive, dump::Disk);
+    dump(drive, Category::Disk);
 }
 
 
@@ -361,9 +342,27 @@ RetroShell::exec <Token::drive, Token::inspect, Token::disk> (Arguments& argv, l
 //
 
 template <> void
+RetroShell::exec <Token::datasette, Token::config> (Arguments& argv, long param)
+{
+    dump(datasette, Category::Config);
+}
+
+template <> void
+RetroShell::exec <Token::datasette, Token::connect> (Arguments& argv, long param)
+{
+    c64.configure(OPT_DAT_CONNECT, true);
+}
+
+template <> void
+RetroShell::exec <Token::datasette, Token::disconnect> (Arguments& argv, long param)
+{
+    c64.configure(OPT_DAT_CONNECT, false);
+}
+
+template <> void
 RetroShell::exec <Token::datasette, Token::inspect> (Arguments& argv, long param)
 {
-    dump(datasette, dump::State);
+    dump(datasette, Category::State);
 }
 
 template <> void
@@ -387,13 +386,13 @@ RetroShell::exec <Token::datasette, Token::rewind, Token::to> (Arguments& argv, 
 template <> void
 RetroShell::exec <Token::cpu, Token::inspect, Token::state> (Arguments& argv, long param)
 {
-    dump(cpu, dump::State);
+    dump(cpu, Category::State);
 }
 
 template <> void
 RetroShell::exec <Token::cpu, Token::inspect, Token::registers> (Arguments& argv, long param)
 {
-    dump(cpu, dump::Registers);
+    dump(cpu, Category::Registers);
 }
 
 //
@@ -404,9 +403,9 @@ template <> void
 RetroShell::exec <Token::cia, Token::config> (Arguments &argv, long param)
 {
     if (param == 0) {
-        dump(cia1, dump::Config);
+        dump(cia1, Category::Config);
     } else {
-        dump(cia2, dump::Config);
+        dump(cia2, Category::Config);
     }
 }
 
@@ -428,9 +427,9 @@ template <> void
 RetroShell::exec <Token::cia, Token::inspect, Token::state> (Arguments& argv, long param)
 {
     if (param == 0) {
-        dump(cia1, dump::State);
+        dump(cia1, Category::State);
     } else {
-        dump(cia2, dump::State);
+        dump(cia2, Category::State);
     }
 }
 
@@ -438,9 +437,9 @@ template <> void
 RetroShell::exec <Token::cia, Token::inspect, Token::registers> (Arguments& argv, long param)
 {
     if (param == 0) {
-        dump(cia1, dump::Registers);
+        dump(cia1, Category::Registers);
     } else {
-        dump(cia2, dump::Registers);
+        dump(cia2, Category::Registers);
     }
 }
 
@@ -448,9 +447,9 @@ template <> void
 RetroShell::exec <Token::cia, Token::inspect, Token::tod> (Arguments& argv, long param)
 {
     if (param == 0) {
-        dump(cia1.tod, dump::State);
+        dump(cia1.tod, Category::State);
     } else {
-        dump(cia2.tod, dump::State);
+        dump(cia2.tod, Category::State);
     }
 }
 
@@ -461,7 +460,7 @@ RetroShell::exec <Token::cia, Token::inspect, Token::tod> (Arguments& argv, long
 template <> void
 RetroShell::exec <Token::vicii, Token::config> (Arguments& argv, long param)
 {
-    dump(vic, dump::Config);
+    dump(vic, Category::Config);
 }
 
 template <> void
@@ -503,13 +502,13 @@ RetroShell::exec <Token::vicii, Token::set, Token::sbcollisions> (Arguments &arg
 template <> void
 RetroShell::exec <Token::vicii, Token::inspect, Token::registers> (Arguments& argv, long param)
 {
-    dump(vic, dump::Registers);
+    dump(vic, Category::Registers);
 }
 
 template <> void
 RetroShell::exec <Token::vicii, Token::inspect, Token::state> (Arguments& argv, long param)
 {
-    dump(vic, dump::State);
+    dump(vic, Category::State);
 }
 
 
@@ -520,7 +519,7 @@ RetroShell::exec <Token::vicii, Token::inspect, Token::state> (Arguments& argv, 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::config> (Arguments& argv, long param)
 {
-    dump(vic.dmaDebugger, dump::Config);
+    dump(vic.dmaDebugger, Category::Config);
 }
 
 template <> void
@@ -538,73 +537,73 @@ RetroShell::exec <Token::dmadebugger, Token::close> (Arguments& argv, long param
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::raccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 0, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 0, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::iaccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 1, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 1, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::caccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 2, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 2, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::gaccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 3, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 3, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::paccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 4, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 4, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::show, Token::saccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 5, true);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 5, true);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::raccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 0, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 0, false);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::iaccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 1, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 1, false);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::caccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 2, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 2, false);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::gaccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 3, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 3, false);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::paccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 4, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 4, false);
 }
 
 template <> void
 RetroShell::exec <Token::dmadebugger, Token::hide, Token::saccesses> (Arguments& argv, long param)
 {
-    c64.configure(OPT_DMA_DEBUG_ENABLE, 5, false);
+    c64.configure(OPT_DMA_DEBUG_CHANNEL, 5, false);
 }
 
 
@@ -644,7 +643,7 @@ RetroShell::exec <Token::monitor, Token::set, Token::saturation> (Arguments& arg
 template <> void
 RetroShell::exec <Token::sid, Token::config> (Arguments& argv, long param)
 {
-    dump(muxer, dump::Config);
+    dump(muxer, Category::Config);
 }
 
 template <> void
@@ -704,7 +703,7 @@ RetroShell::exec <Token::sid, Token::set, Token::pan> (Arguments& argv, long par
 template <> void
 RetroShell::exec <Token::sid, Token::inspect, Token::sid> (Arguments& argv, long param)
 {
-    dump(muxer, dump::State);
+    dump(muxer, Category::State);
 }
 
 template <> void
@@ -712,7 +711,7 @@ RetroShell::exec <Token::sid, Token::inspect, Token::state> (Arguments& argv, lo
 {
     auto value = util::parseNum(argv.front());
     if (value < 0 || value > 3) throw VC64Error(ERROR_OPT_INVARG, "0, 1, 2, or 3");
-    dump(muxer.getSID(value), dump::State);
+    dump(muxer.getSID(value), Category::State);
 }
 
 template <> void
@@ -720,7 +719,7 @@ RetroShell::exec <Token::sid, Token::inspect, Token::registers> (Arguments& argv
 {
     auto value = util::parseNum(argv.front());
     if (value < 0 || value > 3) throw VC64Error(ERROR_OPT_INVARG, "0, 1, 2, or 3");
-    dump(muxer.getSID(value), dump::Registers);
+    dump(muxer.getSID(value), Category::Registers);
 }
 
 
@@ -731,7 +730,7 @@ RetroShell::exec <Token::sid, Token::inspect, Token::registers> (Arguments& argv
 template <> void
 RetroShell::exec <Token::controlport, Token::inspect> (Arguments& argv, long param)
 {
-    dump(param == 0 ? port1 : port2, dump::State);
+    dump(param == 0 ? port1 : port2, Category::State);
 }
 
 
@@ -742,7 +741,7 @@ RetroShell::exec <Token::controlport, Token::inspect> (Arguments& argv, long par
 template <> void
 RetroShell::exec <Token::expansion, Token::inspect> (Arguments& argv, long param)
 {
-    dump(expansionport, dump::State);
+    dump(expansionport, Category::State);
 }
 
 template <> void
@@ -762,7 +761,7 @@ RetroShell::exec <Token::expansion, Token::attach> (Arguments& argv, long param)
 template <> void
 RetroShell::exec <Token::keyboard, Token::inspect> (Arguments& argv, long param)
 {
-    dump(keyboard, dump::State);
+    dump(keyboard, Category::State);
 }
 
 template <> void
@@ -819,17 +818,17 @@ RetroShell::exec <Token::keyboard, Token::release, Token::shiftlock> (Arguments&
 template <> void
 RetroShell::exec <Token::joystick, Token::config> (Arguments& argv, long param)
 {
-    dump(port1.joystick, dump::Config);
+    dump(port1.joystick, Category::Config);
     *this << '\n';
-    dump(port2.joystick, dump::Config);
+    dump(port2.joystick, Category::Config);
 }
 
 template <> void
 RetroShell::exec <Token::joystick, Token::inspect> (Arguments& argv, long param)
 {
-    dump(port1.joystick, dump::State);
+    dump(port1.joystick, Category::State);
     *this << '\n';
-    dump(port2.joystick, dump::State);
+    dump(port2.joystick, Category::State);
 }
 
 template <> void
@@ -861,17 +860,17 @@ RetroShell::exec <Token::joystick, Token::set, Token::delay> (Arguments& argv, l
 template <> void
 RetroShell::exec <Token::mouse, Token::config> (Arguments& argv, long param)
 {
-    dump(port1.mouse, dump::Config);
+    dump(port1.mouse, Category::Config);
     *this << '\n';
-    dump(port2.mouse, dump::Config);
+    dump(port2.mouse, Category::Config);
 }
 
 template <> void
 RetroShell::exec <Token::mouse, Token::inspect> (Arguments& argv, long param)
 {
-    dump(port1.mouse, dump::State);
+    dump(port1.mouse, Category::State);
     *this << '\n';
-    dump(port2.mouse, dump::State);
+    dump(port2.mouse, Category::State);
 }
 
 template <> void
@@ -903,11 +902,11 @@ RetroShell::exec <Token::mouse, Token::set, Token::shakedetector> (Arguments &ar
 template <> void
 RetroShell::exec <Token::parcable, Token::config> (Arguments& argv, long param)
 {
-    dump(parCable, dump::Config);
+    dump(parCable, Category::Config);
 }
 
 template <> void
 RetroShell::exec <Token::parcable, Token::inspect> (Arguments& argv, long param)
 {
-    dump(parCable, dump::State);
+    dump(parCable, Category::State);
 }

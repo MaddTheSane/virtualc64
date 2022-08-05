@@ -74,6 +74,92 @@
 @end
 
 //
+// Defaults
+//
+
+@implementation DefaultsProxy
+
+- (Defaults *)props
+{
+    return (Defaults *)obj;
+}
+
+- (void)load:(NSURL *)url exception:(ExceptionWrapper *)ex
+{
+    try { return [self props]->load([url fileSystemRepresentation]); }
+    catch (VC64Error &error) { [ex save:error]; }
+}
+
+- (void)save:(NSURL *)url exception:(ExceptionWrapper *)ex
+{
+    try { return [self props]->save([url fileSystemRepresentation]); }
+    catch (VC64Error &error) { [ex save:error]; }
+}
+
+- (void)register:(NSString *)key value:(NSString *)value
+{
+    [self props]->setFallback(string([key UTF8String]), string([value UTF8String]));
+}
+
+- (NSString *)getString:(NSString *)key
+{
+    auto result = [self props]->getString([key UTF8String]);
+    return @(result.c_str());
+}
+
+- (NSInteger)getInt:(NSString *)key
+{
+    return [self props]->getInt([key UTF8String]);
+}
+
+- (NSInteger)getOpt:(Option)option
+{
+    return [self props]->get(option);
+}
+
+- (NSInteger)getOpt:(Option)option nr:(NSInteger)nr
+{
+    return [self props]->get(option, nr);
+}
+
+- (void)setKey:(NSString *)key value:(NSString *)value
+{
+    [self props]->setString(string([key UTF8String]), string([value UTF8String]));
+}
+
+- (void)setOpt:(Option)option value:(NSInteger)value
+{
+    [self props]->set(option, value);
+}
+
+- (void)setOpt:(Option)option nr:(NSInteger)nr value:(NSInteger)value
+{
+    [self props]->set(option, nr, value);
+}
+
+- (void)removeAll
+{
+    [self props]->remove();
+}
+
+- (void)removeKey:(NSString *)key
+{
+    [self props]->remove(string([key UTF8String]));
+}
+
+- (void)remove:(Option)option
+{
+    [self props]->remove(option);
+}
+
+- (void)remove:(Option) option nr:(NSInteger)nr
+{
+    [self props]->remove(option, nr);
+}
+
+@end
+
+//
 // Guards (Breakpoints, Watchpoints)
 //
 
@@ -172,14 +258,14 @@
     return (CPU<C64Memory> *)obj;
 }
 
-- (CPUInfo)getInfo
+- (CPUInfo)info
 {
     return [self cpu]->getInfo();
 }
 
-- (i64)cycles
+- (i64)clock
 {
-    return (i64)[self cpu]->cycle;
+    return (i64)[self cpu]->clock;
 }
 
 - (u16)pc
@@ -514,6 +600,30 @@
     [self bridge]->rampDown();
 }
 
+- (float)drawWaveform:(u32 *)buffer
+                    w:(NSInteger)w
+                    h:(NSInteger)h
+                scale:(float)s
+                color:(u32)c
+               source:(NSInteger)source
+{
+    return [self bridge]->draw(buffer, w, h, s, c, source);
+}
+
+- (float)drawWaveform:(u32 *)buffer
+                 size:(NSSize)size
+                scale:(float)s
+                color:(u32)c
+               source:(NSInteger)source
+{
+    return [self drawWaveform:buffer
+                            w:(NSInteger)size.width
+                            h:(NSInteger)size.height
+                        scale:s
+                        color:c
+                       source:source];
+}
+
 @end
 
 //
@@ -699,6 +809,16 @@
 - (CartridgeType)cartridgeType
 {
     return [self eport]->getCartridgeType();
+}
+
+- (CartridgeInfo)getInfo
+{
+    return [self eport]->getInfo();
+}
+
+- (CartridgeRomInfo)getRomInfo:(NSInteger)nr
+{
+    return [self eport]->getRomInfo(nr);
 }
 
 - (BOOL)cartridgeAttached
@@ -984,7 +1104,7 @@
     return [self drive]->hasDisk() ? disk : NULL;
 }
 
-- (DriveID)id
+- (NSInteger)id
 {
     return [self drive]->getDeviceNr();
 }
@@ -1036,20 +1156,54 @@
     return [self drive]->hasDisk();
 }
 
-- (BOOL)hasWriteProtectedDisk
-{
-    return [self drive]->hasWriteProtectedDisk();
-}
-
 - (BOOL)hasModifiedDisk
 {
     return [self drive]->hasModifiedDisk();
 }
 
-- (void)setModifiedDisk:(BOOL)b
+- (BOOL)hasProtectedDisk
 {
-    [self drive]->setModifiedDisk(b);
+    return [self drive]->hasProtectedDisk();
 }
+
+- (BOOL)hasUnmodifiedDisk
+{
+    return [self drive]->hasUnmodifiedDisk();
+}
+
+- (BOOL)hasUnprotectedDisk
+{
+    return [self drive]->hasUnprotectedDisk();
+}
+
+- (void)setModificationFlag:(BOOL)value
+{
+    [self drive]->setModificationFlag(value);
+}
+
+/*
+- (void)setProtectionFlag:(BOOL)value
+{
+    [self drive]->setProtectionFlag(value);
+}
+*/
+
+- (void)markDiskAsModified
+{
+    [self drive]->markDiskAsModified();
+}
+
+- (void)markDiskAsUnmodified
+{
+    [self drive]->markDiskAsUnmodified();
+}
+
+/*
+- (void)toggleWriteProtection
+{
+    [self drive]->toggleWriteProtection();
+}
+*/
 
 - (void)insertD64:(D64FileProxy *)proxy protected:(BOOL)wp
 {
@@ -1066,14 +1220,14 @@
     [self drive]->insertCollection(*(AnyCollection *)proxy->obj, wp);
 }
 
-- (void)insertFileSystem:(FSDeviceProxy *)proxy protected:(BOOL)wp
+- (void)insertFileSystem:(FileSystemProxy *)proxy protected:(BOOL)wp
 {
-    [self drive]->insertFileSystem(*(FSDevice *)proxy->obj, wp);
+    [self drive]->insertFileSystem(*(FileSystem *)proxy->obj, wp);
 }
 
-- (void)insertNewDisk:(DOSType)fsType
+- (void)insertNewDisk:(DOSType)fsType name:(NSString *)name
 {
-    [self drive]->insertNewDisk(fsType);
+    [self drive]->insertNewDisk(fsType, PETName<16>([name UTF8String]));
 }
 
 - (void)ejectDisk
@@ -1264,9 +1418,33 @@
     return (Recorder *)obj;
 }
 
+- (NSString *)path
+{
+    auto path = FFmpeg::getExecPath();
+    return @(path.c_str());
+}
+
+- (void)setPath:(NSString *)path
+{
+    if ([path length] == 0) {
+        FFmpeg::setExecPath("");
+    } else {
+        FFmpeg::setExecPath(string([path fileSystemRepresentation]));
+    }
+}
+
+- (NSString *)findFFmpeg:(NSInteger)nr
+{
+    if (nr < (NSInteger)FFmpeg::paths.size()) {
+        return @(FFmpeg::paths[nr].c_str());
+    } else {
+        return nil;
+    }
+}
+
 - (BOOL)hasFFmpeg
 {
-    return [self recorder]->hasFFmpeg();
+    return FFmpeg::available();
 }
 
 - (BOOL)recording
@@ -1294,20 +1472,19 @@
     return [self recorder]->getSampleRate();
 }
 
-- (BOOL)startRecording:(NSRect)rect
+- (void)startRecording:(NSRect)rect
                bitRate:(NSInteger)rate
                aspectX:(NSInteger)aspectX
                aspectY:(NSInteger)aspectY
+             exception:(ExceptionWrapper *)ex
 {
-    int x1 = (int)rect.origin.x;
-    int y1 = (int)rect.origin.y;
-    int x2 = x1 + (int)rect.size.width;
-    int y2 = y1 + (int)rect.size.height;
-    
-    return [self recorder]->startRecording(x1, y1, x2, y2,
-                                           rate,
-                                           aspectX,
-                                           aspectY);
+    auto x1 = isize(rect.origin.x);
+    auto y1 = isize(rect.origin.y);
+    auto x2 = isize(x1 + (int)rect.size.width);
+    auto y2 = isize(y1 + (int)rect.size.height);
+
+    try { return [self recorder]->startRecording(x1, y1, x2, y2, rate, aspectX, aspectY); }
+    catch (VC64Error &error) { [ex save:error]; }
 }
 
 - (void)stopRecording
@@ -1342,70 +1519,70 @@
     return proxy;
 }
 
--(NSInteger)cposRel
+-(NSInteger)cursorRel
 {
-    return [self shell]->cposRel();
+	return [self shell]->cursorRel();
 }
 
 -(NSString *)getText
 {
-    const char *str = [self shell]->text();
-    return str ? [NSString stringWithUTF8String:str] : nullptr;
+	const char *str = [self shell]->text();
+	return str ? @(str) : nullptr;
 }
 
 - (void)pressUp
 {
-    [self shell]->pressUp();
+	[self shell]->press(RSKEY_UP);
 }
 
 - (void)pressDown
 {
-    [self shell]->pressDown();
+	[self shell]->press(RSKEY_DOWN);
 }
 
 - (void)pressLeft
 {
-    [self shell]->pressLeft();
+	[self shell]->press(RSKEY_LEFT);
 }
 
 - (void)pressRight
 {
-    [self shell]->pressRight();
+	[self shell]->press(RSKEY_RIGHT);
 }
 
 - (void)pressHome
 {
-    [self shell]->pressHome();
+	[self shell]->press(RSKEY_HOME);
 }
 
 - (void)pressEnd
 {
-    [self shell]->pressEnd();
+	[self shell]->press(RSKEY_END);
 }
 
 - (void)pressBackspace
 {
-    [self shell]->pressBackspace();
+	[self shell]->press(RSKEY_BACKSPACE);
 }
 
 - (void)pressDelete
 {
-    [self shell]->pressDelete();
+	[self shell]->press(RSKEY_DEL);
 }
 
 - (void)pressReturn
 {
-    [self shell]->pressReturn();
+	[self shell]->press(RSKEY_RETURN);
 }
 
 - (void)pressTab
 {
-    [self shell]->pressTab();
+	[self shell]->press(RSKEY_TAB);
 }
 
 - (void)pressKey:(char)c
 {
-    [self shell]->pressKey(c);
+	[self shell]->press(c);
 }
 
 @end
@@ -1724,9 +1901,9 @@
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new T64File(*(FSDevice *)proxy->obj)]; }
+    try { return [self make: new T64File(*(FileSystem *)proxy->obj)]; }
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
@@ -1755,9 +1932,9 @@
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new PRGFile(*(FSDevice *)proxy->obj)]; }
+    try { return [self make: new PRGFile(*(FileSystem *)proxy->obj)]; }
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
@@ -1786,9 +1963,9 @@
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new P00File(*(FSDevice *)proxy->obj)]; }
+    try { return [self make: new P00File(*(FileSystem *)proxy->obj)]; }
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
@@ -1822,9 +1999,9 @@
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new D64File(*(FSDevice *)proxy->obj)]; }
+    try { return [self make: new D64File(*(FileSystem *)proxy->obj)]; }
     catch (VC64Error &error) { [ex save:error]; return nil; }
 }
 
@@ -1862,12 +2039,17 @@
 @end
 
 //
-// FSDevice
+// FileSystem
 //
 
-@implementation FSDeviceProxy
+@implementation FileSystemProxy
 
-+ (instancetype)make:(FSDevice *)fs
+- (FileSystem *)fs
+{
+    return (FileSystem *)obj;
+}
+
++ (instancetype)make:(FileSystem *)fs
 {
     return fs ? [[self alloc] initWith: fs] : nil;
 }
@@ -1875,25 +2057,55 @@
 + (instancetype)makeWithDisk:(DiskProxy *)proxy exception:(ExceptionWrapper *)ex
 {
     Drive *drv = (Drive *)proxy->obj;
-    try { return [self make: new FSDevice(*drv->disk)]; }
+    try { return [self make: new FileSystem(*drv->disk)]; }
     catch (VC64Error &err) { [ex save:err]; return nil; }
 }
 
 + (instancetype)makeWithCollection:(AnyCollectionProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new FSDevice(*(AnyCollection *)proxy->obj)]; }
+    try { return [self make: new FileSystem(*(AnyCollection *)proxy->obj)]; }
     catch (VC64Error &err) { [ex save:err]; return nil; }
 }
 
 + (instancetype)makeWithD64:(D64FileProxy *)proxy exception:(ExceptionWrapper *)ex
 {
-    try { return [self make: new FSDevice(*(D64File *)proxy->obj)]; }
+    try { return [self make: new FileSystem(*(D64File *)proxy->obj)]; }
     catch (VC64Error &err) { [ex save:err]; return nil; }
 }
 
-- (FSDevice *)fs
++ (instancetype)makeWithDiskType:(DiskType)diskType dosType:(DOSType)dosType
 {
-    return (FSDevice *)obj;
+    return [self make: new FileSystem(diskType, dosType)];
+}
+
+- (NSString *)name
+{
+    auto str = [self fs]->getName();
+    return @(str.c_str());
+}
+
+- (void)setName:(NSString *)name
+{
+    auto str = string([name UTF8String]);
+    [self fs]->setName(PETName<16>(str));
+}
+
+- (NSString *)idString
+{
+    auto str = [self fs]->getID();
+    return @(str.c_str());
+}
+
+- (NSString *)capacityString
+{
+    auto str = util::byteCountAsString([self fs]->getNumBytes());
+    return @(str.c_str());
+}
+
+- (NSString *)fillLevelString
+{
+    auto str = util::fillLevelAsString([self fs]->fillLevel());
+    return @(str.c_str());
 }
 
 - (DOSType)dos
@@ -1926,14 +2138,14 @@
     return [self fs]->getNumBlocks();
 }
 
-- (NSInteger)numFreeBlocks
+- (NSInteger)freeBlocks
 {
-    return [self fs]->numFreeBlocks();
+    return [self fs]->freeBlocks();
 }
 
-- (NSInteger)numUsedBlocks
+- (NSInteger)usedBlocks
 {
-    return [self fs]->numUsedBlocks();
+    return [self fs]->usedBlocks();
 }
 
 - (NSInteger)numFiles
@@ -2036,10 +2248,15 @@
 
 - (NSInteger)readByte:(NSInteger)block offset:(NSInteger)offset
 {
-    return [self fs]->readByte((u32)block, (u32)offset);
+    return [self fs]->readByte((u32)block, offset);
 }
 
-- (void)exportDirectory:(NSString *)path exception:(ExceptionWrapper *)e
+- (NSString *)ascii:(NSInteger)block offset:(NSInteger)offset length:(NSInteger)len
+{
+    return @([self fs]->ascii(Block(block), offset, len).c_str());
+}
+
+- (void)export:(NSString *)path exception:(ExceptionWrapper *)e
 {
     try { [self fs]->exportDirectory([path fileSystemRepresentation]); }
     catch (VC64Error &error) { [e save:error]; }
@@ -2048,6 +2265,11 @@
 - (void)info
 {
     [self fs]->info();
+}
+
+- (BOOL)isFree:(NSInteger)blockNr
+{
+    return [self fs]->isFree(blockNr);
 }
 
 - (NSString *)fileName:(NSInteger)nr
@@ -2068,6 +2290,26 @@
 - (NSInteger)fileBlocks:(NSInteger)nr
 {
     return [self fs]->fileBlocks((unsigned)nr);
+}
+
+- (FSBlockType)getDisplayType:(NSInteger)column
+{
+    return [self fs]->getDisplayType(column);
+}
+
+- (NSInteger)diagnoseImageSlice:(NSInteger)column
+{
+    return [self fs]->diagnoseImageSlice(column);
+}
+
+- (NSInteger)nextBlockOfType:(FSBlockType)type after:(NSInteger)after
+{
+    return [self fs]->nextBlockOfType(type, after);
+}
+
+- (NSInteger)nextCorruptedBlock:(NSInteger)after
+{
+    return [self fs]->nextCorruptedBlock(after);
 }
 
 @end
@@ -2094,9 +2336,9 @@
     return (Folder *)obj;
 }
 
-- (FSDeviceProxy *)fileSystem
+- (FileSystemProxy *)fileSystem
 {
-    return [FSDeviceProxy make:[self folder]->getFS()];
+    return [FileSystemProxy make:[self folder]->getFS()];
 }
 
 @end
@@ -2164,6 +2406,11 @@
 - (C64 *)c64
 {
     return (C64 *)obj;
+}
+
++ (DefaultsProxy *) defaults
+{
+    return [[DefaultsProxy alloc] initWith:&C64::defaults];
 }
 
 - (void)dealloc
@@ -2341,7 +2588,7 @@
     return [self c64]->getConfigItem(opt, id);
 }
 
-- (NSInteger)getConfig:(Option)opt drive:(DriveID)id
+- (NSInteger)getConfig:(Option)opt drive:(NSInteger)id
 {
     return [self c64]->getConfigItem(opt, (long)id);
 }
@@ -2386,7 +2633,7 @@
     }
 }
 
-- (BOOL)configure:(Option)opt drive:(DriveID)id value:(NSInteger)val
+- (BOOL)configure:(Option)opt drive:(NSInteger)id value:(NSInteger)val
 {
     try {
         [self c64]->configure(opt, (long)id, val);
@@ -2396,7 +2643,7 @@
     }
 }
 
-- (BOOL)configure:(Option)opt drive:(DriveID)id enable:(BOOL)val
+- (BOOL)configure:(Option)opt drive:(NSInteger)id enable:(BOOL)val
 {
     try {
         [self c64]->configure(opt, (long)id, val ? 1 : 0);
@@ -2576,9 +2823,9 @@
     catch (VC64Error &error) { [ex save:error]; }
 }
 
-- (void)flash:(FSDeviceProxy *)proxy item:(NSInteger)nr exception:(ExceptionWrapper *)ex
+- (void)flash:(FileSystemProxy *)proxy item:(NSInteger)nr exception:(ExceptionWrapper *)ex
 {
-    try { [self c64]->flash(*(FSDevice *)proxy->obj, (unsigned)nr); }
+    try { [self c64]->flash(*(FileSystem *)proxy->obj, (unsigned)nr); }
     catch (VC64Error &error) { [ex save:error]; }
 }
 

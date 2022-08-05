@@ -39,9 +39,9 @@ typedef FILETYPE FileType;
 #ifdef __cplusplus
 struct FileTypeEnum : util::Reflection<FileTypeEnum, FileType> {
     
-    static long min() { return 0; }
-    static long max() { return FILETYPE_VC1541_ROM; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = FILETYPE_VC1541_ROM;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "FILETYPE"; }
     static const char *key(FileType value)
@@ -49,7 +49,8 @@ struct FileTypeEnum : util::Reflection<FileTypeEnum, FileType> {
         switch (value) {
                 
             case FILETYPE_UNKNOWN:    return "UNKNOWN";
-            case FILETYPE_SNAPSHOT:   return "V64";
+            case FILETYPE_SNAPSHOT:   return "SNAPSHOT";
+            case FILETYPE_SCRIPT:     return "SCRIPT";
             case FILETYPE_CRT:        return "CRT";
             case FILETYPE_T64:        return "T64";
             case FILETYPE_PRG:        return "PRG";
@@ -58,10 +59,10 @@ struct FileTypeEnum : util::Reflection<FileTypeEnum, FileType> {
             case FILETYPE_D64:        return "D64";
             case FILETYPE_G64:        return "G64";
             case FILETYPE_TAP:        return "TAP";
-            case FILETYPE_BASIC_ROM:  return "ROM";
-            case FILETYPE_CHAR_ROM:   return "ROM";
-            case FILETYPE_KERNAL_ROM: return "ROM";
-            case FILETYPE_VC1541_ROM: return "ROM";
+            case FILETYPE_BASIC_ROM:  return "BASIC_ROM";
+            case FILETYPE_CHAR_ROM:   return "CHAR_ROM";
+            case FILETYPE_KERNAL_ROM: return "KERNAL_ROM";
+            case FILETYPE_VC1541_ROM: return "VC1541_ROM";
         }
         return "???";
     }
@@ -78,9 +79,9 @@ typedef TAP_VERSION TAPVersion;
 #ifdef __cplusplus
 struct TAPVersionEnum : util::Reflection<TAPVersionEnum, TAPVersion> {
     
-    static long min() { return 0; }
-    static long max() { return TAP_VERSION_ADVANCED; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = TAP_VERSION_ADVANCED;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "TAP_VERSION"; }
     static const char *key(TAPVersion value)
@@ -145,12 +146,14 @@ enum_long(ROM_IDENTIFIER)
     KERNAL_DANISH_3RD,
     KERNAL_SX64,
     KERNAL_SX64_SCAND,
+    KERNAL_4064,
     KERNAL_64_JIFFY,
     KERNAL_SX64_JIFFY,
     KERNAL_TURBO_ROM,
     KERNAL_DATEL_V32,
     KERNAL_EXOS_V3,
     KERNAL_TURBO_TAPE,
+    KERNEL_TURBO_250,
     KERNAL_64ER_V3,
     KERNAL_SPEEDDOS_PLUS,
     KERNAL_SPEEDDOS_27,
@@ -161,7 +164,11 @@ enum_long(ROM_IDENTIFIER)
     KERNAL_DOLPHIN_20_3,
     KERNAL_DOLPHIN_20_SLVDR,
     KERNAL_DOLPHIN_30,
-    
+    KERNAL_DOLPHIN_JIFFY,
+    KERNEL_NORLAND_30,
+    KERNEL_SD2IEC,
+    KERNAL_JAFFY,
+
     // VC1541 Roms
     VC1541C_01,
     VC1541C_02,

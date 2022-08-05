@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "DatasetteTypes.h"
 #include "SubComponent.h"
 #include "Constants.h"
 #include "Chrono.h"
@@ -28,7 +29,10 @@ public:
 };
 
 class Datasette : public SubComponent {
-    
+
+    // Current configuration
+    DatasetteConfig config = { };
+
     //
     // Tape
     //
@@ -96,7 +100,7 @@ public:
 private:
     
     const char *getDescription() const override { return "Datasette"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -130,10 +134,24 @@ private:
     }
     
     isize _size() override;
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     isize didLoadFromBuffer(const u8 *buffer) override;
     isize didSaveToBuffer(u8 *buffer) override;
+
+
+    //
+    // Configuring
+    //
+
+public:
+
+    const DatasetteConfig &getConfig() const { return config; }
+    void resetConfig() override;
+
+    i64 getConfigItem(Option option) const;
+    void setConfigItem(Option option, i64 value);
 
     
     //

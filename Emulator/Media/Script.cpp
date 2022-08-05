@@ -10,7 +10,7 @@
 #include "config.h"
 #include "Script.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 #include <sstream>
 
@@ -31,5 +31,5 @@ void
 Script::execute(class C64 &c64)
 {
     string s((char *)data, size);
-    try { c64.retroShell.execScript(s); } catch (util::Exception &e) { }
+    try { c64.retroShell.execScript(s); } catch (util::Exception &) { }
 }

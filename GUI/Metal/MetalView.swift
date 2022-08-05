@@ -11,6 +11,8 @@ public class MetalView: MTKView {
     
     @IBOutlet weak var parent: MyController!
     
+    var myDocument: MyDocument { return parent.mydocument! }
+    var renderer: Renderer { return parent.renderer }
     var prefs: Preferences { return parent.pref }
     
     // Reference to the first mouse (internal, always connected)
@@ -29,9 +31,14 @@ public class MetalView: MTKView {
         
     // Time stamp needed to detect a shaking mouse
     var lastShake = DispatchTime(uptimeNanoseconds: 0)
-    
+
+    // Temporary storage of the properties of a dragged in file
+    var dropZone: Int?
+    var dropUrl: URL?
+    var dropType: FileType?
+
     // When a file is dragged in, it's URL is stored in this variable
-    var draggedUrl: URL?
+    // var draggedUrl: URL?
     
     required public init(coder: NSCoder) {
     
@@ -52,17 +59,11 @@ public class MetalView: MTKView {
     override public func resignFirstResponder() -> Bool { return false }
     
     // Adjusts view height by a certain number of pixels
-    fileprivate func adjustHeight(_ height: CGFloat) {
+    func adjustHeight(_ height: CGFloat) {
     
         var newFrame = frame
         newFrame.origin.y -= height
         newFrame.size.height += height
         frame = newFrame
-    }
-    
-    // Shrinks view vertically by the height of the status bar
-    public func shrink() { adjustHeight(-26.0) }
-    
-    // Expand view vertically by the height of the status bar
-    public func expand() { adjustHeight(26.0) }
+    }    
 }

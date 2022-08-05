@@ -16,7 +16,7 @@
 // Constants
 //
 
-/* The VC1541 can move the drive head to 85 distinct positions (1 .. 85). Odd
+/* The VC1541 can move the drive head to 84 distinct positions (1 .. 84). Odd
  * numbers correspond to "full tracks" and even numbers to "half tracks". The
  * full tracks between 1 and 70 correspond to the 35 tracks that are used by
  * VC1541 DOS. The Rom code always moves the drive head by two positions. When
@@ -45,7 +45,7 @@ static const isize highestSector = 20;
 
 static inline bool isTrackNumber(isize nr) { return 1 <= nr && nr <= highestTrack; }
 static inline bool isHalftrackNumber(isize nr) { return 1 <= nr && nr <= highestHalftrack; }
-static inline bool isSectorNumber(isize nr) { return nr <= highestSector; }
+static inline bool isSectorNumber(isize nr) { return nr >= 0 && nr <= highestSector; }
 
 /* Maximum number of bits and bytes stored on a single track. Each track can
  * store a maximum of 7928 bytes (63424 bits). The exact number depends on the
@@ -112,9 +112,9 @@ typedef DISK_TYPE DiskType;
 #ifdef __cplusplus
 struct DiskTypeEnum : util::Reflection<DiskTypeEnum, DiskType> {
     
-    static long min() { return 0; }
-    static long max() { return DISK_TYPE_DS_SD; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = DISK_TYPE_DS_SD;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
 
     static const char *prefix() { return "DISK_TYPE"; }
     static const char *key(DiskType value)
@@ -141,9 +141,9 @@ typedef CBM_FILE_TYPE CBMFileType;
 #ifdef __cplusplus
 struct CBMFileTypeEnum : util::Reflection<CBMFileTypeEnum, CBMFileType> {
     
-    static long min() { return 0; }
-    static long max() { return CBM_FILE_REL; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+    static constexpr long minVal = 0;
+    static constexpr long maxVal = CBM_FILE_REL;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return "CBM"; }
     static const char *key(CBMFileType value)
@@ -180,9 +180,9 @@ typedef DISK_ERROR_CODE DiskErrorCode;
 #ifdef __cplusplus
 struct DiskErrorCodeEnum : util::Reflection<DiskErrorCodeEnum, DiskErrorCode> {
     
-    static long min() { return 0; }
-    static long max() { return DRIVE_NOT_READY_ERRROR; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+	static constexpr long minVal = 0;
+    static constexpr long maxVal = DRIVE_NOT_READY_ERRROR;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
     
     static const char *prefix() { return ""; }
     static const char *key(DiskErrorCode value)

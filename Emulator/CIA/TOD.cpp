@@ -11,7 +11,7 @@
 #include "TOD.h"
 #include "CIA.h"
 #include "CPU.h"
-#include "IO.h"
+#include "IOUtils.h"
 #include "PowerSupply.h"
 
 TOD::TOD(C64 &ref, CIA &ciaref) : SubComponent(ref), cia(ciaref)
@@ -27,7 +27,7 @@ TOD::getDescription() const
 void
 TOD::_inspect() const
 {
-    synchronized {
+    {   SYNCHRONIZED
         
         info.time = tod;
         info.latch = latch;
@@ -45,11 +45,11 @@ TOD::_reset(bool hard)
 }
 
 void
-TOD::_dump(dump::Category category, std::ostream& os) const
+TOD::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Time of Day");
         os << hex(tod.hour)   << ":" << hex(tod.min)     << ":";
@@ -72,7 +72,7 @@ void
 TOD::increment()
 {
     // Check if a tenth of a second has passed
-    if (stopped || cpu.cycle < (u64)nextTodTrigger) return;
+    if (stopped || cpu.clock < (u64)nextTodTrigger) return;
     
     cia.wakeUp();
     
@@ -126,7 +126,7 @@ void
 TOD::cont()
 {
     stopped = false;
-    nextTodTrigger = cpu.cycle + oscillator.todTickDelay(cia.CRA);
+    nextTodTrigger = cpu.clock + oscillator.todTickDelay(cia.CRA);
 }
 
 void

@@ -127,10 +127,11 @@ private:
     }
     
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     isize didLoadFromBuffer(const u8 *buffer) override;
-    isize willSaveToBuffer(const u8 *buffer) override;
+    isize willSaveToBuffer(u8 *buffer) override;
 
     
     //
@@ -167,7 +168,7 @@ public:
 private:
     
     void _inspect() const override;
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
     
 
     //
@@ -189,6 +190,6 @@ public:
      * samples are written into the provided ring buffer. The fuction returns
      * the number of written audio samples.
      */
-    i64 executeCycles(isize numCycles, SampleStream &stream);
-    i64 executeCycles(isize numCycles);
+    isize executeCycles(isize numCycles, SampleStream &stream);
+    isize executeCycles(isize numCycles);
 };

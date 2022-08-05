@@ -15,8 +15,6 @@ extension MakeWithBuffer {
     
     static func make(with data: Data) throws -> Self {
         
-        track()
-        
         let exception = ExceptionWrapper()
         let obj = make(with: data, exception: exception)
         if exception.errorCode != .OK { throw VC64Error(exception) }
@@ -32,68 +30,68 @@ extension MakeWithBuffer {
     }
 }
 
-extension MakeWithFile {
-    
-    static func make(with url: URL) throws -> Self {
-        
-        let exception = ExceptionWrapper()
-        let obj = make(withFile: url.path, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
-        return obj!
-    }
-}
-
 extension MakeWithDisk {
     
     static func make(with disk: DiskProxy) throws -> Self {
         
-        let exception = ExceptionWrapper()
-        let obj = make(withDisk: disk, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        let exc = ExceptionWrapper()
+        let obj = make(withDisk: disk, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
+        return obj!
+    }
+}
+
+extension MakeWithFile {
+
+    static func make(with url: URL) throws -> Self {
+        
+        let exc = ExceptionWrapper()
+        let obj = make(withFile: url.path, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
         return obj!
     }
 }
 
 extension MakeWithFileSystem {
-    
-    static func make(withFileSystem fs: FSDeviceProxy) throws -> Self {
+
+    static func make(with fs: FileSystemProxy) throws -> Self {
         
-        let exception = ExceptionWrapper()
-        let obj = make(withFileSystem: fs, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        let exc = ExceptionWrapper()
+        let obj = make(withFileSystem: fs, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
         return obj!
     }
 }
 
 extension MakeWithCollection {
-    
-    static func make(withCollection collection: AnyCollectionProxy) throws -> Self {
+
+    static func make(with collection: AnyCollectionProxy) throws -> Self {
         
-        let exception = ExceptionWrapper()
-        let obj = make(withCollection: collection, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        let exc = ExceptionWrapper()
+        let obj = make(withCollection: collection, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
         return obj!
     }
 }
 
 extension MakeWithD64 {
-    
-    static func make(withD64 d64: D64FileProxy) throws -> Self {
-        
-        let exception = ExceptionWrapper()
-        let obj = make(withD64: d64, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+
+    static func make(with d64: D64FileProxy) throws -> Self {
+
+        let exc = ExceptionWrapper()
+        let obj = make(withD64: d64, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
         return obj!
     }
 }
 
 extension MakeWithFolder {
-    
-    static func make(withFolder folder: URL) throws -> Self {
+
+    static func make(with folder: URL) throws -> Self {
         
-        let exception = ExceptionWrapper()
-        let obj = make(withFolder: folder.path, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        let exc = ExceptionWrapper()
+        let obj = make(withFolder: folder.path, exception: exc)
+        if exc.errorCode != .OK { throw VC64Error(exc) }
         return obj!
     }
 }
@@ -139,7 +137,7 @@ extension C64Proxy {
         if exception.errorCode != .OK { throw VC64Error(exception) }
     }
     
-    func flash(_ proxy: FSDeviceProxy, item: Int) throws {
+    func flash(_ proxy: FileSystemProxy, item: Int) throws {
 
         let exception = ExceptionWrapper()
         flash(proxy, item: item, exception: exception)
@@ -167,12 +165,22 @@ extension AnyFileProxy {
     }
 }
 
-extension FSDeviceProxy {
+extension FileSystemProxy {
         
     func exportDirectory(to url: URL) throws {
             
         let exception = ExceptionWrapper()
-        exportDirectory(url.path, exception: exception)
+        export(url.path, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+    }
+}
+
+extension RecorderProxy {
+
+    func startRecording(rect: NSRect, rate: Int, ax: Int, ay: Int) throws {
+
+        let exception = ExceptionWrapper()
+        startRecording(rect, bitRate: rate, aspectX: ax, aspectY: ay, exception: exception)
         if exception.errorCode != .OK { throw VC64Error(exception) }
     }
 }
@@ -183,12 +191,12 @@ extension FSDeviceProxy {
 
 public extension C64Proxy {
     
-    func drive(_ nr: DriveID) -> DriveProxy {
+    func drive(_ nr: NSInteger) -> DriveProxy {
         
         switch nr {
             
-        case .DRIVE8: return drive8
-        case .DRIVE9: return drive9
+        case DRIVE8: return drive8
+        case DRIVE9: return drive9
         
         default:
             fatalError()
@@ -197,12 +205,12 @@ public extension C64Proxy {
     
     func drive(_ item: NSButton!) -> DriveProxy {
         
-        return drive(DriveID(rawValue: item.tag)!)
+        return drive(item.tag)
     }
     
     func drive(_ item: NSMenuItem!) -> DriveProxy {
         
-        return drive(DriveID(rawValue: item.tag)!)
+        return drive(item.tag)
     }
     
     func image(data: UnsafeMutablePointer<UInt8>?, size: NSSize) -> NSImage {
@@ -316,8 +324,17 @@ extension CRTFileProxy {
     }
 }
 
-extension FSDeviceProxy {
-    
+extension FileSystemProxy {
+
+    static func make(withDisk disk: DiskProxy) throws -> FileSystemProxy {
+
+        let exception = ExceptionWrapper()
+        let result = FileSystemProxy.make(withDisk: disk, exception: exception)
+        if exception.errorCode != .OK { throw VC64Error(exception) }
+
+        return result!
+    }
+
     func icon(protected: Bool) -> NSImage {
                         
         let name = "disk2" + (protected ? "_protected" : "")
@@ -328,13 +345,22 @@ extension FSDeviceProxy {
 
         return "Single sided, single density disk with \(numTracks) tracks"
     }
-    
+
+    var dosInfo: String {
+
+        return dos.description
+    }
+
+    var usageInfo: String {
+
+        return "\(numBlocks) blocks, \(usedBlocks) blocks used"
+    }
+
     var filesInfo: String {
         
         let num = numFiles
         let files = num == 1 ? "file" : "files"
-        
-        return "\(num) \(files), \(numUsedBlocks) blocks used"
+        return "\(num) \(files)"
     }
 }
     

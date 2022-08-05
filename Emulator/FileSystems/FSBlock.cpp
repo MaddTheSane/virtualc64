@@ -9,10 +9,10 @@
 
 #include "config.h"
 #include "FSBlock.h"
-#include "FSDevice.h"
+#include "FileSystem.h"
 #include "MemUtils.h"
 
-FSBlock::FSBlock(FSDevice& _device, u32 _nr) : device(_device), nr(_nr)
+FSBlock::FSBlock(FileSystem& _device, u32 _nr) : device(_device), nr(_nr)
 {
     memset(data, 0, sizeof(data));
 }
@@ -58,12 +58,12 @@ FSBlock::writeBAM(PETName<16> &name)
         u8 *p = data + 4 * k;
 
         if (k == 18) {
-            
-            p[0] = 0;    // No free blocks on the directory track
-            p[1] = 0x00;
-            p[2] = 0x00;
-            p[3] = 0x00;
-            
+
+            p[0] = 17;      // 17 out of 19 blocks are free
+            p[1] = 0xFC;    // Mark first two blocks as allocated
+            p[2] = 0xFF;
+            p[3] = 0x07;
+
         } else {
             
             p[0] = (u8)device.layout.numSectors(k);
@@ -84,7 +84,7 @@ FSBlock::writeBAM(PETName<16> &name)
     data[0xA2] = 0x56;
     data[0xA3] = 0x54;
     
-    // AUsually $A0
+    // Usually $A0
     data[0xA4] = 0xA0;
     
     // DOS type
@@ -160,8 +160,6 @@ FSBlock::itemType(u32 byte) const
         default:
             fatalError;
     }
-    
-    return FS_USAGE_UNKNOWN;
 }
 
 ErrorCode
@@ -223,8 +221,6 @@ FSBlock::check(u32 byte, u8 *expected, bool strict) const
         default:
             fatalError;
     }
-    
-    return ERROR_OK;
 }
 
 isize
@@ -238,7 +234,7 @@ FSBlock::check(bool strict) const
         ErrorCode err = check(i, &expected, strict);
         if (err != ERROR_OK) {
             count++;
-            debug(FS_DEBUG, "Block %zd [%d.%d]: %s\n",
+            debug(FS_DEBUG, "Block %ld [%d.%d]: %s\n",
                   nr, i / 4, i % 4, ErrorCodeEnum::key(err));
         }
     }

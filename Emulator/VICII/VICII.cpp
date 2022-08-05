@@ -10,7 +10,7 @@
 #include "config.h"
 #include "VICII.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 #define SPR0 0x01
 #define SPR1 0x02
@@ -26,8 +26,8 @@ VICII::VICII(C64 &ref) : SubComponent(ref), dmaDebugger(ref)
     subComponents = std::vector<C64Component *> { &dmaDebugger };
 
     // Assign reference clock to all time delayed variables
-    baLine.setClock(&cpu.cycle);
-    gAccessResult.setClock(&cpu.cycle);
+    baLine.setClock(&cpu.clock);
+    gAccessResult.setClock(&cpu.clock);
     
     // Create random background noise pattern
     const isize noiseSize = 16 * 512 * 512;
@@ -144,23 +144,28 @@ VICII::getDefaultConfig()
 void
 VICII::resetConfig()
 {
-    VICIIConfig defaults = getDefaultConfig();
-    
-    setConfigItem(OPT_VIC_REVISION, defaults.revision);
-    setConfigItem(OPT_VIC_SPEED, defaults.speed);
-    setConfigItem(OPT_VIC_POWER_SAVE, defaults.powerSave);
-    setConfigItem(OPT_GRAY_DOT_BUG, defaults.grayDotBug);
-    setConfigItem(OPT_GLUE_LOGIC, defaults.glueLogic);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
 
-    setConfigItem(OPT_PALETTE, defaults.palette);
-    setConfigItem(OPT_BRIGHTNESS, defaults.brightness);
-    setConfigItem(OPT_CONTRAST, defaults.contrast);
-    setConfigItem(OPT_SATURATION, defaults.saturation);
+    std::vector <Option> options = {
 
-    setConfigItem(OPT_HIDE_SPRITES, defaults.hideSprites);
-    
-    setConfigItem(OPT_SB_COLLISIONS, defaults.checkSSCollisions);
-    setConfigItem(OPT_SS_COLLISIONS, defaults.checkSBCollisions);
+        OPT_VIC_REVISION,
+        OPT_VIC_SPEED,
+        OPT_VIC_POWER_SAVE,
+        OPT_GRAY_DOT_BUG,
+        OPT_GLUE_LOGIC,
+        OPT_PALETTE,
+        OPT_BRIGHTNESS,
+        OPT_CONTRAST,
+        OPT_SATURATION,
+        OPT_HIDE_SPRITES,
+        OPT_SB_COLLISIONS,
+        OPT_SS_COLLISIONS
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
 }
 
 i64
@@ -197,7 +202,7 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, VICIIRevisionEnum::keyList());
             }
             
-            setRevision((VICIIRevision)value);
+            setRevision(VICIIRevision(value));
             return;
 
         case OPT_VIC_SPEED:
@@ -206,12 +211,12 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, VICIISpeedEnum::keyList());
             }
             
-            setSpeed((VICIISpeed)value);
+            setSpeed(VICIISpeed(value));
             return;
 
         case OPT_VIC_POWER_SAVE:
             
-            config.powerSave = value;
+            config.powerSave = bool(value);
             return;
             
         case OPT_PALETTE:
@@ -219,11 +224,9 @@ VICII::setConfigItem(Option option, i64 value)
             if (!PaletteEnum::isValid(value)) {
                 throw VC64Error(ERROR_OPT_INVARG, PaletteEnum::keyList());
             }
-            
-            suspended {
-                config.palette = (Palette)value;
-                updatePalette();
-            }
+
+            config.palette = Palette(value);
+            updatePalette();
             return;
             
         case OPT_BRIGHTNESS:
@@ -232,7 +235,7 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, "Expected 0...100");
             }
 
-            config.brightness = value;
+            config.brightness = isize(value);
             updatePalette();
             return;
             
@@ -242,7 +245,7 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, "Expected 0...100");
             }
 
-            config.contrast = value;
+            config.contrast = isize(value);
             updatePalette();
             return;
 
@@ -252,28 +255,28 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, "Expected 0...100");
             }
 
-            config.saturation = value;
+            config.saturation = isize(value);
             updatePalette();
             return;
 
         case OPT_GRAY_DOT_BUG:
             
-            config.grayDotBug = value;
+            config.grayDotBug = bool(value);
             return;
             
         case OPT_HIDE_SPRITES:
             
-            config.hideSprites = value;
+            config.hideSprites = bool(value);
             return;
             
         case OPT_SS_COLLISIONS:
             
-            config.checkSSCollisions = value;
+            config.checkSSCollisions = bool(value);
             return;
 
         case OPT_SB_COLLISIONS:
             
-            config.checkSBCollisions = value;
+            config.checkSBCollisions = bool(value);
             return;
 
         case OPT_GLUE_LOGIC:
@@ -282,7 +285,7 @@ VICII::setConfigItem(Option option, i64 value)
                 throw VC64Error(ERROR_OPT_INVARG, GlueLogicEnum::keyList());
             }
             
-            config.glueLogic = (GlueLogic)value;
+            config.glueLogic = GlueLogic(value);
             return;
             
         default:
@@ -295,7 +298,7 @@ VICII::setRevision(VICIIRevision revision)
 {
     assert_enum(VICIIRevision, revision);
     
-    suspended {
+    {   SUSPENDED
         
         if (isPoweredOn()) {
             
@@ -339,7 +342,7 @@ VICII::setRevision(VICIIRevision revision)
 void
 VICII::setSpeed(VICIISpeed speed)
 {
-    suspended {
+    {   SUSPENDED
         
         config.speed = speed;
         
@@ -353,7 +356,7 @@ VICII::setSpeed(VICIISpeed speed)
 void
 VICII::_inspect() const
 {
-    synchronized {
+    {   SYNCHRONIZED
         
         u8 ctrl1 = reg.current.ctrl1;
         u8 ctrl2 = reg.current.ctrl2;
@@ -418,11 +421,11 @@ VICII::_inspect() const
 }
 
 void
-VICII::_dump(dump::Category category, std::ostream& os) const
+VICII::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::Config) {
+    if (category == Category::Config) {
 
         os << tab("Chip model");
         os << VICIIRevisionEnum::key(config.revision) << std::endl;
@@ -448,7 +451,7 @@ VICII::_dump(dump::Category category, std::ostream& os) const
         os << bol(config.checkSBCollisions) << std::endl;
     }
 
-    if (category & dump::Registers) {
+    if (category == Category::Registers) {
         
         string addr[8] = {
             "$D000 - $D007", "$D008 - $D00F", "$D010 - $D017", "$D018 - $D01F",
@@ -463,7 +466,7 @@ VICII::_dump(dump::Category category, std::ostream& os) const
         }
     }
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         /*
         u8 ctrl1 = reg.current.ctrl1;
@@ -550,11 +553,12 @@ VICII::clearStats()
 }
 
 SpriteInfo
-VICII::getSpriteInfo(int nr)
+VICII::getSpriteInfo(isize nr)
 {
-    SpriteInfo result;
-    synchronized { result = spriteInfo[nr]; }
-    return result;
+    {   SYNCHRONIZED
+
+        return spriteInfo[nr];
+    }
 }
 
 void
@@ -854,7 +858,7 @@ VICII::badLineCondition() const
      */
     return
     (yCounter >= 0x30 && yCounter <= 0xf7) && /* [1] */
-    (yCounter & 0x07) == (reg.current.ctrl1 & 0x07) && /* [2] */
+    (yCounter & 0x07) == (u32(reg.current.ctrl1) & 0x07) && /* [2] */
     DENwasSetInLine30; /* [3] */
 }
 
@@ -1215,7 +1219,7 @@ VICII::beginScanline(u16 line)
     if (line == 0x30) DENwasSetInLine30 = DENbit();
 
     // Check if this line is a DMA line (bad line) (value might change later)
-    if ((badLine = badLineCondition())) delay |= VICSetDisplayState;
+    if ((badLine = badLineCondition()) == true) delay |= VICSetDisplayState;
     
     // Reset the pixel buffer offset
     bufferoffset = 0;

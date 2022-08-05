@@ -113,8 +113,15 @@ Interpreter::registerInstructions()
              &RetroShell::exec <Token::c64, Token::reset>);
     
     root.add({"c64", "inspect"},
-             "command", "Displays the component state",
-             &RetroShell::exec <Token::c64, Token::inspect>);
+             "command", "Displays the component state");
+
+    root.add({"c64", "inspect", "state"},
+             "command", "Displays the current state",
+             &RetroShell::exec <Token::c64, Token::inspect, Token::state>);
+
+    root.add({"c64", "inspect", "defaults"},
+             "command", "Displays the user defaults storage",
+             &RetroShell::exec <Token::c64, Token::inspect, Token::defaults>);
 
     root.add({"c64", "init"},
              "command", "Initializes the emulator with factory settings",
@@ -138,7 +145,11 @@ Interpreter::registerInstructions()
     root.add({"memory", "set", "raminit"},
              "key", "Determines how Ram is initialized on startup",
              &RetroShell::exec <Token::memory, Token::set, Token::raminitpattern>, 1);
-    
+
+    root.add({"memory", "set", "saveroms"},
+             "key", "Save Roms to snapshot files",
+             &RetroShell::exec <Token::memory, Token::set, Token::saveroms>, 1);
+
     root.add({"memory", "load"},
              "command", "Installs a Rom image",
              &RetroShell::exec <Token::memory, Token::load>, 1);
@@ -162,8 +173,10 @@ Interpreter::registerInstructions()
     root.add({"drive9"},
              "component", "Floppy drive 9");
 
-    for (const string &drive : {"drive8", "drive9"} ) {
-        
+    for (isize i = 0; i < 2; i++) {
+
+        string drive = (i == 0) ? "drive8" : "drive9";
+
         root.add({drive, "config"},
                  "command", "Displays the current configuration",
                  &RetroShell::exec <Token::drive, Token::config>);
@@ -206,12 +219,24 @@ Interpreter::registerInstructions()
     
     
     //
-    // CPU
+    // Datasette
     //
 
     root.add({"datasette"},
-             "component", "Commodore 1530 tape drive");
-    
+             "component", "Commodore tape drive");
+
+    root.add({"datasette", "config"},
+             "command", "Displays the current configuration",
+             &RetroShell::exec <Token::datasette, Token::config>);
+
+    root.add({"datasette", "connect"},
+             "command", "Connects the datasette",
+             &RetroShell::exec <Token::datasette, Token::connect>);
+
+    root.add({"datasette", "disconnect"},
+             "command", "Disconnects the datasette",
+             &RetroShell::exec <Token::datasette, Token::disconnect>);
+
     root.add({"datasette", "inspect"},
              "command", "Displays the component state",
              &RetroShell::exec <Token::datasette, Token::inspect>);
@@ -254,8 +279,10 @@ Interpreter::registerInstructions()
     root.add({"cia2"},
              "component", "Complex Interface Adapter 2");
 
-    for (const string &cia : {"cia1","cia2"} ) {
-        
+    for (isize i = 0; i < 2; i++) {
+
+        string cia = (i == 0) ? "cia1" : "cia1";
+
         root.add({cia, "config"},
                  "command", "Displays the current configuration",
                  &RetroShell::exec <Token::cia, Token::config>);
@@ -541,9 +568,11 @@ Interpreter::registerInstructions()
     
     root.add({"controlport2"},
              "component", "Control port 2");
-    
-    for (const string &port : {"controlport1", "controlport2"} ) {
-        
+
+    for (isize i = 0; i < 2; i++) {
+
+        string port = (i == 0) ? "controlport1" : "controlport2";
+
         root.add({port, "inspect"},
                  "command", "Displays the internal state",
                  &RetroShell::exec <Token::controlport, Token::inspect>);

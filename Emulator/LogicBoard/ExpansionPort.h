@@ -56,7 +56,7 @@ public:
     //
 
     const char *getDescription() const override { return "ExpansionPort"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -83,6 +83,7 @@ private:
     }
     
     isize _size() override;
+    u64 _checksum() override;
     isize _load(const u8 *buffer) override;
     isize _save(u8 *buffer) override;
 
@@ -92,8 +93,11 @@ private:
     //
     
 public:
-    
-    CartridgeType getCartridgeType();
+
+    CartridgeInfo getInfo() const;
+    CartridgeRomInfo getRomInfo(isize nr) const;
+
+    CartridgeType getCartridgeType() const;
 
  
     //

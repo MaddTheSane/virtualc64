@@ -7,28 +7,29 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
-#include "Constants.h"
-#include "C64Types.h"
-#include "CartridgeTypes.h"
-#include "CIATypes.h"
-#include "ControlPortTypes.h"
-#include "CPUTypes.h"
-#include "DiskTypes.h"
-#include "DiskAnalyzerTypes.h"
-#include "DriveTypes.h"
-#include "ErrorTypes.h"
-#include "ExpansionPortTypes.h"
-#include "FileTypes.h"
-#include "FSTypes.h"
-#include "C64ComponentTypes.h"
-#include "JoystickTypes.h"
-#include "MemoryTypes.h"
-#include "MouseTypes.h"
-#include "MsgQueueTypes.h"
-#include "ParCableTypes.h"
-#include "PowerSupplyTypes.h"
-#include "SIDTypes.h"
-#include "VICIITypes.h"
+#import "Constants.h"
+#import "config.h"
+#import "C64Types.h"
+#import "CartridgeTypes.h"
+#import "CIATypes.h"
+#import "ControlPortTypes.h"
+#import "CPUTypes.h"
+#import "DiskTypes.h"
+#import "DiskAnalyzerTypes.h"
+#import "DriveTypes.h"
+#import "ErrorTypes.h"
+#import "ExpansionPortTypes.h"
+#import "FileTypes.h"
+#import "FSTypes.h"
+#import "C64ComponentTypes.h"
+#import "JoystickTypes.h"
+#import "MemoryTypes.h"
+#import "MouseTypes.h"
+#import "MsgQueueTypes.h"
+#import "ParCableTypes.h"
+#import "PowerSupplyTypes.h"
+#import "SIDTypes.h"
+#import "VICIITypes.h"
 
 #import <Cocoa/Cocoa.h>
 #import <MetalKit/MetalKit.h>
@@ -46,11 +47,12 @@
 @class CRTFileProxy;
 @class D64FileProxy;
 @class DatasetteProxy;
+@class DefaultsProxy;
 @class DiskProxy;
 @class DmaDebuggerProxy;
 @class DriveProxy;
 @class ExpansionPortProxy;
-@class FSDeviceProxy;
+@class FileSystemProxy;
 @class G64FileProxy;
 @class GuardsProxy;
 @class IECProxy;
@@ -116,6 +118,7 @@
     ControlPortProxy *port2;
     CPUProxy *cpu;
     DatasetteProxy *datasette;
+    DefaultsProxy *defaults;
     DmaDebuggerProxy *dmaDebugger;
     DriveProxy *drive8;
     DriveProxy *drive9;
@@ -154,6 +157,8 @@
 @property (readonly, strong) SIDProxy *sid;
 @property (readonly, strong) VICProxy *vic;
 
+@property (class, readonly, strong) DefaultsProxy *defaults;
+
 - (void)dealloc;
 - (void)kill;
 
@@ -191,13 +196,13 @@
 
 - (NSInteger)getConfig:(Option)opt;
 - (NSInteger)getConfig:(Option)opt id:(NSInteger)id;
-- (NSInteger)getConfig:(Option)opt drive:(DriveID)id;
+- (NSInteger)getConfig:(Option)opt drive:(NSInteger)id;
 - (BOOL)configure:(Option)opt value:(NSInteger)val;
 - (BOOL)configure:(Option)opt enable:(BOOL)val;
 - (BOOL)configure:(Option)opt id:(NSInteger)id value:(NSInteger)val;
 - (BOOL)configure:(Option)opt id:(NSInteger)id enable:(BOOL)val;
-- (BOOL)configure:(Option)opt drive:(DriveID)id value:(NSInteger)val;
-- (BOOL)configure:(Option)opt drive:(DriveID)id enable:(BOOL)val;
+- (BOOL)configure:(Option)opt drive:(NSInteger)id value:(NSInteger)val;
+- (BOOL)configure:(Option)opt drive:(NSInteger)id enable:(BOOL)val;
 - (void)configure:(C64Model)value;
 
 - (void)setListener:(const void *)sender function:(Callback *)func;
@@ -205,11 +210,6 @@
 - (void)stopAndGo;
 - (void)stepInto;
 - (void)stepOver;
-
-/*
-@property (readonly) NSInteger breakpointPC;
-@property (readonly) NSInteger watchpointPC;
-*/
 
 - (BOOL)hasRom:(RomType)type;
 - (BOOL)hasMega65Rom:(RomType)type;
@@ -230,7 +230,35 @@
 - (NSString *)romRevision:(RomType)type;
 
 - (void)flash:(AnyFileProxy *)container exception:(ExceptionWrapper *)ex;
-- (void)flash:(FSDeviceProxy *)proxy item:(NSInteger)nr exception:(ExceptionWrapper *)ex;
+- (void)flash:(FileSystemProxy *)proxy item:(NSInteger)nr exception:(ExceptionWrapper *)ex;
+
+@end
+
+
+//
+// Defaults
+//
+
+@interface DefaultsProxy : Proxy { }
+
+- (void)load:(NSURL *)url exception:(ExceptionWrapper *)ex;
+- (void)save:(NSURL *)url exception:(ExceptionWrapper *)ex;
+
+- (void)register:(NSString *)key value:(NSString *)value;
+
+- (NSString *)getString:(NSString *)key;
+- (NSInteger)getInt:(NSString *)key;
+- (NSInteger)getOpt:(Option)option;
+- (NSInteger)getOpt:(Option)option nr:(NSInteger)nr;
+
+- (void)setKey:(NSString *)key value:(NSString *)value;
+- (void)setOpt:(Option)option value:(NSInteger)value;
+- (void)setOpt:(Option)option nr:(NSInteger)nr value:(NSInteger)value;
+
+- (void)removeAll;
+- (void)removeKey:(NSString *)key;
+- (void)remove:(Option)option;
+- (void)remove:(Option) option nr:(NSInteger)nr;
 
 @end
 
@@ -267,9 +295,8 @@
 
 @interface CPUProxy : C64ComponentProxy { }
 
-- (CPUInfo)getInfo;
-
-@property (readonly) i64 cycles;
+@property (readonly) CPUInfo info;
+@property (readonly) i64 clock;
 @property (readonly) u16 pc;
 
 - (NSInteger)loggedInstructions;
@@ -280,9 +307,6 @@
 
 - (void)setHex;
 - (void)setDec;
-
-// - (i64)cycle;
-// - (u16)pc;
 
 - (NSString *)disassembleRecordedInstr:(NSInteger)i length:(NSInteger *)len;
 - (NSString *)disassembleRecordedBytes:(NSInteger)i;
@@ -387,6 +411,9 @@
 - (void)rampUpFromZero;
 - (void)rampDown;
 
+- (float)drawWaveform:(u32 *)buffer w:(NSInteger)w h:(NSInteger)h scale:(float)s color:(u32)c source:(NSInteger)source;
+- (float)drawWaveform:(u32 *)buffer size:(NSSize)size scale:(float)s color:(u32)c source:(NSInteger)source;
+
 @end
 
 
@@ -447,6 +474,9 @@
 
 @interface ExpansionPortProxy : C64ComponentProxy { }
 
+- (CartridgeInfo)getInfo;
+- (CartridgeRomInfo)getRomInfo:(NSInteger)nr;
+
 @property (readonly) BOOL cartridgeAttached;
 @property (readonly) CartridgeType cartridgeType;
 - (void)attachCartridge:(CRTFileProxy *)c reset:(BOOL)reset exception:(ExceptionWrapper *)ex;
@@ -506,7 +536,7 @@
 @property (readonly) DiskProxy *disk;
 - (VIAProxy *)via:(NSInteger)num;
 
-@property (readonly) DriveID id;
+@property (readonly) NSInteger id;
 
 - (DriveConfig)getConfig;
 
@@ -518,13 +548,24 @@
 
 @property (readonly) BOOL redLED;
 @property (readonly) BOOL hasDisk;
-@property (readonly) BOOL hasWriteProtectedDisk;
-@property (getter=hasModifiedDisk) BOOL modifiedDisk;
-- (void)insertNewDisk:(DOSType)fstype;
+@property (readonly) BOOL hasModifiedDisk;
+@property (readonly) BOOL hasProtectedDisk;
+@property (readonly) BOOL hasUnmodifiedDisk;
+@property (readonly) BOOL hasUnprotectedDisk;
+
+- (BOOL)redLED;
+- (void)setModificationFlag:(BOOL)value;
+// - (void)setProtectionFlag:(BOOL)value;
+- (void)markDiskAsModified;
+- (void)markDiskAsUnmodified;
+// - (void)toggleWriteProtection;
+
+// - (void)setModifiedDisk:(BOOL)b;
+- (void)insertNewDisk:(DOSType)fstype name:(NSString *)name;
 - (void)insertD64:(D64FileProxy *)proxy protected:(BOOL)wp;
 - (void)insertG64:(G64FileProxy *)proxy protected:(BOOL)wp;
 - (void)insertCollection:(AnyCollectionProxy *)proxy protected:(BOOL)wp;
-- (void)insertFileSystem:(FSDeviceProxy *)proxy protected:(BOOL)wp;
+- (void)insertFileSystem:(FileSystemProxy *)proxy protected:(BOOL)wp;
 - (void)ejectDisk;
 
 @property (readonly) Track track;
@@ -645,6 +686,8 @@
 
 @interface RecorderProxy : Proxy { }
 
+@property NSString *path;
+- (NSString *)findFFmpeg:(NSInteger)nr;
 @property (readonly) BOOL hasFFmpeg;
 @property (readonly) BOOL recording;
 @property (readonly) double duration;
@@ -652,12 +695,14 @@
 @property (readonly) NSInteger bitRate;
 @property (readonly) NSInteger sampleRate;
 
-- (BOOL)startRecording:(NSRect)rect
-               bitRate:(NSInteger)rate
-               aspectX:(NSInteger)aspectX
-               aspectY:(NSInteger)aspectY;
+- (void)startRecording:(NSRect)rect
+bitRate:(NSInteger)rate
+aspectX:(NSInteger)aspectX
+aspectY:(NSInteger)aspectY
+exception:(ExceptionWrapper *)ex;
 - (void)stopRecording;
 - (BOOL)exportAs:(NSString *)path;
+
 
 @end
 
@@ -668,7 +713,7 @@
 
 @interface RetroShellProxy : Proxy { }
 
-@property (readonly) NSInteger cposRel;
+@property (readonly) NSInteger cursorRel;
 
 - (NSString *)getText;
 - (void)pressUp;
@@ -703,7 +748,7 @@
 @end
 
 @protocol MakeWithFileSystem <NSObject>
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)fs exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)fs exception:(ExceptionWrapper *)ex;
 @end
 
 @protocol MakeWithCollection <NSObject>
@@ -824,7 +869,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 + (instancetype)makeWithFile:(NSString *)path exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
 
@@ -837,7 +882,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 + (instancetype)makeWithFile:(NSString *)path exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
 
@@ -850,7 +895,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 + (instancetype)makeWithFile:(NSString *)path exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
 
@@ -863,7 +908,7 @@ AnyFileProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 + (instancetype)makeWithFile:(NSString *)path exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
-+ (instancetype)makeWithFileSystem:(FSDeviceProxy *)proxy exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
 
@@ -889,20 +934,25 @@ AnyCollectionProxy <MakeWithFolder>
 
 + (instancetype)makeWithFolder:(NSString *)path exception:(ExceptionWrapper *)ex;
 
-@property (readonly) FSDeviceProxy *fileSystem;
+@property (readonly) FileSystemProxy *fileSystem;
 
 @end
 
 //
-// FSDevice
+// FileSystem
 //
 
-@interface FSDeviceProxy : Proxy <MakeWithDisk, MakeWithCollection, MakeWithD64>
+@interface FileSystemProxy : Proxy <MakeWithDisk, MakeWithCollection, MakeWithD64> 
 
 + (instancetype)makeWithD64:(D64FileProxy *)d64 exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithDisk:(DiskProxy *)disk exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithCollection:(AnyCollectionProxy *)collection exception:(ExceptionWrapper *)ex;
++ (instancetype)makeWithDiskType:(DiskType)diskType dosType:(DOSType)dosType;
 
+@property NSString *name;
+@property (readonly) NSString *idString;
+@property (readonly) NSString *capacityString;
+@property (readonly) NSString *fillLevelString;
 @property (readonly) DOSType dos;
 @property (readonly) NSInteger numCyls;
 @property (readonly) NSInteger numHeads;
@@ -910,8 +960,8 @@ AnyCollectionProxy <MakeWithFolder>
 - (NSInteger)numSectors:(NSInteger)track;
 @property (readonly) NSInteger numBlocks;
 
-@property (readonly) NSInteger numFreeBlocks;
-@property (readonly) NSInteger numUsedBlocks;
+@property (readonly) NSInteger freeBlocks;
+@property (readonly) NSInteger usedBlocks;
 @property (readonly) NSInteger numFiles;
 
 - (NSInteger)cylNr:(NSInteger)t;
@@ -935,13 +985,21 @@ AnyCollectionProxy <MakeWithFolder>
 - (void)printDirectory;
 
 - (NSInteger)readByte:(NSInteger)block offset:(NSInteger)offset;
-- (void)exportDirectory:(NSString *)path exception:(ExceptionWrapper *)ex;
+- (NSString *)ascii:(NSInteger)block offset:(NSInteger)offset length:(NSInteger)len;
+- (void)export:(NSString *)path exception:(ExceptionWrapper *)ex;
 
 - (void)info;
+
+- (BOOL)isFree:(NSInteger)blockNr;
 
 - (NSString *)fileName:(NSInteger)nr;
 - (FSFileType)fileType:(NSInteger)nr;
 - (NSInteger)fileSize:(NSInteger)nr;
 - (NSInteger)fileBlocks:(NSInteger)nr;
+
+- (FSBlockType)getDisplayType:(NSInteger)column;
+- (NSInteger)diagnoseImageSlice:(NSInteger)column;
+- (NSInteger)nextBlockOfType:(FSBlockType)type after:(NSInteger)after;
+- (NSInteger)nextCorruptedBlock:(NSInteger)after;
 
 @end

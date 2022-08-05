@@ -9,8 +9,8 @@
 
 #include "config.h"
 #include "PRGFile.h"
-#include "FSDevice.h"
-#include "IO.h"
+#include "FileSystem.h"
+#include "IOUtils.h"
 
 bool
 PRGFile::isCompatible(const string &path)
@@ -26,7 +26,7 @@ PRGFile::isCompatible(std::istream &stream)
 }
 
 void
-PRGFile::init(FSDevice &fs)
+PRGFile::init(FileSystem &fs)
 {
     isize item = 0;
     isize itemSize = fs.fileSize(item);
@@ -60,7 +60,7 @@ PRGFile::itemName(isize nr) const
     return PETName<16>(getName());
 }
 
-u64
+isize
 PRGFile::itemSize(isize nr) const
 {
     assert(nr == 0);
@@ -68,7 +68,7 @@ PRGFile::itemSize(isize nr) const
 }
 
 u8
-PRGFile::readByte(isize nr, u64 pos) const
+PRGFile::readByte(isize nr, isize pos) const
 {
     assert(nr == 0);
     assert(pos < itemSize(nr));

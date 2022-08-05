@@ -10,7 +10,7 @@
 #include "config.h"
 #include "Mouse.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 #include <cmath>
 
 Mouse::Mouse(C64 &ref, ControlPort& pref) : SubComponent(ref), port(pref)
@@ -21,14 +21,6 @@ Mouse::Mouse(C64 &ref, ControlPort& pref) : SubComponent(ref), port(pref)
         &mouse1351,
         &mouseNeos
     };
-
-    /*
-    config.model = MOUSE_C1350;
-    config.shakeDetection = true;
-    config.velocity = 100;
-
-    updateScalingFactors();
-    */
 }
 
 void Mouse::_reset(bool hard)
@@ -42,9 +34,19 @@ void Mouse::_reset(bool hard)
 void
 Mouse::resetConfig()
 {
-    setConfigItem(OPT_MOUSE_MODEL, MOUSE_C1350);
-    setConfigItem(OPT_SHAKE_DETECTION, true);
-    setConfigItem(OPT_MOUSE_VELOCITY, 100);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
+
+    std::vector <Option> options = {
+
+        OPT_MOUSE_MODEL,
+        OPT_SHAKE_DETECTION,
+        OPT_MOUSE_VELOCITY
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
 }
 
 i64
@@ -68,13 +70,13 @@ Mouse::setConfigItem(Option option, i64 value)
             
         case OPT_MOUSE_MODEL:
             
-            config.model = (MouseModel)value;
+            config.model = MouseModel(value);
             _reset(true);
             return;
             
         case OPT_SHAKE_DETECTION:
             
-            config.shakeDetection = value;
+            config.shakeDetection = bool(value);
             return;
             
         case OPT_MOUSE_VELOCITY:
@@ -82,7 +84,7 @@ Mouse::setConfigItem(Option option, i64 value)
             if (value < 0 || value > 255) {
                 throw VC64Error(ERROR_OPT_INVARG, "0 ... 255");
             }
-            config.velocity= value;
+            config.velocity = isize(value);
             updateScalingFactors();
             return;
 
@@ -99,11 +101,11 @@ Mouse::updateScalingFactors()
 }
 
 void
-Mouse::_dump(dump::Category category, std::ostream& os) const
+Mouse::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
 
-    if (category & dump::Config) {
+    if (category == Category::Config) {
         
         os << tab("Mouse nr") << dec(port.nr) << std::endl;
         os << tab("Model") << MouseModelEnum::key(config.model) << std::endl;
@@ -111,7 +113,7 @@ Mouse::_dump(dump::Category category, std::ostream& os) const
         os << tab("Velocity") << config.velocity << std::endl;
     }
 
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Mouse nr") << dec(port.nr) << std::endl;
         os << tab("targetX") << targetX << std::endl;
@@ -156,7 +158,7 @@ Mouse::setDxDy(double dx, double dy)
     debug(PRT_DEBUG, "setDxDy(%f,%f)\n", dx, dy);
 
     targetX += dx * scaleX;
-    targetY += dy * scaleY;
+    targetY -= dy * scaleY;
     
     port.device = CPDEVICE_MOUSE;
 }
@@ -200,7 +202,7 @@ Mouse::trigger(GamePadAction event)
 {
     assert_enum(GamePadAction, event);
 
-    debug(PRT_DEBUG, "trigger(%lld)\n", event);
+    debug(PRT_DEBUG, "trigger(%ld)\n", event);
     
     switch (event) {
 

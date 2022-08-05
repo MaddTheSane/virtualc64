@@ -10,7 +10,7 @@
 #include "config.h"
 #include "CPUDebugger.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 using util::sprint8x;
 using util::sprint8d;
@@ -259,7 +259,7 @@ CPUDebugger::logInstruction()
 
     isize i = logCnt++ % LOG_BUFFER_CAPACITY;
     
-    logBuffer[i].cycle = cpu.cycle;
+    logBuffer[i].cycle = cpu.clock;
     logBuffer[i].pc = pc;
     logBuffer[i].sp = cpu.reg.sp;
     logBuffer[i].byte1 = opcode;

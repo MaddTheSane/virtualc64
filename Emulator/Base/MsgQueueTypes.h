@@ -87,6 +87,8 @@ enum_long(MSG_TYPE)
     MSG_FILE_FLASHED,
 
     // Peripherals (Datasette)
+    MSG_VC1530_CONNECT,
+    MSG_VC1530_DISCONNECT,
     MSG_VC1530_TAPE,
     MSG_VC1530_PLAY,
     MSG_VC1530_MOTOR,
@@ -115,6 +117,7 @@ enum_long(MSG_TYPE)
     
     // Console
     MSG_CLOSE_CONSOLE,
+	MSG_UPDATE_CONSOLE,
     
     // Debugging
     MSG_DMA_DEBUG_ON,
@@ -127,9 +130,9 @@ typedef MSG_TYPE MsgType;
 #ifdef __cplusplus
 struct MsgTypeEnum : util::Reflection<MsgType, MsgType> {
     
-    static long min() { return 0; }
-    static long max() { return MSG_DMA_DEBUG_OFF; }
-    static bool isValid(long value) { return value >= min() && value <= max(); }
+    static constexpr long minVal = 0;
+    static constexpr long maxVal = MSG_DMA_DEBUG_OFF;
+    static bool isValid(auto value) { return value >= minVal && value <= maxVal; }
 
     static const char *prefix() { return "MSG"; }
     static const char *key(MsgType value)
@@ -193,7 +196,9 @@ struct MsgTypeEnum : util::Reflection<MsgType, MsgType> {
             case MSG_DISK_UNSAVED:         return "DISK_UNSAVED";
             case MSG_DISK_PROTECT:         return "DISK_PROTECT";
             case MSG_FILE_FLASHED:         return "FILE_FLASHED";
-                
+
+            case MSG_VC1530_CONNECT:       return "VC1530_CONNECT";
+            case MSG_VC1530_DISCONNECT:    return "VC1530_DISCONNECT";
             case MSG_VC1530_TAPE:          return "VC1530_TAPE";
             case MSG_VC1530_PLAY:          return "VC1530_PLAY";
             case MSG_VC1530_MOTOR:         return "VC1530_MOTOR";
@@ -216,6 +221,7 @@ struct MsgTypeEnum : util::Reflection<MsgType, MsgType> {
             case MSG_RECORDING_ABORTED:    return "MSG_RECORDING_ABORTED";
                 
             case MSG_CLOSE_CONSOLE:        return "CLOSE_CONSOLE";
+			case MSG_UPDATE_CONSOLE:        return "UPDATE_CONSOLE";
                 
             case MSG_DMA_DEBUG_ON:         return "DMA_DEBUG_ON";
             case MSG_DMA_DEBUG_OFF:        return "DMA_DEBUG_OFF";
@@ -235,7 +241,15 @@ struct MsgTypeEnum : util::Reflection<MsgType, MsgType> {
 typedef struct
 {
     MsgType type;
-    long data;
+
+    /* The payload of a message consists of up to four (signed) 32-bit values.
+     * We avoid the usage of 64-bit types inside this structure to make it
+     * easily processable by JavaScript (web ports).
+     */
+    i32 data1;
+    i32 data2;
+    i32 data3;
+    i32 data4;
 }
 Message;
 
@@ -244,4 +258,4 @@ Message;
 // Signatures
 //
 
-typedef void Callback(const void *, long, long);
+typedef void Callback(const void *, long, i32, i32, i32, i32);

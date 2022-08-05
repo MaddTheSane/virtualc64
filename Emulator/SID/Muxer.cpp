@@ -10,7 +10,7 @@
 #include "config.h"
 #include "Muxer.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 #include <algorithm>
 #include <cmath>
@@ -85,21 +85,35 @@ Muxer::getDefaultConfig()
 void
 Muxer::resetConfig()
 {
-    SIDConfig defaults = getDefaultConfig();
-    
-    setConfigItem(OPT_SID_REVISION, defaults.revision);
-    setConfigItem(OPT_SID_FILTER, defaults.filter);
-    setConfigItem(OPT_SID_ENGINE, defaults.engine);
-    setConfigItem(OPT_SID_SAMPLING, defaults.sampling);
-    setConfigItem(OPT_AUDVOLL, defaults.volL);
-    setConfigItem(OPT_AUDVOLR, defaults.volR);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
 
-    for (isize i = 0; i < 4; i++) {
-        
-        setConfigItem(OPT_SID_ENABLE, i, GET_BIT(defaults.enabled, i));
-        setConfigItem(OPT_SID_ADDRESS, i, defaults.address[i]);
-        setConfigItem(OPT_AUDVOL, i, defaults.vol[i]);
-        setConfigItem(OPT_AUDPAN, i, defaults.pan[i]);
+    std::vector <Option> options = {
+
+        OPT_SID_REVISION,
+        OPT_SID_FILTER,
+        OPT_SID_ENGINE,
+        OPT_SID_SAMPLING,
+        OPT_AUDVOLL,
+        OPT_AUDVOLR
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
+
+    std::vector <Option> moreOptions = {
+
+        OPT_SID_ENABLE,
+        OPT_SID_ADDRESS,
+        OPT_AUDVOL,
+        OPT_AUDPAN
+    };
+
+    for (auto &option : moreOptions) {
+        for (isize i = 0; i < 4; i++) {
+            setConfigItem(option, i, defaults.get(option, i));
+        }
     }
 }
 
@@ -165,66 +179,69 @@ Muxer::setConfigItem(Option option, i64 value)
     switch (option) {
                         
         case OPT_SID_POWER_SAVE:
-            
-            suspended { config.powerSave = value; }
+        {
+            {   SUSPENDED
+
+                config.powerSave = bool(value);
+            }
             return;
-            
+        }
         case OPT_SID_REVISION:
-            
+        {
             if (!SIDRevisionEnum::isValid(value)) {
                 throw VC64Error(ERROR_OPT_INVARG, SIDRevisionEnum::keyList());
             }
             
-            suspended {
+            {   SUSPENDED
                 
-                config.revision = (SIDRevision)value;
+                config.revision = SIDRevision(value);
                 for (int i = 0; i < 4; i++) {
-                    resid[i].setRevision(value);
-                    fastsid[i].setRevision(value);
+                    resid[i].setRevision(SIDRevision(value));
+                    fastsid[i].setRevision(SIDRevision(value));
                 }
             }
             return;
-            
+        }
         case OPT_SID_FILTER:
-            
-            suspended {
+        {
+            {   SUSPENDED
                 
-                config.filter = value;
+                config.filter = bool(value);
                 for (int i = 0; i < 4; i++) {
-                    resid[i].setAudioFilter(value);
-                    fastsid[i].setAudioFilter(value);
+                    resid[i].setAudioFilter(bool(value));
+                    fastsid[i].setAudioFilter(bool(value));
                 }
             }
             return;
-            
+        }
         case OPT_SID_ENGINE:
-            
+        {
             if (!SIDEngineEnum::isValid(value)) {
                 throw VC64Error(ERROR_OPT_INVARG, SIDEngineEnum::keyList());
             }
 
-            suspended {
+            {   SUSPENDED
 
-                config.engine = (SIDEngine)value;
+                config.engine = SIDEngine(value);
             }
             return;
-            
+        }
         case OPT_SID_SAMPLING:
-            
+        {
             if (!SamplingMethodEnum::isValid(value)) {
                 throw VC64Error(ERROR_OPT_INVARG, SamplingMethodEnum::keyList());
             }
 
-            suspended {
+            {   SUSPENDED
                 
-                config.sampling = (SamplingMethod)value;
+                config.sampling = SamplingMethod(value);
                 for (int i = 0; i < 4; i++) {
-                    resid[i].setSamplingMethod(value);
+                    resid[i].setSamplingMethod(SamplingMethod(value));
                     // Note: fastSID has no such option
                 }
             }
             return;
-            
+        }
         case OPT_AUDVOLL:
             
             config.volL = std::clamp(value, 0LL, 100LL);
@@ -258,7 +275,7 @@ Muxer::setConfigItem(Option option, long id, i64 value)
     switch (option) {
                      
         case OPT_SID_ENABLE:
-
+        {
             assert(id >= 0 && id <= 3);
 
             if (id == 0 && value == false) {
@@ -270,7 +287,7 @@ Muxer::setConfigItem(Option option, long id, i64 value)
                 return;
             }
             
-            suspended {
+            {   SUSPENDED
                 
                 REPLACE_BIT(config.enabled, id, value);
                 clearSampleBuffer(id);
@@ -281,9 +298,9 @@ Muxer::setConfigItem(Option option, long id, i64 value)
                 }
             }
             return;
-            
+        }
         case OPT_SID_ADDRESS:
-
+        {
             assert(id >= 0 && id <= 3);
 
             if (id == 0 && value != 0xD400) {
@@ -299,13 +316,13 @@ Muxer::setConfigItem(Option option, long id, i64 value)
                 return;
             }
             
-            suspended {
+            {   SUSPENDED
                 
                 config.address[id] = (u16)value;
                 clearSampleBuffer(id);
             }
             return;
-            
+        }
         case OPT_AUDVOL:
             
             assert(id >= 0 && id <= 3);
@@ -325,11 +342,8 @@ Muxer::setConfigItem(Option option, long id, i64 value)
             
             assert(id >= 0 && id <= 3);
 
-            config.pan[id] = std::clamp(value, 0LL, 200LL);
-            
-            if (value <= 50) pan[id] = (50 + value) / 100.0f;
-            else if (value <= 150) pan[id] = (150 - value) / 100.0f;
-            else if (value <= 200) pan[id] = (value - 150) / 100.0f;
+            config.pan[id] = value;
+            pan[id] = float(0.5 * (sin(config.pan[id] * M_PI / 200.0) + 1));
             return;
 
         default:
@@ -448,11 +462,11 @@ Muxer::_warpOff()
 }
 
 void
-Muxer::_dump(dump::Category category, std::ostream& os) const
+Muxer::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::Config) {
+    if (category == Category::Config) {
         
         os << tab("Chip revision");
         os << SIDRevisionEnum::key(config.revision) << std::endl;
@@ -484,13 +498,11 @@ Muxer::_dump(dump::Category category, std::ostream& os) const
         os << config.volL << std::endl;
         os << tab("Volume R");
         os << config.volR << std::endl;
-        // os << tab("isMuted()");
-        // os << bol(isMuted()) << std::endl;
     }
 }
 
 void
-Muxer::_dump(dump::Category category, std::ostream& os, isize nr) const
+Muxer::_dump(Category category, std::ostream& os, isize nr) const
 {
     switch (config.engine) {
             
@@ -501,40 +513,6 @@ Muxer::_dump(dump::Category category, std::ostream& os, isize nr) const
             fatalError;
     }
 }
-
-/*
-void
-Muxer::_dump(SIDInfo &info, VoiceInfo (&vinfo)[3]) const
-{
-    u8 ft = info.filterType;
-    msg("        Volume: %d\n", info.volume);
-    msg("   Filter type: %s\n",
-        (ft == FASTSID_LOW_PASS) ? "LOW PASS" :
-        (ft == FASTSID_HIGH_PASS) ? "HIGH PASS" :
-        (ft == FASTSID_BAND_PASS) ? "BAND PASS" : "NONE");
-    msg("Filter cut off: %d\n\n", info.filterCutoff);
-    msg("Filter resonance: %d\n\n", info.filterResonance);
-    msg("Filter enable bits: %d\n\n", info.filterEnableBits);
-
-    for (isize i = 0; i < 3; i++) {
-        // VoiceInfo vinfo = getVoiceInfo(i);
-        u8 wf = vinfo[i].waveform;
-        msg("Voice %d:       Frequency: %d\n", i, vinfo[i].frequency);
-        msg("             Pulse width: %d\n", vinfo[i].pulseWidth);
-        msg("                Waveform: %s\n",
-            (wf == FASTSID_NOISE) ? "NOISE" :
-            (wf == FASTSID_PULSE) ? "PULSE" :
-            (wf == FASTSID_SAW) ? "SAW" :
-            (wf == FASTSID_TRIANGLE) ? "TRIANGLE" : "NONE");
-        msg("         Ring modulation: %s\n", vinfo[i].ringMod ? "yes" : "no");
-        msg("               Hard sync: %s\n", vinfo[i].hardSync ? "yes" : "no");
-        msg("             Attack rate: %d\n", vinfo[i].attackRate);
-        msg("              Decay rate: %d\n", vinfo[i].decayRate);
-        msg("            Sustain rate: %d\n", vinfo[i].sustainRate);
-        msg("            Release rate: %d\n", vinfo[i].releaseRate);
-    }
-}
-*/
 
 SIDStats
 Muxer::getStats()
@@ -652,7 +630,7 @@ u8
 Muxer::peek(u16 addr)
 {
     // Get SIDs up to date
-    executeUntil(cpu.cycle);
+    executeUntil(cpu.clock);
  
     // Select the target SID
     isize sidNr = config.enabled > 1 ? mappedSID(addr) : 0;
@@ -733,7 +711,7 @@ Muxer::poke(u16 addr, u8 value)
     trace(SIDREG_DEBUG, "poke(%x,%x)\n", addr, value);
     
     // Get SID up to date
-    executeUntil(cpu.cycle);
+    executeUntil(cpu.clock);
  
     // Select the target SID
     isize sidNr = config.enabled > 1 ? mappedSID(addr) : 0;
@@ -766,13 +744,13 @@ Muxer::executeUntil(Cycle targetCycle)
         }
     }
     
-    isize missingCycles  = targetCycle - cycles;
+    isize missingCycles  = isize(targetCycle - cycles);
     isize consumedCycles = executeCycles(missingCycles);
 
     cycles += consumedCycles;
     
     debug(SID_EXEC,
-          "target: %lld missing: %zd consumed: %zd reached: %lld still missing: %lld\n",
+          "target: %lld missing: %ld consumed: %ld reached: %lld still missing: %lld\n",
           targetCycle, missingCycles, consumedCycles, cycles, targetCycle - cycles);
 }
 
@@ -886,10 +864,10 @@ Muxer::mixMultiSID(isize numSamples)
         
         float ch0, ch1, ch2, ch3, l, r;
         
-        ch0 = (float)sidStream[0].read()    * vol[0];
-        ch1 = (float)sidStream[1].read(0.0) * vol[1];
-        ch2 = (float)sidStream[2].read(0.0) * vol[2];
-        ch3 = (float)sidStream[3].read(0.0) * vol[3];
+        ch0 = (float)sidStream[0].read()  * vol[0];
+        ch1 = (float)sidStream[1].read(0) * vol[1];
+        ch2 = (float)sidStream[2].read(0) * vol[2];
+        ch3 = (float)sidStream[3].read(0) * vol[3];
 
         // Compute left channel output
         l =
@@ -1055,4 +1033,75 @@ Muxer::copyInterleaved(float *target, isize n)
     stream.copyInterleaved(target, n, volL, volR);
     
     stream.unlock();
+}
+
+float
+Muxer::draw(u32 *buffer, isize width, isize height,
+            float maxAmp, u32 color, isize sid) const
+{
+    auto samples = new float[width][2];
+    isize hheight = height / 2;
+    float newMaxAmp = 0.001f, dw;
+
+    // Gather data
+    switch (sid) {
+
+        case 0: case 1: case 2: case 3:
+
+            dw = sidStream[sid].cap() / float(width);
+
+            for (isize w = 0; w < width; w++) {
+
+                auto sample = sidStream[sid].current(isize(w * dw));
+                samples[w][0] = float(abs(sample));
+                samples[w][1] = float(abs(sample));
+            }
+            break;
+
+        default:
+
+            dw = stream.cap() / float(width);
+
+            for (isize w = 0; w < width; w++) {
+
+                auto sample = stream.current(isize(w * dw));
+                samples[w][0] = abs(sample.left);
+                samples[w][1] = abs(sample.right);
+            }
+            break;
+    }
+
+    // Clear buffer
+    for (isize i = 0; i < width * height; i++) buffer[i] = 0;
+
+    // Draw waveform
+    for (isize w = 0; w < width; w++) {
+
+        u32 *ptr = buffer + width * hheight + w;
+
+        if (samples[w][0] == 0 && samples[w][1] == 0) {
+
+            // Draw some noise to make it look sexy
+            *ptr = color;
+            if (rand() % 2) *(ptr + width) = color;
+            if (rand() % 2) *(ptr - width) = color;
+
+        } else {
+
+            // Remember the highest amplitude
+            if (samples[w][0] > newMaxAmp) newMaxAmp = samples[w][0];
+            if (samples[w][1] > newMaxAmp) newMaxAmp = samples[w][1];
+
+            // Scale the sample
+            isize scaledL = std::min(isize(samples[w][0] * hheight / maxAmp), hheight);
+            isize scaledR = std::min(isize(samples[w][1] * hheight / maxAmp), hheight);
+
+            // Draw vertical lines
+            for (isize j = 0; j < scaledL; j++) *(ptr - j * width) = color;
+            for (isize j = 0; j < scaledR; j++) *(ptr + j * width) = color;
+        }
+    }
+
+    delete[] samples;
+    return newMaxAmp;
 }

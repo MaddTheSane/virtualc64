@@ -25,8 +25,8 @@
  *                   |  Phi2.4 BA logic
  */
 
-#define PAL if (flags & PAL_CYCLE)
-#define NTSC if (flags & NTSC_CYCLE)
+#define PAL if constexpr (bool(flags & PAL_CYCLE))
+#define NTSC if constexpr (bool(flags & NTSC_CYCLE))
 
 template <u16 flags> void
 VICII::cycle1()
@@ -765,10 +765,11 @@ VICII::cycle63()
 template <u16 flags> void
 VICII::cycle64()
 {
+    // NTSC only cycle
+    assert(bool(flags & NTSC_CYCLE));
+
     // Phi2.5 Fetch (previous cycle)
     NTSC { sAccess1 <flags,2> (); }
-
-    PAL { fatalError; } // NTSC only
     
     // Phi1.1 Frame logic
     checkVerticalFrameFF();
@@ -791,7 +792,8 @@ VICII::cycle64()
 template <u16 flags> void
 VICII::cycle65()
 {
-    PAL { fatalError; } // NTSC only
+    // NTSC only cycle
+    assert(bool(flags & NTSC_CYCLE));
 
     // Phi1.1 Frame logic
     checkVerticalFrameFF();
@@ -826,7 +828,7 @@ VICII::sAccess1()
             
             dataBusPhi2 = memAccess(spritePtr[sprite] | mc[sprite]);
             
-            if (flags & DEBUG_CYCLE) {
+            if constexpr (bool(flags & DEBUG_CYCLE)) {
                 dmaDebugger.visualizeDma(bufferoffset, dataBusPhi2, MEMACCESS_S);
             }
         }
@@ -851,7 +853,7 @@ VICII::sAccess2()
         dataBusPhi1 = memAccess(spritePtr[sprite] | mc[sprite]);
         mc[sprite] = (mc[sprite] + 1) & 0x3F;
         
-        if (flags & DEBUG_CYCLE) {
+        if constexpr (bool(flags & DEBUG_CYCLE)) {
             dmaDebugger.visualizeDma(bufferoffset, dataBusPhi1, MEMACCESS_S);
         }
 
@@ -875,7 +877,7 @@ VICII::sAccess3()
         dataBusPhi2 = memAccess(spritePtr[sprite] | mc[sprite]);
         mc[sprite] = (mc[sprite] + 1) & 0x3F;
 
-        if (flags & DEBUG_CYCLE) {
+        if constexpr (bool(flags & DEBUG_CYCLE)) {
             dmaDebugger.visualizeDma(bufferoffset, dataBusPhi2, MEMACCESS_S);
         }
     }
@@ -888,7 +890,7 @@ VICII::rAccess()
 {
     dataBusPhi1 = memAccess(0x3F00 | refreshCounter--);
     
-    if (flags & DEBUG_CYCLE) {
+    if constexpr (bool(flags & DEBUG_CYCLE)) {
         dmaDebugger.visualizeDma(bufferoffset, dataBusPhi1, MEMACCESS_R);
     }
 }
@@ -898,7 +900,7 @@ VICII::iAccess()
 {
     dataBusPhi1 = memAccess(0x3FFF);
     
-    if (flags & DEBUG_CYCLE) {
+    if constexpr (bool(flags & DEBUG_CYCLE)) {
         dmaDebugger.visualizeDma(bufferoffset, dataBusPhi1, MEMACCESS_I);
     }
 }
@@ -916,7 +918,7 @@ VICII::cAccess()
         videoMatrix[vmli] = dataBusPhi2;
         colorLine[vmli] = mem.colorRam[vc] & 0x0F;
         
-        if (flags & DEBUG_CYCLE) {
+        if constexpr (bool(flags & DEBUG_CYCLE)) {
             dmaDebugger.visualizeDma(bufferoffset, dataBusPhi2, MEMACCESS_C);
         }
     }
@@ -997,7 +999,7 @@ VICII::gAccess()
         gAccessResult.write(dataBusPhi1);
     }
     
-    if (flags & DEBUG_CYCLE) {
+    if constexpr (bool(flags & DEBUG_CYCLE)) {
         dmaDebugger.visualizeDma(bufferoffset, dataBusPhi1, MEMACCESS_G);
     }
 }
@@ -1072,7 +1074,7 @@ VICII::pAccess(isize sprite)
     dataBusPhi1 = memAccess((u16)(VM13VM12VM11VM10() << 6 | 0x03F8 | sprite));
     spritePtr[sprite] = (u16)(dataBusPhi1 << 6);
     
-    if (flags & DEBUG_CYCLE) {
+    if constexpr (bool(flags & DEBUG_CYCLE)) {
         dmaDebugger.visualizeDma(bufferoffset, dataBusPhi1, MEMACCESS_P);
     }
 }

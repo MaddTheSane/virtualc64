@@ -31,12 +31,12 @@ public:
     PRGFile(isize capacity) : AnyCollection(capacity) { }
     PRGFile(const string &path) throws { init(path); }
     PRGFile(const u8 *buf, isize len) throws { init(buf, len); }
-    PRGFile(class FSDevice &fs) throws { init(fs); }
+    PRGFile(class FileSystem &fs) throws { init(fs); }
     
 private:
     
     using AnyFile::init;
-    void init(FSDevice &fs) throws;
+    void init(FileSystem &fs) throws;
     
     
     //
@@ -62,6 +62,6 @@ private:
     PETName<16> collectionName() override;
     isize collectionCount() const override;
     PETName<16> itemName(isize nr) const override;
-    u64 itemSize(isize nr) const override;
-    u8 readByte(isize nr, u64 pos) const override;
+    isize itemSize(isize nr) const override;
+    u8 readByte(isize nr, isize pos) const override;
 };

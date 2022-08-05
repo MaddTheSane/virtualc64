@@ -35,6 +35,21 @@ ExpansionPort::_size()
     return counter.count;
 }
 
+u64
+ExpansionPort::_checksum()
+{
+    util::SerChecker checker;
+
+    applyToPersistentItems(checker);
+    applyToResetItems(checker);
+
+    if (cartridge) {
+        checker.hash = util::fnvIt64(checker.hash, cartridge->checksum());
+    }
+
+    return checker.hash;
+}
+
 isize
 ExpansionPort::_load(const u8 *buffer)
 {
@@ -48,8 +63,8 @@ ExpansionPort::_load(const u8 *buffer)
         reader.ptr += cartridge->load(reader.ptr);
     }
     
-    trace(SNP_DEBUG, "Recreated from %ld bytes\n", reader.ptr - buffer);
-    return reader.ptr - buffer;
+    debug(SNP_DEBUG, "Recreated from %ld bytes\n", isize(reader.ptr - buffer));
+    return isize(reader.ptr - buffer);
 }
 
 isize
@@ -64,16 +79,16 @@ ExpansionPort::_save(u8 *buffer)
         writer.ptr += cartridge->save(writer.ptr);
     }
     
-    trace(SNP_DEBUG, "Serialized to %ld bytes\n", writer.ptr - buffer); \
-    return writer.ptr - buffer;
+    debug(SNP_DEBUG, "Serialized to %ld bytes\n", isize(writer.ptr - buffer));
+    return isize(writer.ptr - buffer);
 }
 
 void
-ExpansionPort::_dump(dump::Category category, std::ostream& os) const
+ExpansionPort::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Game line");
         os << bol(gameLine) << std::endl;
@@ -89,8 +104,20 @@ ExpansionPort::_dump(dump::Category category, std::ostream& os) const
     }
 }
 
+CartridgeInfo
+ExpansionPort::getInfo() const
+{
+    return cartridge ? cartridge->getInfo() : CartridgeInfo { };
+}
+
+CartridgeRomInfo
+ExpansionPort::getRomInfo(isize nr) const
+{
+    return cartridge ? cartridge->getRomInfo(nr) : CartridgeRomInfo { };
+}
+
 CartridgeType
-ExpansionPort::getCartridgeType()
+ExpansionPort::getCartridgeType() const
 {
     return cartridge ? cartridge->getCartridgeType() : CRT_NONE;
 }
@@ -219,7 +246,7 @@ ExpansionPort::attachCartridge(Cartridge *c)
     assert(c);
     assert(c->isSupported());
     
-    suspended {
+    {   SUSPENDED
         
         // Remove old cartridge (if any) and assign new one
         detachCartridge();
@@ -266,7 +293,7 @@ ExpansionPort::attachCartridge(CRTFile *file, bool reset)
     Cartridge *cartridge = Cartridge::makeWithCRTFile(c64, *file);
         
     // Attach cartridge to the expansion port
-    suspended {
+    {   SUSPENDED
         
         attachCartridge(cartridge);
         if (reset) c64.hardReset();
@@ -285,7 +312,7 @@ ExpansionPort::attachIsepicCartridge()
 void
 ExpansionPort::detachCartridge()
 {
-    suspended {
+    {   SUSPENDED
         
         if (cartridge) {
             
@@ -303,7 +330,7 @@ ExpansionPort::detachCartridge()
 void
 ExpansionPort::detachCartridgeAndReset()
 {
-    suspended {
+    {   SUSPENDED
         
         detachCartridge();
         c64.hardReset();

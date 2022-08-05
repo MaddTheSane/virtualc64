@@ -10,18 +10,40 @@
 #include "config.h"
 #include "C64.h"
 #include "Checksum.h"
-#include "IO.h"
+#include "IOUtils.h"
 #include <algorithm>
 
 // Perform some consistency checks
-static_assert(sizeof(i8 ) == 1, "i8 size mismatch");
+static_assert(sizeof(i8 ) == 1, "i8  size mismatch");
 static_assert(sizeof(i16) == 2, "i16 size mismatch");
 static_assert(sizeof(i32) == 4, "i32 size mismatch");
 static_assert(sizeof(i64) == 8, "i64 size mismatch");
-static_assert(sizeof(u8 ) == 1, "u8 size mismatch");
+static_assert(sizeof(u8 ) == 1, "u8  size mismatch");
 static_assert(sizeof(u16) == 2, "u16 size mismatch");
 static_assert(sizeof(u32) == 4, "u32 size mismatch");
 static_assert(sizeof(u64) == 8, "u64 size mismatch");
+
+Defaults C64::defaults;
+
+string
+C64::version()
+{
+	string result;
+	
+	result = std::to_string(VER_MAJOR) + "." + std::to_string(VER_MINOR);
+	if constexpr (VER_SUBMINOR > 0) result += "." + std::to_string(VER_SUBMINOR);
+	if constexpr (VER_BETA > 0) result += 'b' + std::to_string(VER_BETA);
+
+	return result;
+}
+
+string
+C64::build()
+{
+	string db = debugBuild ? " [DEBUG BUILD]" : "";
+	
+	return version() + db + " (" + __DATE__ + " " + __TIME__ + ")";
+}
 
 C64::C64()
 {
@@ -53,6 +75,12 @@ C64::C64()
     // Set up the initial state
     C64Component::initialize();
     C64Component::reset(true);
+	
+	// Initialize the sync timer
+	targetTime = util::Time::now();
+	
+	// Start the thread and enter the main function
+	thread = std::thread(&Thread::main, this);
 }
 
 C64::~C64()
@@ -69,7 +97,7 @@ C64::prefix() const
 void
 C64::reset(bool hard)
 {
-    suspended {
+    {   SUSPENDED
         
         // Execute the standard reset routine
         C64Component::reset(hard);
@@ -77,6 +105,26 @@ C64::reset(bool hard)
         // Inform the GUI
         msgQueue.put(MSG_RESET);
     }
+}
+
+void
+C64::_initialize()
+{
+    C64Component::_initialize();
+
+    auto load = [&](const string &path) {
+
+        msg("Trying to load Rom from %s...\n", path.c_str());
+
+        try { loadRom(path); } catch (std::exception& e) {
+            warn("Error: %s\n", e.what());
+        }
+    };
+
+    if (auto path = C64::defaults.getString("BASIC_PATH");  path != "") load(path);
+    if (auto path = C64::defaults.getString("CHAR_PATH");   path != "") load(path);
+    if (auto path = C64::defaults.getString("KERNAL_PATH"); path != "") load(path);
+    if (auto path = C64::defaults.getString("VC1541_PATH"); path != "") load(path);
 }
 
 void
@@ -89,12 +137,6 @@ C64::_reset(bool hard)
     
     flags = 0;
     rasterCycle = 1;
-}
-
-InspectionTarget
-C64::getInspectionTarget() const
-{
-    return inspectionTarget;
 }
 
 void
@@ -149,7 +191,12 @@ C64::getConfigItem(Option option) const
             return muxer.getConfigItem(option);
 
         case OPT_RAM_PATTERN:
+        case OPT_SAVE_ROMS:
             return mem.getConfigItem(option);
+
+        case OPT_DAT_MODEL:
+        case OPT_DAT_CONNECT:
+            return datasette.getConfigItem(option);
             
         default:
             fatalError;
@@ -163,7 +210,7 @@ C64::getConfigItem(Option option, long id) const
     
     switch (option) {
             
-        case OPT_DMA_DEBUG_ENABLE:
+        case OPT_DMA_DEBUG_CHANNEL:
         case OPT_DMA_DEBUG_COLOR:
             
             return vic.dmaDebugger.getConfigItem(option, id);
@@ -198,16 +245,16 @@ C64::getConfigItem(Option option, long id) const
         case OPT_SHAKE_DETECTION:
         case OPT_MOUSE_VELOCITY:
             
-            if (id == PORT_ONE) return port1.mouse.getConfigItem(option);
-            if (id == PORT_TWO) return port2.mouse.getConfigItem(option);
+            if (id == PORT_1) return port1.mouse.getConfigItem(option);
+            if (id == PORT_2) return port2.mouse.getConfigItem(option);
             fatalError;
 
         case OPT_AUTOFIRE:
         case OPT_AUTOFIRE_BULLETS:
         case OPT_AUTOFIRE_DELAY:
             
-            if (id == PORT_ONE) return port1.joystick.getConfigItem(option);
-            if (id == PORT_TWO) return port2.joystick.getConfigItem(option);
+            if (id == PORT_1) return port1.joystick.getConfigItem(option);
+            if (id == PORT_2) return port2.joystick.getConfigItem(option);
             fatalError;
 
         default:
@@ -218,7 +265,7 @@ C64::getConfigItem(Option option, long id) const
 void
 C64::configure(Option option, i64 value)
 {
-    debug(CNF_DEBUG, "configure(%lld, %lld)\n", option, value);
+    debug(CNF_DEBUG, "configure(%ld, %lld)\n", option, value);
 
     // The following options do not send a message to the GUI
     static std::vector<Option> quiet = {
@@ -266,7 +313,6 @@ C64::configure(Option option, i64 value)
         case OPT_CUT_OPACITY:
         case OPT_DMA_DEBUG_ENABLE:
         case OPT_DMA_DEBUG_MODE:
-        case OPT_DMA_DEBUG_COLOR:
         case OPT_DMA_DEBUG_OPACITY:
 
             vic.dmaDebugger.setConfigItem(option, value);
@@ -282,22 +328,6 @@ C64::configure(Option option, i64 value)
             
             cia1.setConfigItem(option, value);
             cia2.setConfigItem(option, value);
-            break;
-
-        case OPT_MOUSE_MODEL:
-        case OPT_SHAKE_DETECTION:
-        case OPT_MOUSE_VELOCITY:
-
-            port1.mouse.setConfigItem(option, value);
-            port2.mouse.setConfigItem(option, value);
-            break;
-
-        case OPT_AUTOFIRE:
-        case OPT_AUTOFIRE_BULLETS:
-        case OPT_AUTOFIRE_DELAY:
-            
-            port1.joystick.setConfigItem(option, value);
-            port2.joystick.setConfigItem(option, value);
             break;
 
         case OPT_SID_ENABLE:
@@ -322,7 +352,8 @@ C64::configure(Option option, i64 value)
             break;
             
         case OPT_RAM_PATTERN:
-            
+        case OPT_SAVE_ROMS:
+
             mem.setConfigItem(option, value);
             break;
 
@@ -345,7 +376,26 @@ C64::configure(Option option, i64 value)
             drive8.setConfigItem(option, value);
             drive9.setConfigItem(option, value);
             break;
+
+        case OPT_DAT_MODEL:
+        case OPT_DAT_CONNECT:
+            datasette.setConfigItem(option, value);
             
+        case OPT_MOUSE_MODEL:
+        case OPT_SHAKE_DETECTION:
+        case OPT_MOUSE_VELOCITY:
+
+            port1.mouse.setConfigItem(option, value);
+            port2.mouse.setConfigItem(option, value);
+            break;
+
+        case OPT_AUTOFIRE:
+        case OPT_AUTOFIRE_BULLETS:
+        case OPT_AUTOFIRE_DELAY:
+
+            port1.joystick.setConfigItem(option, value);
+            port2.joystick.setConfigItem(option, value);
+            break;
         default:
             fatalError;
     }
@@ -358,7 +408,7 @@ C64::configure(Option option, i64 value)
 void
 C64::configure(Option option, long id, i64 value)
 {
-    debug(CNF_DEBUG, "configure(%lld, %ld, %lld)\n", option, id, value);
+    debug(CNF_DEBUG, "configure(%ld, %ld, %lld)\n", option, id, value);
 
     // Check if this option has been locked for debugging
     value = overrideOption(option, value);
@@ -382,7 +432,7 @@ C64::configure(Option option, long id, i64 value)
     switch (option) {
             
                         
-        case OPT_DMA_DEBUG_ENABLE:
+        case OPT_DMA_DEBUG_CHANNEL:
         case OPT_DMA_DEBUG_COLOR:
             
             vic.dmaDebugger.setConfigItem(option, id, value);
@@ -403,8 +453,8 @@ C64::configure(Option option, long id, i64 value)
         case OPT_MOUSE_VELOCITY:
 
             switch (id) {
-                case PORT_ONE: port1.mouse.setConfigItem(option, value); break;
-                case PORT_TWO: port2.mouse.setConfigItem(option, value); break;
+                case PORT_1: port1.mouse.setConfigItem(option, value); break;
+                case PORT_2: port2.mouse.setConfigItem(option, value); break;
                 default: fatalError;
             }
             break;
@@ -414,8 +464,8 @@ C64::configure(Option option, long id, i64 value)
         case OPT_AUTOFIRE_DELAY:
 
             switch (id) {
-                case PORT_ONE: port1.joystick.setConfigItem(option, value); break;
-                case PORT_TWO: port2.joystick.setConfigItem(option, value); break;
+                case PORT_1: port1.joystick.setConfigItem(option, value); break;
+                case PORT_2: port2.joystick.setConfigItem(option, value); break;
                 default: fatalError;
             }
             break;
@@ -472,7 +522,7 @@ C64::configure(C64Model model)
 {
     assert_enum(C64Model, model);
     
-    suspended {
+    {   SUSPENDED
         
         switch(model) {
                 
@@ -617,11 +667,13 @@ C64::execute()
         }
         
         // Are we requested to update the debugger info structs?
+        /*
         if (flags & RL::INSPECT) {
             clearFlag(RL::INSPECT);
             inspect();
         }
-        
+        */
+
         // Did we reach a breakpoint?
         if (flags & RL::BREAKPOINT) {
             clearFlag(RL::BREAKPOINT);
@@ -685,9 +737,9 @@ C64::_powerOn()
     
     // Perform a reset
     hardReset();
-            
+
     // Update the recorded debug information
-    inspect();
+    inspect(INSPECTION_C64);
 
     msgQueue.put(MSG_POWER_ON);
 }
@@ -697,7 +749,9 @@ C64::_powerOff()
 {
     debug(RUN_DEBUG, "_powerOff\n");
 
-    inspect();
+    // Update the recorded debug information for all components
+    inspect(INSPECTION_C64);
+
     msgQueue.put(MSG_POWER_OFF);
 }
 
@@ -717,7 +771,9 @@ C64::_pause()
     // Finish the current instruction to reach a clean state
     finishInstruction();
     
-    inspect();
+    // Update the recorded debug information for all components
+    inspect(INSPECTION_C64);
+
     msgQueue.put(MSG_PAUSE);
 }
 
@@ -759,11 +815,33 @@ C64::_debugOff()
     // vic.updateVicFunctionTable();
 }
 
-void
-C64::inspect()
+isize
+C64::load(const u8 *buffer)
 {
-    switch(inspectionTarget) {
+    auto result = C64Component::load(buffer);
+    C64Component::didLoad();
+
+    return result;
+}
+
+isize
+C64::save(u8 *buffer)
+{
+    auto result = C64Component::save(buffer);
+    C64Component::didSave();
+
+    return result;
+}
+
+void
+C64::inspect(InspectionTarget target)
+{
+    // Never call this function from outside if the emulator is running
+    assert(!isRunning() || isEmulatorThread());
+
+    switch(target) {
             
+        case INSPECTION_C64: C64Component::inspect(); break;
         case INSPECTION_CPU: cpu.inspect(); break;
         case INSPECTION_MEM: mem.inspect(); break;
         case INSPECTION_CIA: cia1.inspect(); cia2.inspect(); break;
@@ -776,23 +854,39 @@ C64::inspect()
 }
 
 void
-C64::_dump(dump::Category category, std::ostream& os) const
+C64::autoInspect()
+{
+    // This function is called periodically by the CPU in debug mode
+    if (inspectionCounter-- == 0) {
+
+        inspect();
+        inspectionCounter = 25000;
+    }
+}
+
+void
+C64::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
         
-    if (category & dump::State) {
+    if (category == Category::State) {
                 
         os << tab("Machine type") << bol(vic.pal(), "PAL", "NTSC") << std::endl;
         os << tab("Frames per second") << vic.getFps() << std::endl;
         os << tab("Lines per frame") << vic.getLinesPerFrame() << std::endl;
         os << tab("Cycles per scanline") << vic.getCyclesPerLine() << std::endl;
-        os << tab("Current cycle") << cpu.cycle << std::endl;
+        os << tab("Current cycle") << cpu.clock << std::endl;
         os << tab("Current frame") << frame << std::endl;
         os << tab("Current scanline") << scanline << std::endl;
         os << tab("Current scanline cycle") << dec(rasterCycle) << std::endl;
         os << tab("Ultimax mode") << bol(getUltimax()) << std::endl;
         os << tab("Warp mode") << bol(inWarpMode()) << std::endl;
         os << tab("Debug mode") << bol(debugMode) << std::endl;
+    }
+
+    if (category == Category::Defaults) {
+
+        defaults.dump(category, os);
     }
 }
 
@@ -871,7 +965,7 @@ C64::executeOneCycle()
 void
 C64::_executeOneCycle()
 {
-    Cycle cycle = ++cpu.cycle;
+    Cycle cycle = ++cpu.clock;
     
     //  <---------- o2 low phase ----------->|<- o2 high phase ->|
     //                                       |                   |
@@ -949,7 +1043,7 @@ C64::endFrame()
     vic.endFrame();
         
     // Execute remaining SID cycles
-    muxer.executeUntil(cpu.cycle);
+    muxer.executeUntil(cpu.clock);
     
     // Execute other components
     iec.execute();
@@ -967,13 +1061,17 @@ C64::endFrame()
 void
 C64::setFlag(u32 flag)
 {
-    synchronized { flags |= flag; }
+    SYNCHRONIZED
+
+    flags |= flag;
 }
 
 void
 C64::clearFlag(u32 flag)
 {
-    synchronized { flags &= ~flag; }
+    SYNCHRONIZED
+
+    flags &= ~flag;
 }
 
 void
@@ -1029,28 +1127,34 @@ C64::latestUserSnapshot()
 void
 C64::loadSnapshot(const Snapshot &snapshot)
 {
-    // Check if this snapshot is compatible with the emulator
-    if (snapshot.isTooOld() || FORCE_SNAPSHOT_TOO_OLD) {
-        throw VC64Error(ERROR_SNP_TOO_OLD);
-    }
-    if (snapshot.isTooNew() || FORCE_SNAPSHOT_TOO_NEW) {
-        throw VC64Error(ERROR_SNP_TOO_NEW);
-    }
+	{   SUSPENDED
+		
+		try {
+        
+			// Restore the saved state
+			load(snapshot.getData());
+			
+			// Clear the keyboard matrix to avoid constantly pressed keys
+			keyboard.releaseAll();
+			
+			// Print some debug info if requested
+			if constexpr (SNP_DEBUG) dump(Category::State);
     
-    suspended {
-        
-        // Restore the saved state
-        load(snapshot.getData());
-        
-        // Clear the keyboard matrix to avoid constantly pressed keys
-        keyboard.releaseAll();
-        
-        // Print some debug info if requested
-        if constexpr (SNP_DEBUG) dump();
-    }
-    
-    // Inform the GUI
-    msgQueue.put(MSG_SNAPSHOT_RESTORED);
+		} catch (VC64Error &error) {
+			
+			/* If we reach this point, the emulator has been put into an
+			 * inconsistent state due to corrupted snapshot data. We cannot
+			 * continue emulation, because it would likely crash the
+			 * application. Because we cannot revert to the old state either,
+			 * we perform a hard reset to eliminate the inconsistency.
+			 */
+			hardReset();
+			throw error;
+		}
+	}
+	
+	// Inform the GUI
+	msgQueue.put(MSG_SNAPSHOT_RESTORED);
 }
 
 u32
@@ -1077,9 +1181,9 @@ C64::romFNV64(RomType type) const
     
     switch (type) {
             
-        case ROM_TYPE_BASIC:  return util::fnv_1a_64(mem.rom + 0xA000, 0x2000);
-        case ROM_TYPE_CHAR:   return util::fnv_1a_64(mem.rom + 0xD000, 0x1000);
-        case ROM_TYPE_KERNAL: return util::fnv_1a_64(mem.rom + 0xE000, 0x2000);
+        case ROM_TYPE_BASIC:  return util::fnv64(mem.rom + 0xA000, 0x2000);
+        case ROM_TYPE_CHAR:   return util::fnv64(mem.rom + 0xD000, 0x1000);
+        case ROM_TYPE_KERNAL: return util::fnv64(mem.rom + 0xE000, 0x2000);
         case ROM_TYPE_VC1541: return drive8.mem.romFNV64();
         
         default:
@@ -1394,7 +1498,7 @@ C64::saveRom(RomType type, const string &path)
 void
 C64::flash(const AnyFile &file)
 {
-    suspended {
+    {   SUSPENDED
         
         switch (file.type()) {
                 
@@ -1428,11 +1532,11 @@ C64::flash(const AnyFile &file)
 void
 C64::flash(const AnyCollection &file, isize nr)
 {
-    u16 addr = (u16)file.itemLoadAddr(nr);
-    u64 size = (u64)file.itemSize(nr);
+    auto addr = (u16)file.itemLoadAddr(nr);
+    auto size = file.itemSize(nr);
     if (size <= 2) return;
     
-    suspended {
+    {   SUSPENDED
         
         switch (file.type()) {
                 
@@ -1441,8 +1545,8 @@ C64::flash(const AnyCollection &file, isize nr)
             case FILETYPE_P00:
             case FILETYPE_PRG:
             case FILETYPE_FOLDER:
-                
-                size = std::min(size - 2, (u64)(0x10000 - addr));
+
+                size = std::min(size - 2, isize(0x10000 - addr));
                 file.copyItem(nr, mem.ram + addr, size, 2);
                 break;
                 
@@ -1455,7 +1559,7 @@ C64::flash(const AnyCollection &file, isize nr)
 }
 
 void
-C64::flash(const FSDevice &fs, isize nr)
+C64::flash(const FileSystem &fs, isize nr)
 {
     u16 addr = fs.loadAddr(nr);
     u64 size = fs.fileSize(nr);
@@ -1464,11 +1568,59 @@ C64::flash(const FSDevice &fs, isize nr)
         return;
     }
     
-    suspended {
+    {   SUSPENDED
         
         size = std::min(size - 2, (u64)(0x10000 - addr));
         fs.copyFile(nr, mem.ram + addr, size, 2);
     }
     
     msgQueue.put(MSG_FILE_FLASHED);
+}
+
+fs::path
+C64::tmp()
+{
+    STATIC_SYNCHRONIZED
+
+    static fs::path base;
+
+    if (base.empty()) {
+
+        // Use /tmp as default folder for temporary files
+        base = "/tmp";
+
+        // Open a file to see if we have write permissions
+        std::ofstream logfile(base / "vAmiga.log");
+
+        // If /tmp is not accessible, use a different directory
+        if (!logfile.is_open()) {
+
+            base = fs::temp_directory_path();
+            logfile.open(base / "vAmiga.log");
+
+            if (!logfile.is_open()) {
+
+                throw VC64Error(ERROR_DIR_NOT_FOUND);
+            }
+        }
+
+        logfile.close();
+        fs::remove(base / "vAmiga.log");
+    }
+
+    return base;
+}
+
+fs::path
+C64::tmp(const string &name, bool unique)
+{
+    STATIC_SYNCHRONIZED
+
+    auto base = tmp();
+    auto result = base / name;
+
+    // Make the file name unique if requested
+    if (unique) result = fs::path(util::makeUniquePath(result.string()));
+
+    return result;
 }

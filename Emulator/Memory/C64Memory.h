@@ -75,7 +75,7 @@ public:
 private:
     
     const char *getDescription() const override { return "C64Memory"; }
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -83,7 +83,7 @@ private:
     //
 
 private:
-    
+
     void _reset(bool hard) override;
     
     template <class T>
@@ -93,19 +93,27 @@ private:
         
         << ram
         << colorRam
-        << rom
         << peekSrc
         << pokeTarget;
     }
-    
+
+    template <class T>
+    void applyToRoms(T& worker)
+    {
+        worker
+
+        << rom;
+    }
+
     template <class T>
     void applyToResetItems(T& worker, bool hard = true)
     {
     }
     
-    isize _size() override { COMPUTE_SNAPSHOT_SIZE }
-    isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
-    isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
+    isize _size() override;
+    u64 _checksum() override;
+    isize _load(const u8 *buffer) override;
+    isize _save(u8 *buffer) override;
     
     
     //

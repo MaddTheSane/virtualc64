@@ -10,7 +10,7 @@
 #include "config.h"
 #include "G64File.h"
 #include "Disk.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 bool
 G64File::isCompatible(const string &path)
@@ -86,7 +86,7 @@ G64File::init(Disk &disk)
             auto numFillBytes = maxBytesOnTrack - numDataBytes;
 
             if (disk.lengthOfHalftrack(ht) % 8 != 0) {
-                warn("Size of halftrack %zd is not a multiple of 8\n", ht);
+                warn("Size of halftrack %ld is not a multiple of 8\n", ht);
             }
             assert(pos == offset[ht]);
             buffer[pos++] = LO_BYTE(numDataBytes);

@@ -15,14 +15,14 @@ extension MyController: NSMenuItemValidation {
         let running = c64.running
         var recording: Bool { return c64.recorder.recording }
         
-        var driveID: DriveID { return DriveID(rawValue: item.tag)! }
+        var driveID: Int { return item.tag }
         var drive: DriveProxy { return c64.drive(driveID) }
         
         func validateURLlist(_ list: [URL], image: NSImage) -> Bool {
             
             let slot = item.tag % 10
-            
-            if let url = myAppDelegate.getRecentlyUsedURL(slot, from: list) {
+
+            if let url = MediaManager.getRecentlyUsedURL(slot, from: list) {
                 item.title = url.lastPathComponent
                 item.isHidden = false
                 item.image = image
@@ -38,11 +38,6 @@ extension MyController: NSMenuItemValidation {
         switch item.action {
             
         // Machine menu
-        case #selector(MyController.importConfigAction(_:)),
-             #selector(MyController.exportConfigAction(_:)),
-             #selector(MyController.resetConfigAction(_:)):
-            return !powered
-            
         case #selector(MyController.captureScreenAction(_:)):
             item.title = recording ? "Stop Recording" : "Record Screen"
             return true
@@ -72,10 +67,12 @@ extension MyController: NSMenuItemValidation {
             
         // Drive menu
         case #selector(MyController.insertRecentDiskAction(_:)):
-            return validateURLlist(myAppDelegate.recentlyInsertedDiskURLs, image: smallDisk)
-            
+            return validateURLlist(MediaManager.insertedFloppyDisks, image: smallDisk)
+
         case  #selector(MyController.ejectDiskAction(_:)),
-              #selector(MyController.exportDiskAction(_:)):
+            #selector(MyController.exportDiskAction(_:)),
+            #selector(MyController.inspectDiskAction(_:)),
+            #selector(MyController.inspectVolumeAction(_:)):
             return drive.hasDisk
             
         case #selector(MyController.exportRecentDiskDummyAction8(_:)):
@@ -85,24 +82,19 @@ extension MyController: NSMenuItemValidation {
             return c64.drive9.hasDisk
                         
         case #selector(MyController.exportRecentDiskAction(_:)):
-            switch item.tag {
-            case 8: return validateURLlist(myAppDelegate.recentlyExportedDisk8URLs, image: smallDisk)
-            case 9: return validateURLlist(myAppDelegate.recentlyExportedDisk9URLs, image: smallDisk)
-            default: fatalError()
-            }
+            return validateURLlist(mm.exportedFloppyDisks[driveID], image: smallDisk)
             
         case #selector(MyController.writeProtectAction(_:)):
-            item.state = drive.hasWriteProtectedDisk ? .on : .off
+            item.state = drive.hasProtectedDisk ? .on : .off
             return drive.hasDisk
             
         case #selector(MyController.drivePowerAction(_:)):
-            track()
             item.title = drive.isSwitchedOn ? "Switch off" : "Switch on"
             return true
             
         // Tape menu
         case #selector(MyController.insertRecentTapeAction(_:)):
-            return validateURLlist(myAppDelegate.recentlyInsertedTapeURLs, image: smallTape)
+            return validateURLlist(MediaManager.insertedTapes, image: smallTape)
             
         case #selector(MyController.ejectTapeAction(_:)):
             return c64.datasette.hasTape
@@ -116,7 +108,7 @@ extension MyController: NSMenuItemValidation {
             
         // Cartridge menu
         case #selector(MyController.attachRecentCartridgeAction(_:)):
-            return validateURLlist(myAppDelegate.recentlyAttachedCartridgeURLs, image: smallCart)
+            return validateURLlist(MediaManager.attachedCartridges, image: smallCart)
             
         case #selector(MyController.attachGeoRamDummyAction(_:)):
             item.state = (c64.expansionport.cartridgeType == .GEO_RAM) ? .on : .off
@@ -134,7 +126,10 @@ extension MyController: NSMenuItemValidation {
             
         case #selector(MyController.detachCartridgeAction(_:)):
             return c64.expansionport.cartridgeAttached
-            
+
+        case #selector(MyController.inspectCartridgeAction(_:)):
+            return c64.expansionport.cartridgeAttached
+
         case #selector(MyController.pressButtonDummyAction(_:)):
             return c64.expansionport.numButtons > 0
             
@@ -185,6 +180,7 @@ extension MyController: NSMenuItemValidation {
         
         myAppDelegate.drive8Menu.isHidden = !config.drive8Connected
         myAppDelegate.drive9Menu.isHidden = !config.drive9Connected
+        myAppDelegate.datasetteMenu.isHidden = !config.datasetteConnected
     }
     
     //
@@ -195,76 +191,31 @@ extension MyController: NSMenuItemValidation {
         
         if myAppDelegate.prefController == nil {
             myAppDelegate.prefController =
-                PreferencesController.make(parent: self,
-                                           nibName: NSNib.Name("Preferences"))
+            PreferencesController(with: self, nibName: "Preferences")
         }
         myAppDelegate.prefController?.showWindow(self)
     }
     
-    func importPrefs(_ prefixes: [String]) {
-        
-        track("Importing user defaults with prefixes \(prefixes)")
-        
-        let panel = NSOpenPanel()
-        panel.prompt = "Import"
-        panel.allowedFileTypes = ["vc64conf"]
-        
-        panel.beginSheetModal(for: window!, completionHandler: { result in
-            if result == .OK {
-                if let url = panel.url {
-                    self.loadUserDefaults(url: url, prefixes: prefixes)
-                }
-            }
-        })
-    }
-    
-    func exportPrefs(_ prefixes: [String]) {
-        
-        track("Exporting user defaults with prefixes \(prefixes)")
-        
-        let panel = NSSavePanel()
-        panel.prompt = "Export"
-        panel.allowedFileTypes = ["vc64conf"]
-        
-        panel.beginSheetModal(for: window!, completionHandler: { result in
-            if result == .OK {
-                if let url = panel.url {
-                    track()
-                    self.saveUserDefaults(url: url, prefixes: prefixes)
-                }
-            }
-        })
-    }
-    
-    @IBAction func importConfigAction(_ sender: Any!) {
-        
-        importPrefs(["VC64_ROM", "VC64_HW", "VC64_VID"])
-    }
-    
-    @IBAction func exportConfigAction(_ sender: Any!) {
-        
-        exportPrefs(["VC64_ROM", "VC64_HW", "VC64_VID"])
-    }
-    
-    @IBAction func resetConfigAction(_ sender: Any!) {
-               
-        track()
+    @IBAction func factorySettingsAction(_ sender: Any!) {
 
-        UserDefaults.resetHardwareUserDefaults()
-        UserDefaults.resetPeripheralsUserDefaults()
-        UserDefaults.resetAudioUserDefaults()
-        UserDefaults.resetVideoUserDefaults()
-        UserDefaults.resetRomUserDefaults()
+        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
-        config.loadRomUserDefaults()
-        config.loadHardwareUserDefaults()
-        config.loadPeripheralsUserDefaults()
-        config.loadAudioUserDefaults()
-        config.loadVideoUserDefaults()
-        c64.resume()
+        // Power off the emulator if the user doesn't object
+        if !askToPowerOff() { return }
+
+        // Reset settings
+        defaults.removeAll()
+        defaults.resetSearchPaths()
+        defaults.save()
+
+        // Apply new settings
+        config.applyUserDefaults()
+        pref.applyUserDefaults()
+
+        // Relaunch the emulator
+        try? c64.run()
     }
-    
+
     //
     // Action methods (File menu)
     //
@@ -272,8 +223,7 @@ extension MyController: NSMenuItemValidation {
     func openConfigurator(tab: String = "") {
         
         if configurator == nil {
-            let name = NSNib.Name("Configuration")
-            configurator = ConfigurationController.make(parent: self, nibName: name)
+            configurator = ConfigurationController(with: self, nibName: "Configuration")
         }
         configurator?.showSheet(tab: tab)
     }
@@ -286,7 +236,7 @@ extension MyController: NSMenuItemValidation {
     @IBAction func inspectorAction(_ sender: Any!) {
         
         if inspector == nil {
-            inspector = Inspector.make(parent: self, nibName: "Inspector")
+            inspector = Inspector(with: self, nibName: "Inspector")
         }
         inspector?.showWindow(self)
     }
@@ -294,7 +244,7 @@ extension MyController: NSMenuItemValidation {
     @IBAction func monitorAction(_ sender: Any!) {
         
         if monitor == nil {
-            monitor = Monitor.make(parent: self, nibName: "Monitor")
+            monitor = Monitor(with: self, nibName: "Monitor")
         }
         monitor?.showWindow(self)
     }
@@ -324,24 +274,21 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func browseSnapshotsAction(_ sender: Any!) {
         
-        track()
         if snapshotBrowser == nil {
-            let name = NSNib.Name("SnapshotDialog")
-            snapshotBrowser = SnapshotDialog.make(parent: self, nibName: name)
+            snapshotBrowser = SnapshotViewer(with: self, nibName: "SnapshotViewer")
         }
         snapshotBrowser?.showSheet()
     }
     
     @IBAction func takeScreenshotAction(_ sender: Any!) {
-        
-        track()
-        
+
         // Determine screenshot format
         let format = ScreenshotSource(rawValue: pref.screenshotSource)!
         
         // Take screenshot
         guard let screen = renderer.canvas.screenshot(source: format) else {
-            track("Failed to create screenshot")
+
+            warn("Failed to create screenshot")
             return
         }
 
@@ -349,63 +296,60 @@ extension MyController: NSMenuItemValidation {
         let screenshot = Screenshot(screen: screen, format: pref.screenshotTarget)
 
         // Save to disk
-        try? screenshot.save(id: mydocument.bootDiskID)
+        try? screenshot.save()
         
         // Create a visual effect
         renderer.flash()
     }
     
     @IBAction func browseScreenshotsAction(_ sender: Any!) {
-        
-        track()
-        
+
         if screenshotBrowser == nil {
-            let name = NSNib.Name("ScreenshotDialog")
-            screenshotBrowser = ScreenshotDialog.make(parent: self, nibName: name)
+            screenshotBrowser = ScreenshotViewer(with: self, nibName: "ScreenshotViewer")
         }
-        screenshotBrowser?.checksum = mydocument.bootDiskID
         screenshotBrowser?.showSheet()
     }
-        
+
     @IBAction func captureScreenAction(_ sender: Any!) {
-        
-        track("Recording = \(c64.recorder.recording)")
-        
+
         if c64.recorder.recording {
             
             c64.recorder.stopRecording()
             exportVideoAction(self)
             return
         }
-        
+
         if !c64.recorder.hasFFmpeg {
-            showMissingFFmpegAlert()
+
+            if pref.ffmpegPath != "" {
+                showAlert(.noFFmpegFound(exec: pref.ffmpegPath))
+            } else {
+                showAlert(.noFFmpegInstalled)
+            }
             return
         }
-        
+
         var rect: CGRect
         if pref.captureSource == 0 {
             rect = renderer.canvas.visible
         } else {
             rect = renderer.canvas.entire
         }
-                
-        let success = c64.recorder.startRecording(rect,
-                                                  bitRate: pref.bitRate,
-                                                  aspectX: pref.aspectX,
-                                                  aspectY: pref.aspectY)
-        if !success {
-            showFailedToLaunchFFmpegAlert()
+
+        do {
+            try c64.recorder.startRecording(rect: rect,
+                                            rate: pref.bitRate,
+                                            ax: pref.aspectX,
+                                            ay: pref.aspectY)
+        } catch {
+
+            showAlert(.cantRecord, error: error)
         }
     }
     
     @IBAction func exportVideoAction(_ sender: Any!) {
-        
-        track()
-        
-        let name = NSNib.Name("ExportVideoDialog")
-        let exporter = ExportVideoDialog.make(parent: self, nibName: name)
-        
+
+        let exporter = VideoExporter(with: self, nibName: "VideoExporter")
         exporter?.showSheet()
     }
     
@@ -414,12 +358,10 @@ extension MyController: NSMenuItemValidation {
     //
     
     @IBAction func paste(_ sender: Any!) {
-        
-        track()
-        
+
         let pasteBoard = NSPasteboard.general
         guard let text = pasteBoard.string(forType: .string) else {
-            track("Cannot paste. No text in pasteboard")
+            warn("Cannot paste. No text in pasteboard")
             return
         }
         
@@ -464,18 +406,18 @@ extension MyController: NSMenuItemValidation {
     }
 
     @IBAction func powerAction(_ sender: Any!) {
-        
+
         if c64.poweredOn {
+
             c64.powerOff()
-            return
-        }
-        
-        do {
-            try c64.run()
-        } catch let error as VC64Error {
-            error.warning("Unable to power up the emulator")
-        } catch {
-            fatalError()
+
+        } else {
+
+            do {
+                try c64.run()
+            } catch {
+                showAlert(.cantRun, error: error)
+            }
         }
     }
      
@@ -517,12 +459,12 @@ extension MyController: NSMenuItemValidation {
         
         if virtualKeyboard == nil {
             let name = NSNib.Name("VirtualKeyboard")
-            virtualKeyboard = VirtualKeyboardController.make(parent: self, nibName: name)
+            virtualKeyboard = VirtualKeyboardController(with: self, nibName: name)
         }
         if virtualKeyboard?.window?.isVisible == true {
-            track("Virtual keyboard already open")
+            debug(.lifetime, "Virtual keyboard already open")
         } else {
-            track("Opeining virtual keyboard as a window")
+            debug(.lifetime, "Opeining virtual keyboard as a window")
         }
 
         virtualKeyboard?.showWindow()
@@ -623,21 +565,25 @@ extension MyController: NSMenuItemValidation {
     //
 
     @IBAction func newDiskAction(_ sender: NSMenuItem!) {
-        
+
         let drive = c64.drive(sender)
-        
-        drive.insertNewDisk(config.blankDiskFormat)
-        myAppDelegate.clearRecentlyExportedDiskURLs(drive: drive.id)
+
+        // Ask the user if a modified hard drive should be detached
+        if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
+
+        let panel = DiskCreator(with: self, nibName: "DiskCreator")
+        panel?.showSheet(forDrive: drive.id)
+
+        mm.clearRecentlyExportedDiskURLs(drive: drive.id)
     }
     
     @IBAction func insertDiskAction(_ sender: NSMenuItem!) {
         
-        let id = DriveID(rawValue: sender.tag)!
-        
+        let id = sender.tag
+        let drive = c64.drive(sender)
+
         // Ask user to continue if the current disk contains modified data
-        if !proceedWithUnexportedDisk(drive: id) {
-            return
-        }
+        if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
         
         let openPanel = NSOpenPanel()
         openPanel.allowsMultipleSelection = false
@@ -647,138 +593,179 @@ extension MyController: NSMenuItemValidation {
         openPanel.prompt = "Insert"
         openPanel.allowedFileTypes = ["t64", "prg", "p00", "d64", "g64", "zip", "gz"]
         openPanel.beginSheetModal(for: window!, completionHandler: { result in
+
             if result == .OK, let url = openPanel.url {
-                self.insertDiskAction(from: url, drive: id)
+
+                do {
+                    try self.mm.addMedia(url: url,
+                                         allowedTypes: [ .D64, .T64, .PRG, .P00, .G64 ],
+                                         drive: id,
+                                         options: [.force])
+                } catch {
+                    self.showAlert(.cantInsert, error: error, async: true)
+                }
             }
         })
     }
     
     @IBAction func insertRecentDiskAction(_ sender: NSMenuItem!) {
         
-        let drive = sender.tag < 10 ? DriveID.DRIVE8 : DriveID.DRIVE9
+        let drive = sender.tag < 10 ? DRIVE8 : DRIVE9
         let slot  = sender.tag % 10
-                
-        if let url = myAppDelegate.getRecentlyInsertedDiskURL(slot) {
-            insertDiskAction(from: url, drive: drive)
-        }
-    }
-    
-    func insertDiskAction(from url: URL, drive: DriveID) {
-        
-        let types = [ FileType.D64,
-                      FileType.T64,
-                      FileType.PRG,
-                      FileType.P00,
-                      FileType.G64 ]
-        
-        do {
-            // Try to create a file proxy
-            try mydocument.createAttachment(from: url, allowedTypes: types)
 
-            // Ask the user if an unsafed disk should be replaced
-            if !proceedWithUnexportedDisk(drive: drive) { return }
-            
-            // Insert the disk
-            try mydocument.mountAttachment(drive: drive)
-                        
-            // Remember the URL
-            myAppDelegate.noteNewRecentlyUsedURL(url)
-            
-        } catch {
-            
-            (error as? VC64Error)?.cantOpen(url: url)
+        insertRecentDiskAction(drive: drive, slot: slot)
+    }
+
+    func insertRecentDiskAction(drive: Int, slot: Int) {
+
+        let types: [FileType] = [ .D64, .T64, .PRG, .P00, .G64 ]
+
+        if let url = MediaManager.getRecentlyInsertedDiskURL(slot) {
+
+            do {
+                try self.mm.addMedia(url: url, allowedTypes: types, drive: drive)
+            } catch {
+                self.showAlert(.cantInsert, error: error)
+            }
         }
     }
-    
+
     @IBAction func exportRecentDiskDummyAction8(_ sender: NSMenuItem!) {}
     @IBAction func exportRecentDiskDummyAction9(_ sender: NSMenuItem!) {}
 
     @IBAction func exportRecentDiskAction(_ sender: NSMenuItem!) {
                 
-        track()
-
-        let drive = sender.tag < 10 ? DriveID.DRIVE8 : DriveID.DRIVE9
+        let drive = sender.tag < 10 ? DRIVE8 : DRIVE9
         let slot = sender.tag % 10
         
         exportRecentDiskAction(drive: drive, slot: slot)
     }
     
-    func exportRecentDiskAction(drive id: DriveID, slot: Int) {
+    func exportRecentDiskAction(drive id: Int, slot: Int) {
                 
-        if let url = myAppDelegate.getRecentlyExportedDiskURL(slot, drive: id) {
+        if let url = mm.getRecentlyExportedDiskURL(slot, drive: id) {
             
             do {
-                try mydocument.export(drive: id, to: url)
-                
-            } catch let error as VC64Error {
-                error.warning("Cannot export disk to file \"\(url.path)\"")
+                try mm.export(drive: id, to: url)
             } catch {
-                fatalError()
+                showAlert(.cantExport(url: url), error: error)
             }
         }
     }
     
     @IBAction func clearRecentlyInsertedDisksAction(_ sender: Any!) {
-        myAppDelegate.recentlyInsertedDiskURLs = []
+        MediaManager.insertedFloppyDisks = []
     }
 
     @IBAction func clearRecentlyExportedDisksAction(_ sender: NSMenuItem!) {
 
-        let drive = DriveID(rawValue: sender.tag)!
-        myAppDelegate.clearRecentlyExportedDiskURLs(drive: drive)
+        let drive = sender.tag
+        mm.clearRecentlyExportedDiskURLs(drive: drive)
     }
 
     @IBAction func clearRecentlyInsertedTapesAction(_ sender: Any!) {
-        myAppDelegate.recentlyInsertedTapeURLs = []
+        MediaManager.insertedTapes = []
     }
     
     @IBAction func clearRecentlyAttachedCartridgesAction(_ sender: Any!) {
-        myAppDelegate.recentlyAttachedCartridgeURLs = []
+        MediaManager.attachedCartridges = []
     }
     
     @IBAction func ejectDiskAction(_ sender: NSMenuItem!) {
-        
-        let drive = c64.drive(sender)
-        
-        if proceedWithUnexportedDisk(drive: drive.id) {
-            
+
+        ejectDiskAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
+    }
+
+    func ejectDiskAction(drive nr: Int) {
+
+        let drive = c64.drive(nr)
+
+        if proceedWithUnsavedFloppyDisk(drive: drive) {
+
             drive.ejectDisk()
-            myAppDelegate.clearRecentlyExportedDiskURLs(drive: drive.id)
+            mm.clearRecentlyExportedDiskURLs(drive: nr)
         }
     }
-    
+
     @IBAction func exportDiskAction(_ sender: NSMenuItem!) {
 
-        let drive = DriveID(rawValue: sender.tag)!
-        
-        let nibName = NSNib.Name("ExportDialog")
-        let exportPanel = ExportDialog.make(parent: self, nibName: nibName)
-        exportPanel?.showSheet(forDrive: drive)
+        exportDiskAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
     }
-     
-    @IBAction func writeProtectAction(_ sender: NSMenuItem!) {
-        
-        let drive = DriveID(rawValue: sender.tag)!
 
-        if drive == .DRIVE8 {
-            c64.drive8.disk.toggleWriteProtection()
-        } else {
-            c64.drive9.disk.toggleWriteProtection()
+    func exportDiskAction(drive nr: Int) {
+
+        let nibName = NSNib.Name("DiskExporter")
+        let exportPanel = DiskExporter(with: self, nibName: nibName)
+        exportPanel?.showSheet(diskDrive: nr)
+    }
+
+    @IBAction func inspectDiskAction(_ sender: NSMenuItem!) {
+
+        inspectDiskAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
+    }
+
+    func inspectDiskAction(drive nr: Int) {
+
+        do {
+
+            let panel = DiskInspector(with: self, nibName: "DiskInspector")
+            try panel?.show(diskDrive: nr)
+
+        } catch {
+
+            showAlert(.cantDecode, error: error, window: window)
         }
     }
-    
+
+    @IBAction func inspectVolumeAction(_ sender: NSMenuItem!) {
+
+        inspectVolumeAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
+    }
+
+    func inspectVolumeAction(drive nr: Int) {
+
+        do {
+
+            let panel = VolumeInspector(with: self, nibName: "VolumeInspector")
+            try panel?.show(diskDrive: nr)
+
+        } catch {
+
+            showAlert(.cantDecode, error: error, window: window)
+        }
+    }
+
+    @IBAction func writeProtectAction(_ sender: NSMenuItem!) {
+
+        writeProtectAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
+    }
+
+    func writeProtectAction(drive nr: Int) {
+
+        switch nr {
+
+        case DRIVE8: c64.drive8.disk.toggleWriteProtection()
+        case DRIVE9: c64.drive9.disk.toggleWriteProtection()
+
+        default:
+            fatalError()
+        }
+    }
+
     @IBAction func drivePowerAction(_ sender: NSMenuItem!) {
         
-        let drive = DriveID(rawValue: sender.tag)!
-        drivePowerAction(drive: drive)
+        drivePowerAction(drive: sender.tag == 0 ? DRIVE8 : DRIVE9)
     }
     
-    func drivePowerAction(drive: DriveID) {
+    func drivePowerAction(drive nr: Int) {
                 
-        switch drive {
-        case .DRIVE8: config.drive8PowerSwitch = !config.drive8PowerSwitch
-        case .DRIVE9: config.drive9PowerSwitch = !config.drive9PowerSwitch
-        default: fatalError()
+        switch nr {
+
+        case DRIVE8: config.drive8PowerSwitch = !config.drive8PowerSwitch
+        case DRIVE9: config.drive9PowerSwitch = !config.drive9PowerSwitch
+
+        default:
+            fatalError()
         }         
     }
         
@@ -806,28 +793,17 @@ extension MyController: NSMenuItemValidation {
         
         let slot  = sender.tag
         
-        if let url = myAppDelegate.getRecentlyInsertedTapeURL(slot) {
+        if let url = MediaManager.getRecentlyInsertedTapeURL(slot) {
             insertTapeAction(from: url)
         }
     }
     
     func insertTapeAction(from url: URL) {
-        
-        let types = [ FileType.TAP ]
-        
-        do {
-            // Try to create a file proxy
-            try mydocument.createAttachment(from: url, allowedTypes: types)
-            
-            // Insert the tape
-            try mydocument.mountAttachment()
-            
-            // Remember the URL
-            myAppDelegate.noteNewRecentlyUsedURL(url)
-            
-        } catch {
 
-            (error as? VC64Error)?.cantOpen(url: url)
+        do {
+            try mm.addMedia(url: url, allowedTypes: [ .TAP ])
+        } catch {
+            self.showAlert(.cantInsertTape, error: error)
         }
     }
 
@@ -865,42 +841,31 @@ extension MyController: NSMenuItemValidation {
         openPanel.allowedFileTypes = ["crt", "zip", "gz"]
         openPanel.beginSheetModal(for: window!, completionHandler: { result in
             if result == .OK, let url = openPanel.url {
-                self.attachCartridgeAction(from: url)
+
+                do {
+                    try self.mm.addMedia(url: url, allowedTypes: [ .CRT ])
+                } catch {
+                    self.showAlert(.cantAttach, error: error, async: true)
+                }
             }
         })
     }
     
-    @IBAction func attachRecentCartridgeAction(_ sender: NSMenuItem!) throws {
+    @IBAction func attachRecentCartridgeAction(_ sender: NSMenuItem!) {
         
         let slot  = sender.tag
         
-        if let url = myAppDelegate.getRecentlyAtachedCartridgeURL(slot) {
-            attachCartridgeAction(from: url)
-        }
-    }
-    
-    func attachCartridgeAction(from url: URL) {
-        
-        let types = [ FileType.CRT ]
-        
-        do {
-            // Try to create a file proxy
-            try mydocument.createAttachment(from: url, allowedTypes: types)
-            
-            // Attach the cartridge
-            try mydocument.mountAttachment()
-            
-            // Remember the URL
-            myAppDelegate.noteNewRecentlyUsedURL(url)
-            
-        } catch {
+        if let url = MediaManager.getRecentlyAtachedCartridgeURL(slot) {
 
-            (error as? VC64Error)?.cantOpen(url: url)
+            do {
+                try self.mm.addMedia(url: url, allowedTypes: [ .CRT ])
+            } catch {
+                self.showAlert(.cantAttach, error: error, async: true)
+            }
         }
     }
-    
+
     @IBAction func detachCartridgeAction(_ sender: Any!) {
-        track()
         c64.expansionport.detachCartridgeAndReset()
     }
 
@@ -915,7 +880,6 @@ extension MyController: NSMenuItemValidation {
     }
     
     @IBAction func attachIsepicAction(_ sender: Any!) {
-        track("")
         c64.expansionport.attachIsepicCartridge()
     }
     
@@ -974,5 +938,11 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func setSwitchDummyAction(_ sender: Any!) {
         // Dummy action method to enable menu item validation
+    }
+
+    @IBAction  func inspectCartridgeAction(_ sender: Any!) {
+
+        let panel = CartridgeInspector(with: self, nibName: "CartridgeInspector")
+        panel?.show(expansionPort: c64.expansionport)
     }
 }

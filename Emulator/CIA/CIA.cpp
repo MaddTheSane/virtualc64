@@ -10,7 +10,7 @@
 #include "config.h"
 #include "CIA.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 CIA::CIA(C64 &ref) : SubComponent(ref)
 {    
@@ -49,10 +49,18 @@ CIA::getDefaultConfig()
 void
 CIA::resetConfig()
 {
-    CIAConfig defaults = getDefaultConfig();
-    
-    setConfigItem(OPT_CIA_REVISION, defaults.revision);
-    setConfigItem(OPT_TIMER_B_BUG, defaults.timerBBug);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
+
+    std::vector <Option> options = {
+
+        OPT_CIA_REVISION,
+        OPT_TIMER_B_BUG
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
 }
 
 i64
@@ -95,7 +103,7 @@ CIA::setConfigItem(Option option, i64 value)
 void
 CIA::_inspect() const
 {
-    synchronized {
+    {   SYNCHRONIZED
         
         info.portA.port = computePA();
         info.portA.reg = PRA;
@@ -130,16 +138,16 @@ CIA::_inspect() const
         
         info.idleSince = idleSince();
         info.idleTotal = idleTotal();
-        info.idlePercentage =  cpu.cycle ? (double)idleCycles / (double)cpu.cycle : 100.0;
+        info.idlePercentage =  cpu.clock ? (double)idleCycles / (double)cpu.clock : 100.0;
     }
 }
 
 void
-CIA::_dump(dump::Category category, std::ostream& os) const
+CIA::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::Config) {
+    if (category == Category::Config) {
     
         os << tab("Revision");
         os << CIARevisionEnum::key(config.revision) << std::endl;
@@ -147,7 +155,7 @@ CIA::_dump(dump::Category category, std::ostream& os) const
         os << bol(config.timerBBug) << std::endl;
     }
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Sleeping") << bol(sleeping) << std::endl;
         os << tab("Tiredness") << dec(tiredness) << std::endl;
@@ -157,7 +165,7 @@ CIA::_dump(dump::Category category, std::ostream& os) const
         os << tab("INT") << dec(INT) << std::endl;
     }
     
-    if (category & dump::Registers) {
+    if (category == Category::Registers) {
         
         os << tab("Counter A") << dec(counterA) << std::endl;
         os << tab("Latch A") << dec(latchA) << std::endl;
@@ -265,7 +273,7 @@ CIA::todInterrupt()
 void
 CIA::executeOneCycle()
 {
-    if (sleeping) wakeUp(cpu.cycle - 1);
+    if (sleeping) wakeUp(cpu.clock - 1);
     
     // Make a local copy for speed
     u64 delay = this->delay;
@@ -604,15 +612,15 @@ CIA::sleep()
     assert(!sleeping);
     
     // Determine maximum possible sleep cycle based on timer counts
-    Cycle sleepA = cpu.cycle + ((counterA > 2) ? (counterA - 1) : 0);
-    Cycle sleepB = cpu.cycle + ((counterB > 2) ? (counterB - 1) : 0);
+    Cycle sleepA = cpu.clock + ((counterA > 2) ? (counterA - 1) : 0);
+    Cycle sleepB = cpu.clock + ((counterB > 2) ? (counterB - 1) : 0);
     
     // CIAs with stopped timers can sleep forever
     if (!(feed & CIACountA0)) sleepA = INT64_MAX;
     if (!(feed & CIACountB0)) sleepB = INT64_MAX;
 
     // ZZzzz
-    sleepCycle = cpu.cycle;
+    sleepCycle = cpu.clock;
     wakeUpCycle = std::min(sleepA, sleepB);;
     tiredness = 0;
     sleeping = true;
@@ -621,7 +629,7 @@ CIA::sleep()
 void
 CIA::wakeUp()
 {
-    wakeUp(cpu.cycle);
+    wakeUp(cpu.clock);
 }
 
 void
@@ -638,11 +646,11 @@ CIA::wakeUp(Cycle targetCycle)
         
         if (feed & CIACountA0) {
             assert(counterA >= missedCycles);
-            counterA -= missedCycles;
+            counterA -= u16(missedCycles);
         }
         if (feed & CIACountB0) {
             assert(counterB >= missedCycles);
-            counterB -= missedCycles;
+            counterB -= u16(missedCycles);
         }
         
         idleCycles += missedCycles;
@@ -654,7 +662,7 @@ CIA::wakeUp(Cycle targetCycle)
 Cycle
 CIA::idleSince() const
 {
-    return isAwake() ? 0 : cpu.cycle - sleepCycle;
+    return isAwake() ? 0 : cpu.clock - sleepCycle;
 }
 
 

@@ -98,20 +98,6 @@ class CIA : public SubComponent {
     
     static constexpr u64 CIALast =      (1ULL << 42);
     
-    /* vAmiga:
-     static constexpr u64 CIASdrToSsr0 = (1ULL << 36); // Move serial data reg to serial shift reg
-     static constexpr u64 CIASdrToSsr1 = (1ULL << 37);
-     static constexpr u64 CIASsrToSdr0 = (1ULL << 38); // Move serial shift reg to serial data reg
-     static constexpr u64 CIASsrToSdr1 = (1ULL << 39);
-     static constexpr u64 CIASsrToSdr2 = (1ULL << 40);
-     static constexpr u64 CIASsrToSdr3 = (1ULL << 41);
-     static constexpr u64 CIASerClk0 =   (1ULL << 42); // Clock signal driving the serial register
-     static constexpr u64 CIASerClk1 =   (1ULL << 43);
-     static constexpr u64 CIASerClk2 =   (1ULL << 44);
-     static constexpr u64 CIASerClk3 =   (1ULL << 45);
-     static constexpr u64 CIALast =      (1ULL << 46);
-     */
-    
     static constexpr u64 CIADelayMask = ~CIALast
     & ~CIACountA0 & ~CIACountB0 & ~CIALoadA0 & ~CIALoadB0 & ~CIAPB6Low0
     & ~CIAPB7Low0 & ~CIASetInt0 & ~CIAClearInt0 & ~CIAOneShotA0 & ~CIAOneShotB0
@@ -309,7 +295,7 @@ public:
 
 private:
     
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -370,6 +356,7 @@ private:
     }
     
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     

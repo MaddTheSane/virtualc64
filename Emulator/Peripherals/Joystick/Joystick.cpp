@@ -10,7 +10,7 @@
 #include "config.h"
 #include "Joystick.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 Joystick::Joystick(C64& ref, ControlPort& pref) : SubComponent(ref), port(pref)
 {
@@ -19,7 +19,7 @@ Joystick::Joystick(C64& ref, ControlPort& pref) : SubComponent(ref), port(pref)
 const char *
 Joystick::getDescription() const
 {
-    return port.nr == PORT_ONE ? "Joystick1" : "Joystick2";
+    return port.nr == PORT_1 ? "Joystick1" : "Joystick2";
 }
 
 void
@@ -36,9 +36,19 @@ Joystick::_reset(bool hard)
 void
 Joystick::resetConfig()
 {
-    setConfigItem(OPT_AUTOFIRE, false);
-    setConfigItem(OPT_AUTOFIRE_BULLETS, -3);
-    setConfigItem(OPT_AUTOFIRE_DELAY, 125);
+    assert(isPoweredOff());
+    auto &defaults = c64.defaults;
+
+    std::vector <Option> options = {
+
+        OPT_AUTOFIRE,
+        OPT_AUTOFIRE_BULLETS,
+        OPT_AUTOFIRE_DELAY
+    };
+
+    for (auto &option : options) {
+        setConfigItem(option, defaults.get(option));
+    }
 }
 
 i64
@@ -62,7 +72,7 @@ Joystick::setConfigItem(Option option, i64 value)
             
         case OPT_AUTOFIRE:
             
-            config.autofire = (bool)value;
+            config.autofire = bool(value);
             
             // Release button immediately if autofire-mode is switches off
             if (value == false) button = false;
@@ -70,7 +80,7 @@ Joystick::setConfigItem(Option option, i64 value)
 
         case OPT_AUTOFIRE_BULLETS:
             
-            config.autofireBullets = value;
+            config.autofireBullets = isize(value);
             
             // Update the bullet counter if we're currently firing
             if (bulletCounter > 0) reload();
@@ -78,7 +88,7 @@ Joystick::setConfigItem(Option option, i64 value)
 
         case OPT_AUTOFIRE_DELAY:
             
-            config.autofireDelay = value;
+            config.autofireDelay = isize(value);
             return;
 
         default:
@@ -87,11 +97,11 @@ Joystick::setConfigItem(Option option, i64 value)
 }
 
 void
-Joystick::_dump(dump::Category category, std::ostream& os) const
+Joystick::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
 
-    if (category & dump::Config) {
+    if (category == Category::Config) {
         
         os << tab("Joystick nr") << dec(port.nr) << std::endl;
         os << tab("Auto fire") << bol(config.autofire) << std::endl;
@@ -99,7 +109,7 @@ Joystick::_dump(dump::Category category, std::ostream& os) const
         os << tab("Auto fire delay") << dec(config.autofireDelay) << std::endl;
     }
 
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Joystick nr") << dec(port.nr) << std::endl;
         os << tab("Button") << bol(button) << std::endl;
@@ -148,7 +158,7 @@ Joystick::getControlPort() const
 void
 Joystick::trigger(GamePadAction event)
 {
-    debug(PRT_DEBUG, "Port %lld: %s\n", port.nr, GamePadActionEnum::key(event));
+    debug(PRT_DEBUG, "Port %ld: %s\n", port.nr, GamePadActionEnum::key(event));
     
     switch (event) {
     

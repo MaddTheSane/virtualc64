@@ -10,7 +10,7 @@
 #include "config.h"
 #include "VIA.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 //
 // VIA 6522 (Commons)
@@ -39,14 +39,14 @@ VIA6522::prefix() const
 }
 
 void
-VIA6522::_dump(dump::Category category, std::ostream& os) const
+VIA6522::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
     u16 t1Latch = LO_HI(t1_latch_lo, t1_latch_hi);
     u16 t2Latch = LO_HI(t2_latch_lo, 0);
     
-    if (category & dump::State) {
+    if (category == Category::State) {
         
         os << tab("Input reg (IRA)");
         os << hex(ira) << std::endl;
@@ -846,8 +846,8 @@ VIA6522::sleep()
     assert(idleCounter == 0);
     
     // Determine maximum possible sleep cycles based on timer counts
-    u64 sleepA = (t1 > 2) ? (drive.cpu.cycle + t1 - 1) : 0;
-    u64 sleepB = (t2 > 2) ? (drive.cpu.cycle + t2 - 1) : 0;
+    u64 sleepA = (t1 > 2) ? (drive.cpu.clock + t1 - 1) : 0;
+    u64 sleepB = (t2 > 2) ? (drive.cpu.clock + t2 - 1) : 0;
     
     // VIAs with stopped timers can sleep forever
     if (!(delay & VIACountA1)) sleepA = UINT64_MAX;
@@ -859,7 +859,7 @@ VIA6522::sleep()
 void
 VIA6522::wakeUp()
 {
-    u64 idleCycles = idleCounter;
+    auto idleCycles = idleCounter;
     
     // Make up for missed cycles
     if (idleCycles) {
@@ -867,7 +867,7 @@ VIA6522::wakeUp()
             assert((delay & (VIACountA0)) != 0);
             assert((feed & (VIACountA0)) != 0);
             assert(t1 > idleCycles);
-            t1 -= idleCycles;
+            t1 -= u16(idleCycles);
         } else {
             assert((delay & (VIACountA0)) == 0);
             assert((feed & (VIACountA0)) == 0);
@@ -876,7 +876,7 @@ VIA6522::wakeUp()
             assert((delay & (VIACountB0)) != 0);
             assert((feed & (VIACountB0)) != 0);
             assert(t2 > idleCycles);
-            t2 -= idleCycles;
+            t2 -= u16(idleCycles);
         } else {
             assert((delay & (VIACountB0)) == 0);
             assert((feed & (VIACountB0)) == 0);

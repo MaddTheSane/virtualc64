@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "Macros.h"
 #include <algorithm>
 
 template <class T, isize delay> class TimeDelayed {
@@ -21,13 +22,13 @@ template <class T, isize delay> class TimeDelayed {
      *    pipeline[n] : Value that was written at time timeStamp - n
      */
     T pipeline[capacity];
-        
+    
     // Remembers the time of the most recent call to write()
     i64 timeStamp = 0;
-        
+    
     // Pointer to the reference clock
     i64 *clock = nullptr;
-
+    
     
     //
     // Initializing
@@ -43,10 +44,10 @@ public:
     }
     
     TimeDelayed() : TimeDelayed(nullptr) { };
-          
+    
     // Sets the reference clock (either the C64 clock or a drive clock)
     void setClock(u64 *clock) { this->clock = (i64 *)clock; }
-
+    
     // Overwrites all pipeline entries with a reset value
     void reset(T value) {
         for (isize i = 0; i < capacity; i++) pipeline[i] = value;
@@ -68,7 +69,7 @@ public:
     //
     
 public:
-            
+    
     template <class W>
     void operator<<(W& worker)
     {
@@ -77,8 +78,8 @@ public:
         << pipeline
         << timeStamp;
     }
-
-
+    
+    
     //
     // Accessing
     //
@@ -107,10 +108,9 @@ public:
     T current() const { return pipeline[0]; }
     
     // Reads a value from the pipeline with the standard delay
-    // T delayed() { return pipeline[MAX(0, timeStamp - *clock + delay)]; }
     T delayed() const {
         i64 offset = timeStamp - *clock + delay;
-        if (__builtin_expect(offset <= 0, 1)) {
+        if (likely(offset <= 0)) {
             return pipeline[0];
         } else {
             return pipeline[offset];

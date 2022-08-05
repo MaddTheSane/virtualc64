@@ -9,8 +9,8 @@
 
 #include "config.h"
 #include "T64File.h"
-#include "FSDevice.h"
-#include "IO.h"
+#include "FileSystem.h"
+#include "IOUtils.h"
 #include "Macros.h"
 
 bool
@@ -38,7 +38,7 @@ T64File::isCompatible(std::istream &stream)
 }
 
 void
-T64File::init(class FSDevice &fs)
+T64File::init(class FileSystem &fs)
 {
     // Analyze the file system
     isize numFiles = fs.numFiles();
@@ -130,8 +130,8 @@ T64File::init(class FSDevice &fs)
         ptr += 4;
         
         // File name (16 bytes)
-        PETName<16> name = fs.fileName(n);
-        name.write(ptr);
+        PETName<16> fileName = fs.fileName(n);
+        fileName.write(ptr);
         ptr += 16;
     }
     
@@ -172,17 +172,17 @@ T64File::itemName(isize nr) const
     return PETName<16>(data + 0x50 + nr * 0x20).stripped(' ');
 }
 
-u64
+isize
 T64File::itemSize(isize nr) const
 {
     assert(nr < collectionCount());
     
     // Return the number of data bytes plus 2 (for the loading address header)
-    return (u64)(memEnd(nr) - memStart(nr) + 2);
+    return isize(memEnd(nr) - memStart(nr) + 2);
 }
 
 u8
-T64File::readByte(isize nr, u64 pos) const
+T64File::readByte(isize nr, isize pos) const
 {
     assert(nr < collectionCount());
     assert(pos < itemSize(nr));
@@ -260,7 +260,7 @@ T64File::finalizeRead()
         isize noOfItemsStatedInHeader = collectionCount();
         if (noOfItems != noOfItemsStatedInHeader) {
             
-            warn("T64: Changing number of items from %zd to %zd.\n",
+            warn("T64: Changing number of items from %ld to %ld.\n",
                   noOfItemsStatedInHeader, noOfItems);
             
             data[0x24] = LO_BYTE(noOfItems);
@@ -302,7 +302,7 @@ T64File::finalizeRead()
             // Let's assume that the rest of the file data belongs to this file ...
             isize fixedEndAddrInMemory = startAddrInMemory + (size - startAddrInContainer);
 
-            warn("T64: Changing end address of item %zd from %04zX to %04zX.\n",
+            warn("T64: Changing end address of item %ld from %04lX to %04lX.\n",
                  i, endAddrInMemory, fixedEndAddrInMemory);
 
             data[n] = LO_BYTE(fixedEndAddrInMemory);

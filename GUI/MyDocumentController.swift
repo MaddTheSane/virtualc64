@@ -15,10 +15,12 @@ class MyDocumentController: NSDocumentController {
         // For media files, attach the file to a new untitled document
         if typeName.uppercased() != "V64" {
 
-            let doc = try super.makeUntitledDocument(ofType: typeName)
-            if let mydoc = doc as? MyDocument {
-                try? mydoc.createAttachment(from: url)
-                return mydoc
+            let document = try super.makeUntitledDocument(ofType: typeName)
+
+            if let document = document as? MyDocument {
+
+                try? document.mm.addMedia(url: url, allowedTypes: FileType.all)
+                return document
             }
         }
         

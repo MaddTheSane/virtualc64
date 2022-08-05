@@ -83,7 +83,7 @@ protected:
 public:
     
     // Elapsed clock cycles since power up
-    u64 cycle;
+    u64 clock;
                         
 private:
 
@@ -146,7 +146,7 @@ private:
      *  where the edge is detected, and stays high until the NMI has been
      *  handled."
      */
-    TimeDelayed <u8,1> edgeDetector = TimeDelayed <u8,1> (&cycle);
+    TimeDelayed <u8,1> edgeDetector = TimeDelayed <u8,1> (&clock);
     
     /* Level detector of IRQ line.
      * https://wiki.nesdev.com/w/index.php/CPU_interrupts
@@ -156,7 +156,7 @@ private:
      *  (or put another way, remaining high as long as the IRQ input is low
      *  during the preceding cycle's φ2).
      */
-    TimeDelayed <u8,1> levelDetector = TimeDelayed <u8,1> (&cycle);
+    TimeDelayed <u8,1> levelDetector = TimeDelayed <u8,1> (&clock);
     
     /* Result of the edge detector polling operation.
      * https://wiki.nesdev.com/w/index.php/CPU_interrupts
@@ -206,7 +206,7 @@ private:
     // Methods from C64Object
     //
 
-    void _dump(dump::Category category, std::ostream& os) const override;
+    void _dump(Category category, std::ostream& os) const override;
 
     
     //
@@ -230,7 +230,7 @@ private:
     {
         if (hard) {
             
-            worker << cycle;
+            worker << clock;
         }
         
         worker
@@ -266,6 +266,7 @@ private:
     }
     
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
+    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
 

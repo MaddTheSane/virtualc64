@@ -10,7 +10,7 @@
 #include "config.h"
 #include "CPU.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 template <typename M>
 CPU<M>::CPU(C64& ref, M& memref) : SubComponent(ref), mem(memref)
@@ -51,9 +51,9 @@ CPU<M>::_reset(bool hard)
 template <typename M> void
 CPU<M>::_inspect() const
 {    
-    synchronized {
+    {   SYNCHRONIZED
         
-        info.cycle = cycle;
+        info.cycle = clock;
         info.reg = reg;
         
         info.irq = irqLine;
@@ -80,11 +80,11 @@ CPU<M>::_debugOff()
 }
 
 template <typename M> void
-CPU<M>::_dump(dump::Category category, std::ostream& os) const
+CPU<M>::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
 
-    if (category & dump::Registers) {
+    if (category == Category::Registers) {
 
         os << tab("PC") << hex(reg.pc) << std::endl;
         os << tab("SP") << hex(reg.sp) << std::endl;
@@ -102,10 +102,10 @@ CPU<M>::_dump(dump::Category category, std::ostream& os) const
         os << std::endl;
     }
     
-    if (category & dump::State) {
+    if (category == Category::State) {
     
         os << tab("Cycle");
-        os << dec(cycle) << std::endl;
+        os << dec(clock) << std::endl;
         os << tab("Rdy line");
         os << bol(rdyLine, "high", "low") << std::endl;
         os << tab("Nmi line");
@@ -210,12 +210,12 @@ CPU<M>::setRDY(bool value)
     if (rdyLine)
     {
         rdyLine = value;
-        if (!rdyLine) rdyLineDown = cycle;
+        if (!rdyLine) rdyLineDown = clock;
     }
     else
     {
         rdyLine = value;
-        if (rdyLine) rdyLineUp = cycle;
+        if (rdyLine) rdyLineUp = clock;
     }
 }
 
@@ -226,7 +226,7 @@ CPU<M>::setRDY(bool value)
 
 template         CPU<C64Memory>::CPU(C64& ref, C64Memory& memref);
 template CPUInfo CPU<C64Memory>::getInfo() const;
-template void    CPU<C64Memory>::_dump(dump::Category category, std::ostream& os) const;
+template void    CPU<C64Memory>::_dump(Category category, std::ostream& os) const;
 template void    CPU<C64Memory>::_debugOn();
 template void    CPU<C64Memory>::_debugOff();
 template void    CPU<C64Memory>::_reset(bool hard);
@@ -243,7 +243,7 @@ template void    CPU<C64Memory>::setRDY(bool value);
 
 template         CPU<DriveMemory>::CPU(C64& ref, DriveMemory& memref);
 template CPUInfo CPU<DriveMemory>::getInfo() const;
-template void    CPU<DriveMemory>::_dump(dump::Category category, std::ostream& os) const;
+template void    CPU<DriveMemory>::_dump(Category category, std::ostream& os) const;
 template void    CPU<DriveMemory>::_debugOn();
 template void    CPU<DriveMemory>::_debugOff();
 template void    CPU<DriveMemory>::_reset(bool hard);

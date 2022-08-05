@@ -9,7 +9,7 @@
 
 #include "config.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 #include "Checksum.h"
 
 #include <stdarg.h>
@@ -121,7 +121,7 @@ Disk::init(const string &path, bool wp)
         return;
     }
     
-    auto fs = FSDevice(path);
+    auto fs = FileSystem(path);
     init(fs, wp);
 }
 
@@ -132,15 +132,20 @@ Disk::init(DOSType type, PETName<16> name, bool wp)
     
     if (type == DOS_TYPE_CBM) {
         
-        auto fs = FSDevice(DISK_TYPE_SS_SD, DOS_TYPE_CBM);
+        auto fs = FileSystem(DISK_TYPE_SS_SD, DOS_TYPE_CBM);
         fs.setName(name);
         init(fs, wp);
+
+    } else {
+
+        clearDisk();
     }
 }
 
 void
-Disk::init(const FSDevice &fs, bool wp)
+Disk::init(const FileSystem &fs, bool wp)
 {
+    clearDisk();
     encode(fs);
     setWriteProtection(wp);
 }
@@ -148,6 +153,7 @@ Disk::init(const FSDevice &fs, bool wp)
 void
 Disk::init(const G64File &g64, bool wp)
 {
+    clearDisk();
     encodeG64(g64);
     setWriteProtection(wp);
 }
@@ -155,14 +161,14 @@ Disk::init(const G64File &g64, bool wp)
 void
 Disk::init(const D64File &d64, bool wp)
 {
-    auto fs = FSDevice(d64);
+    auto fs = FileSystem(d64);
     init(fs, wp);
 }
 
 void
 Disk::init(AnyCollection &collection, bool wp)
 {
-    auto fs = FSDevice(collection);
+    auto fs = FileSystem(collection);
     init(fs, wp);
 }
 
@@ -173,20 +179,20 @@ Disk::init(util::SerReader &reader)
 }
 
 void
-Disk::_dump(dump::Category category, std::ostream& os) const
+Disk::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
-    if (category & dump::State) {
+    if (category == Category::State) {
 
-        auto checksum = util::fnv_1a_32((const u8 *)data.track, sizeof(data.track));
+        auto checksum = util::fnv32((const u8 *)data.track, sizeof(data.track));
 
         os << tab("Write protected") << bol(writeProtected) << std::endl;
         os << tab("Modified") << bol(modified) << std::endl;
         os << tab("Checksum") << hex(checksum) << std::endl;
     }
 
-    if (category & dump::Layout) {
+    if (category == Category::Layout) {
 
         for (Halftrack ht = 1; ht <= highestHalftrack; ht++) {
             
@@ -237,34 +243,10 @@ Disk::encodeGcr(u8 *values, isize length, Track t, HeadPos offset)
     }
 }
 
-/*
-u8
-Disk::decodeGcrNibble(u8 *gcr)
-{
-    assert(gcr);
-    
-    auto codeword = gcr[0] << 4 | gcr[1] << 3 | gcr[2] << 2 | gcr[3] << 1 | gcr[4];
-    assert(codeword < 32);
-    
-    return invgcr[codeword];
-}
-
-u8
-Disk::decodeGcr(u8 *gcr)
-{
-    assert(gcr);
-    
-    u8 nibble1 = decodeGcrNibble(gcr);
-    u8 nibble2 = decodeGcrNibble(gcr + 5);
-
-    return (u8)(nibble1 << 4 | nibble2);
-}
-*/
-
 bool
 Disk::isValidHeadPos(Halftrack ht, HeadPos pos) const
 {
-    return isHalftrackNumber(ht) && pos < length.halftrack[ht];
+    return isHalftrackNumber(ht) && pos >= 0 && pos < length.halftrack[ht];
 }
 
 HeadPos
@@ -394,7 +376,7 @@ Disk::decodeDisk(u8 *dest, isize numTracks, DiskAnalyzer &analyzer)
         if (trackIsEmpty(t))
             break;
         
-       trace(GCR_DEBUG, "Decoding track %zd %s\n", t, dest ? "" : "(test run)");
+       trace(GCR_DEBUG, "Decoding track %ld %s\n", t, dest ? "" : "(test run)");
         numBytes += decodeTrack(t, dest + (dest ? numBytes : 0), analyzer);
     }
     
@@ -420,7 +402,7 @@ Disk::decodeHalfrack(Halftrack ht, u8 *dest, DiskAnalyzer &analyzer)
     // For each sector ...
     for (Sector s = 0; s < numSectors; s++) {
         
-        trace(GCR_DEBUG, "   Decoding sector %zd\n", s);
+        trace(GCR_DEBUG, "   Decoding sector %ld\n", s);
         SectorInfo info = analyzer.sectorLayout(ht, s);
         if (info.dataBegin != info.dataEnd) {
             numBytes += decodeSector(ht, info.dataBegin, dest + (dest ? numBytes : 0), analyzer);
@@ -474,10 +456,10 @@ Disk::encodeG64(const G64File &a)
         }
         
         if (size > 7928) {
-            warn("Halftrack %zd has %zd bytes. Must be less than 7928\n", ht, size);
+            warn("Halftrack %ld has %ld bytes. Must be less than 7928\n", ht, size);
             continue;
         }
-        trace(GCR_DEBUG, "  Encoding halftrack %zd (%zd bytes)\n", ht, size);
+        trace(GCR_DEBUG, "  Encoding halftrack %ld (%ld bytes)\n", ht, size);
         length.halftrack[ht] = (u16)(8 * size);
         
         a.copyHalftrack(ht, data.halftrack[ht]);
@@ -485,7 +467,7 @@ Disk::encodeG64(const G64File &a)
 }
 
 void
-Disk::encode(const FSDevice &fs, bool alignTracks)
+Disk::encode(const FileSystem &fs, bool alignTracks)
 {    
     // 64COPY (fails on VICE test drive/skew)
     /*
@@ -523,7 +505,7 @@ Disk::encode(const FSDevice &fs, bool alignTracks)
     
     isize numTracks = fs.getNumTracks();
 
-    trace(GCR_DEBUG, "Encoding disk with %zd tracks\n", numTracks);
+    trace(GCR_DEBUG, "Encoding disk with %ld tracks\n", numTracks);
 
     // Wipe out track data
     clearDisk();
@@ -553,10 +535,10 @@ Disk::encode(const FSDevice &fs, bool alignTracks)
 }
 
 isize
-Disk::encodeTrack(const FSDevice &fs, Track t, isize gap, HeadPos start)
+Disk::encodeTrack(const FileSystem &fs, Track t, isize gap, HeadPos start)
 {
     assert(isTrackNumber(t));
-    trace(GCR_DEBUG, "Encoding track %zd\n", t);
+    trace(GCR_DEBUG, "Encoding track %ld\n", t);
 
     isize totalEncodedBits = 0;
     
@@ -572,7 +554,7 @@ Disk::encodeTrack(const FSDevice &fs, Track t, isize gap, HeadPos start)
 }
 
 isize
-Disk::encodeSector(const FSDevice &fs, Track t, Sector s, HeadPos start, isize tailGap)
+Disk::encodeSector(const FileSystem &fs, Track t, Sector s, HeadPos start, isize tailGap)
 {
     assert(isValidTrackSectorPair(t, s));
     
@@ -581,7 +563,7 @@ Disk::encodeSector(const FSDevice &fs, Track t, Sector s, HeadPos start, isize t
     HeadPos offset = start;
     u8 errorCode = fs.getErrorCode(ts);
         
-    trace(GCR_DEBUG, "  Encoding track/sector %zd/%zd\n", t, s);
+    trace(GCR_DEBUG, "  Encoding track/sector %ld/%ld\n", t, s);
     
     // Get disk id and compute checksum
     u8 id1 = fs.diskId1();

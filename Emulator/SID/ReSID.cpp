@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ReSID.h"
 #include "C64.h"
-#include "IO.h"
+#include "IOUtils.h"
 
 ReSID::ReSID(C64 &ref, int n) : SubComponent(ref), nr(n)
 {
@@ -75,7 +75,7 @@ ReSID::setClockFrequency(u32 frequency)
 void
 ReSID::_inspect() const
 {
-    synchronized {
+    {   SYNCHRONIZED
         
         reSID::SID::State state = sid->read_state();
         u8 *reg = (u8 *)state.sid_register;
@@ -106,7 +106,7 @@ ReSID::_inspect() const
 }
 
 void
-ReSID::_dump(dump::Category category, std::ostream& os) const
+ReSID::_dump(Category category, std::ostream& os) const
 {
     using namespace util;
     
@@ -118,7 +118,7 @@ ReSID::_dump(dump::Category category, std::ostream& os) const
     ft == FASTSID_HIGH_PASS ? "HIGH_PASS" :
     ft == FASTSID_BAND_PASS ? "BAND_PASS" : "???";
     
-    if (category & dump::State) {
+    if (category == Category::State) {
    
         os << tab("Chip");
         os << "ReSID " << dec(nr) << std::endl;
@@ -142,7 +142,7 @@ ReSID::_dump(dump::Category category, std::ostream& os) const
         os << hex((u8)(reg[0x17] & 0x0F));
     }
     
-    if (category & dump::Registers) {
+    if (category == Category::Registers) {
    
         for (isize i = 0; i <= 0x1C; i++) {
    
@@ -160,7 +160,7 @@ ReSID::didLoadFromBuffer(const u8 *buffer)
 }
  
 isize
-ReSID::willSaveToBuffer(const u8 *buffer)
+ReSID::willSaveToBuffer(u8 *buffer)
 {
     st = sid->read_state();
     return 0;
@@ -180,8 +180,11 @@ ReSID::setRevision(SIDRevision revision)
 
     assert(revision == 0 || revision == 1);
     model = revision;
-    
-    suspended { sid->set_chip_model((reSID::chip_model)revision); }
+
+    {   SUSPENDED
+
+        sid->set_chip_model((reSID::chip_model)revision);
+    }
         
     assert((SIDRevision)sid->sid_model == revision);
     trace(SID_DEBUG, "Emulating SID revision %s.\n", SIDRevisionEnum::key(revision));
@@ -205,8 +208,11 @@ ReSID::setAudioFilter(bool value)
     assert(!isRunning());
 
     emulateFilter = value;
-    
-    suspended { sid->enable_filter(value); }
+
+    {   SUSPENDED
+
+        sid->enable_filter(value);
+    }
     
     trace(SID_DEBUG, "%s audio filter emulation.\n", value ? "Enabling" : "Disabling");
 }
@@ -238,12 +244,13 @@ ReSID::setSamplingMethod(SamplingMethod value)
             value = SAMPLING_INTERPOLATE;
             break;
         default:
-            warn("Unknown sampling method: %lld\n", value);
+            warn("Unknown sampling method: %ld\n", value);
     }
 
     samplingMethod = value;
-    
-    suspended {
+
+    {   SUSPENDED
+
         sid->set_sampling_parameters((double)clockFrequency,
                                      (reSID::sampling_method)samplingMethod,
                                      (double)sampleRate);
@@ -255,7 +262,7 @@ ReSID::setSamplingMethod(SamplingMethod value)
 u8
 ReSID::peek(u16 addr)
 {	
-    return sid->read(addr);
+    return u8(sid->read(addr));
 }
 
 void 
@@ -264,7 +271,7 @@ ReSID::poke(u16 addr, u8 value)
     sid->write(addr, value);
 }
 
-i64
+isize
 ReSID::executeCycles(isize numCycles, SampleStream &stream)
 {
     short buf[2049];
@@ -295,7 +302,7 @@ ReSID::executeCycles(isize numCycles, SampleStream &stream)
     return samples;
 }
 
-i64
+isize
 ReSID::executeCycles(isize numCycles)
 {
     return executeCycles(numCycles, muxer.sidStream[nr]);
