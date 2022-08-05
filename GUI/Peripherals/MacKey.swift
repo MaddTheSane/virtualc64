@@ -11,9 +11,8 @@
 
 import Carbon.HIToolbox
 
-/* Mapping from Mac key codes to textual representations. This mapping covers
- * keys with an empty standard representation.
- */
+/// Mapping from Mac key codes to textual representations. This mapping covers
+/// keys with an empty standard representation.
 let mac2string: [Int: String] = [
     
     kVK_ANSI_Keypad0:     "\u{2327}", // ⌧
@@ -65,14 +64,13 @@ let mac2string: [Int: String] = [
     kVK_DownArrow:        "\u{2193}"   // ↓
 ]
 
-/* This structure represents a physical key of the Mac keyboard.
-*/
+/// This structure represents a physical key of the Mac keyboard.
 struct MacKey: Codable {
     
-    // The unique identifier of this Mac key
+    /// The unique identifier of this Mac key
     var keyCode: Int = 0
     
-    // Modifier flags at the time the key was pressed
+    /// Modifier flags at the time the key was pressed
     var carbonFlags: Int = 0
     
     init(keyCode: Int, flags: NSEvent.ModifierFlags = []) {
@@ -100,7 +98,7 @@ struct MacKey: Codable {
         hasher.combine(keyCode)
     }
     
-    // Returns the modifier flags of this key
+    /// Returns the modifier flags of this key
     var modifierFlags: NSEvent.ModifierFlags {
         
         var cocoaFlags: NSEvent.ModifierFlags = []
@@ -113,7 +111,7 @@ struct MacKey: Codable {
         return cocoaFlags
     }
     
-    // Returns a string representation for this key
+    /// Returns a string representation for this key
     var stringValue: String {
         
         // Check if this key has a custom representation
@@ -173,7 +171,7 @@ extension MacKey {
     static let pageUp       = MacKey(keyCode: kVK_PageUp)
     static let pageDown     = MacKey(keyCode: kVK_PageDown)
 
-    // Layout dependend keys. Keycodes refer to the keys on a standard ANSI US keyboard
+    /// Layout dependend keys. Keycodes refer to the keys on a standard ANSI US keyboard
     struct Ansi {
         static let grave    = MacKey(keyCode: kVK_ANSI_Grave)
         static let digit0   = MacKey(keyCode: kVK_ANSI_0)

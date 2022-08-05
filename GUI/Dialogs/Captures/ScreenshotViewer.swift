@@ -21,10 +21,10 @@ class ScreenshotViewer: DialogController {
     @IBOutlet weak var text1: NSTextField!
     @IBOutlet weak var text2: NSTextField!
 
-    // Screenshot storage
+    /// Screenshot storage
     var screenshots: [Screenshot] = []
     
-    // Indicates if the screenshot storage has been edited
+    /// Indicates if the screenshot storage has been edited
     var needsSaving = false
     
     // Computed variables
@@ -183,7 +183,7 @@ class ScreenshotViewer: DialogController {
 }
 
 //
-// iCarousel data source and delegate
+// MARK: iCarousel data source and delegate
 //
 
 extension ScreenshotViewer: iCarouselDataSource, iCarouselDelegate {

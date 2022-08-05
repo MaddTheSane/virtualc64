@@ -19,27 +19,26 @@ struct InputDevice {
     static let joystick2 = 4
 }
 
-/* An object of this class holds and manages an array of GamePad objects.
- * Up to five gamepads are managed. The first three gamepads are initialized
- * by default and represent a mouse and two keyboard emulated joysticks.
- * All remaining gamepads are added dynamically when HID devices are connected.
- */
+/// An object of this class holds and manages an array of GamePad objects.
+/// Up to five gamepads are managed. The first three gamepads are initialized
+/// by default and represent a mouse and two keyboard emulated joysticks.
+/// All remaining gamepads are added dynamically when HID devices are connected.
 class GamePadManager {
     
-    // Reference to the the controller
+    /// Reference to the the controller
     var parent: MyController!
     
-    // Reference to the HID manager
+    /// Reference to the HID manager
     var hidManager: IOHIDManager
         
-    // Gamepad storage
+    /// Gamepad storage
     var gamePads: [Int: GamePad] = [:]
     
-    // Lock for synchronizing asynchroneous calls
+    /// Lock for synchronizing asynchroneous calls
     var lock = NSLock()
     
     //
-    // Initializing
+    // MARK: Initializing
     //
     
     init(parent: MyController) {
@@ -124,14 +123,14 @@ class GamePadManager {
     }
     
     //
-    // Managing slots
+    // MARK: Managing slots
     //
     
     // Returns true iff the specified game pad slot is used or free
     func isUsed(slot: Int) -> Bool { return gamePads[slot] != nil }
     func isEmpty(slot: Int) -> Bool { return gamePads[slot] == nil }
     
-    // Returns the lowest free slot number or nil if all slots are occupied
+    /// Returns the lowest free slot number or `nil` if all slots are occupied
     func findFreeSlot() -> Int? {
         
         var nr = 0
@@ -162,7 +161,7 @@ class GamePadManager {
     }
 
     //
-    // HID support
+    // MARK: HID support
     //
     
     // Matching callback (invoked when a matching HID device is plugged in)

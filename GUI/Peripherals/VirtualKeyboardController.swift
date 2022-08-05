@@ -13,25 +13,24 @@ class VirtualKeyboardController: DialogController {
     
     @IBOutlet weak var caseSelector: NSSegmentedControl!
 
-    // Array holding a reference to the view of each key
+    /// Array holding a reference to the view of each key
     var keyView = Array(repeating: nil as NSButton?, count: 66)
 
-    // Array holding a reference to the image of each key
+    /// Array holding a reference to the image of each key
     var keyImage = Array(repeating: nil as NSImage?, count: 66)
 
-    // Image cache for keys that are currently pressed
+    /// Image cache for keys that are currently pressed
     var pressedKeyImage = Array(repeating: nil as NSImage?, count: 66)
 
-    // Currently set key modifiers
+    /// Currently set key modifiers
     var modifiers: Modifier = []
         
-    // Indicates if lower case or upper case characters should be displayed
+    /// Indicates if lower case or upper case characters should be displayed
     var lowercase: Bool { return caseSelector.selectedSegment == 1 }
     
-    /* Indicates if the window should be closed when a key is pressed. If the
-     * virtual keyboard is opened as a sheet, this variable is set to true. If
-     * it is opened as a seperate window, it is set to false.
-     */
+    /// Indicates if the window should be closed when a key is pressed. If the
+    /// virtual keyboard is opened as a sheet, this variable is set to true. If
+    /// it is opened as a seperate window, it is set to false.
     var autoClose = true
 
     /*
@@ -154,7 +153,7 @@ class VirtualKeyboardController: DialogController {
     }
 }
 
-// Subclass of NSButton for the keys in the virtual keyboard
+/// Subclass of NSButton for the keys in the virtual keyboard
 class KeycapButton: NSButton {
     
     override func mouseDown(with event: NSEvent) {

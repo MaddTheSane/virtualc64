@@ -210,7 +210,7 @@ class SnapshotViewer: DialogController {
 }
 
 //
-// iCarousel data source and delegate
+// MARK: iCarousel data source and delegate
 //
 
 extension SnapshotViewer: iCarouselDataSource, iCarouselDelegate {

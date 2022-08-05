@@ -9,15 +9,14 @@
 
 import IOKit.hid
 
-/* An object of this class represents an input device connected to the Game
- * Port. The object can either represent a connected HID device or a keyboard
- * emulated device. In the first case, the object serves as a callback handler
- * for HID events. In the latter case, it translates keyboard events to
- * GamePadAction events by utilizing a key map.
- */
+/// An object of this class represents an input device connected to the Game
+/// Port. The object can either represent a connected HID device or a keyboard
+/// emulated device. In the first case, the object serves as a callback handler
+/// for HID events. In the latter case, it translates keyboard events to
+/// `GamePadAction` events by utilizing a key map.
 class GamePad {
 
-    // Mapping schemes
+    /// Mapping schemes
     enum Schemes {
 
         // Left stick
@@ -43,7 +42,7 @@ class GamePad {
     var prefs: Preferences { return manager.parent.pref }
     var db: DeviceDatabase { return myAppDelegate.database }
     
-    // The control port this device is connected to (1, 2, or nil)
+    /// The control port this device is connected to (1, 2, or nil)
     var port: Int?
 
     // Reference to the HID device
@@ -57,22 +56,22 @@ class GamePad {
     var isMouse: Bool { return type == .MOUSE }
     var isJoystick: Bool { return type == .JOYSTICK }
 
-    // Name of the managed device
+    /// Name of the managed device
     var name = ""
 
-    // Icon of this device
+    /// Icon of this device
     var icon: NSImage?
             
-    // Indicates if this device is officially supported
+    /// Indicates if this device is officially supported
     var isKnown: Bool { return db.isKnown(vendorID: vendorID, productID: productID) }
     
-    // Keymap of the managed device (only set for keyboard emulated devices)
+    /// Keymap of the managed device (only set for keyboard emulated devices)
     var keyMap: Int?
     
-    // Indicates if a joystick emulation key is currently pressed
+    /// Indicates if a joystick emulation key is currently pressed
     var keyUp = false, keyDown = false, keyLeft = false, keyRight = false
     
-    // Indicates if other components should be notified when the device is used
+    /// Indicates if other components should be notified when the device is used
     var notify = false
         
     // Controller specific mapping schemes for the two sticks and the hat switch
@@ -91,13 +90,12 @@ class GamePad {
     var releaseActions: [Int: [GamePadAction]] = [:]
     */
     
-    /* Rescued information from the latest invocation of the action function.
-     * This information is utilized to determine whether a joystick event has
-     * to be triggered.
-     */
+    /// Rescued information from the latest invocation of the action function.
+    /// This information is utilized to determine whether a joystick event has
+    /// to be triggered.
     var oldEvents: [Int: [GamePadAction]] = [:]
     
-    // Receivers for HID events
+    /// Receivers for HID events
     let inputValueCallback: IOHIDValueCallback = {
         inContext, inResult, inSender, value in
         let this: GamePad = unsafeBitCast(inContext, to: GamePad.self)
@@ -163,10 +161,10 @@ class GamePad {
     }
     
     //
-    // Responding to keyboard events
+    // MARK: Responding to keyboard events
     //
 
-    // Binds a key to a gamepad action
+    /// Binds a key to a gamepad action
     func bind(key: MacKey, action: GamePadAction) {
 
         guard let n = keyMap else { return }
@@ -177,7 +175,7 @@ class GamePad {
         prefs.keyMaps[n][key] = action.rawValue
     }
 
-    // Removes a key binding to the specified gampad action (if any)
+    /// Removes a key binding to the specified gampad action (if any)
     func unbind(action: GamePadAction) {
         
         guard let n = keyMap else { return }
@@ -187,7 +185,7 @@ class GamePad {
         }
      }
 
-    // Translates a key press event to a list of gamepad actions
+    /// Translates a key press event to a list of gamepad actions
     func keyDownEvents(_ macKey: MacKey) -> [GamePadAction] {
         
         var macKey2 = macKey
@@ -226,7 +224,7 @@ class GamePad {
         }
     }
         
-    // Handles a key release event
+    /// Handles a key release event
     func keyUpEvents(_ macKey: MacKey) -> [GamePadAction] {
         
         var macKey2 = macKey
@@ -268,7 +266,7 @@ class GamePad {
     }
     
     //
-    // Responding to HID events
+    // MARK: Responding to HID events
     //
 
     // Based on
@@ -446,7 +444,7 @@ class GamePad {
     }
     
     //
-    // Emulate events on the C64 side
+    // MARK: Emulate events on the C64 side
     //
     
     @discardableResult

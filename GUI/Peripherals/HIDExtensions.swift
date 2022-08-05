@@ -40,7 +40,7 @@ extension IOHIDDevice {
     func property(key: String) -> String? {
             
         if let prop = IOHIDDeviceGetProperty(self, key as CFString) {
-            return "\(prop)"
+            return CFCopyDescription(prop)! as String
         }
         return nil
     }

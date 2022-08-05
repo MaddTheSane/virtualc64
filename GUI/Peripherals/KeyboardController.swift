@@ -24,9 +24,10 @@ class KeyboardController: NSObject {
     var leftOption  = false, rightOption  = false
     var leftCommand = false, rightCommand = false
 
-    // Remembers the currently pressed keys and their assigned C64 key list.
-    // This variable is only used when keys are mapped symbolically. It it
-    // written in keyDown and picked up in keyUp.
+    /// Remembers the currently pressed keys and their assigned C64 key list.
+    ///
+    /// This variable is only used when keys are mapped symbolically. It is
+    /// written in keyDown and picked up in keyUp.
     var pressedKeys: [Int: [C64Key]] = [:]
         
     init(parent: MyController) {
@@ -256,8 +257,9 @@ class KeyboardController: NSObject {
         MacKey.space: C64Key.space
     ]
     
-    // Logical key mapping
-    // Keys are mapped based on their meaning or the characters they represent
+    /// Logical key mapping
+    ///
+    /// Keys are mapped based on their meaning or the characters they represent
     func translate(macKey: MacKey) -> [C64Key] {
         
         switch macKey {

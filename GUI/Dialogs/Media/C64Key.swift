@@ -23,14 +23,14 @@ func == (lhs: Modifier, rhs: Modifier) -> Bool {
     return lhs.hashValue == rhs.hashValue
 }
 
-/* The C64Key structure represents a physical keys on the C64 keyboard. Each of
- * the 66 keys is specified uniquely by it's number ranging from 0 to 65. When
- * a key is pressed, a row bit and a column bit is set in the keyboard matrix
- * that can be read by the CIA chip. Note that the CapsLock and the Restore key
- * behave differently. Caps lock is a switch that holds down the left shift key
- * until it is released and restore has no key matrix representation. This key
- * is connected to the NMI line.
- */
+/// The C64Key structure represents a physical keys on the C64 keyboard. Each of
+/// the 66 keys is specified uniquely by it's number ranging from 0 to 65. When
+/// a key is pressed, a row bit and a column bit is set in the keyboard matrix
+/// that can be read by the CIA chip. Note that the CapsLock and the Restore key
+/// behave differently. Caps lock is a switch that holds down the left shift key
+/// until it is released and restore has no key matrix representation. This key
+/// is connected to the NMI line.
+///
 struct C64Key: Codable {
     
     // Unique key identifier (0 .. 65)
@@ -201,9 +201,9 @@ extension C64Key: Hashable {
 
 extension C64Key {
     
-    /* Translates a character to a list of C64 keys. This function is called in
-     * symbolic key mapping mode when the user hits a key.
-     */
+    /// Translates a character to a list of C64 keys. This function is called in
+    /// symbolic key mapping mode when the user hits a key.
+    ///
     static func translate(char: String?) -> [C64Key] {
         
         guard let char = char else { return [] }
@@ -316,7 +316,7 @@ extension C64Key {
         }
     }
     
-    // Returns an image for being used in the configuring panel
+    /// Returns an image for being used in the configuring panel
     func image(keyCode: String, red: Bool = false) -> NSImage {
         
         assert(nr != 31 /* RESTORE */)
