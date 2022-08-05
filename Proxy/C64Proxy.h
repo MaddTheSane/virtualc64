@@ -90,9 +90,7 @@
 
 @end
 
-//
-// Base proxies
-//
+#pragma mark - Base proxies
 
 @interface Proxy : NSObject {
     
@@ -101,9 +99,7 @@
 }
 @end
 
-@interface C64ComponentProxy : Proxy {
-    
-}
+@interface C64ComponentProxy : Proxy
 @end
 
 //
@@ -159,7 +155,6 @@
 
 @property (class, readonly, strong) DefaultsProxy *defaults;
 
-- (void)dealloc;
 - (void)kill;
 
 @property BOOL warpMode;
@@ -239,7 +234,7 @@
 // Defaults
 //
 
-@interface DefaultsProxy : Proxy { }
+@interface DefaultsProxy : Proxy
 
 - (void)load:(NSURL *)url exception:(ExceptionWrapper *)ex;
 - (void)save:(NSURL *)url exception:(ExceptionWrapper *)ex;
@@ -267,7 +262,7 @@
 // Guards (Breakpoints, Watchpoints)
 //
 
-@interface GuardsProxy : Proxy { }
+@interface GuardsProxy : Proxy
 
 @property (readonly) NSInteger count;
 - (NSInteger)addr:(NSInteger)nr;
@@ -293,7 +288,7 @@
 // CPU
 //
 
-@interface CPUProxy : C64ComponentProxy { }
+@interface CPUProxy : C64ComponentProxy
 
 @property (readonly) CPUInfo info;
 @property (readonly) i64 clock;
@@ -324,7 +319,7 @@
 // CIA
 //
 
-@interface CIAProxy : C64ComponentProxy { }
+@interface CIAProxy : C64ComponentProxy
 
 - (CIAInfo)getInfo;
 
@@ -335,7 +330,7 @@
 // Memory
 //
 
-@interface MemoryProxy : C64ComponentProxy { }
+@interface MemoryProxy : C64ComponentProxy
 
 - (MemInfo)getInfo;
 
@@ -358,7 +353,7 @@
 //
 
 
-@interface VICProxy : C64ComponentProxy { }
+@interface VICProxy : C64ComponentProxy
 
 @property (readonly) NSInteger hPixels;
 @property (readonly) NSInteger vPixels;
@@ -381,7 +376,7 @@
 //
 
 
-@interface DmaDebuggerProxy : C64ComponentProxy { }
+@interface DmaDebuggerProxy : C64ComponentProxy
 
 - (DmaDebuggerConfig)getConfig;
 
@@ -392,7 +387,7 @@
 // SID
 //
 
-@interface SIDProxy : C64ComponentProxy { }
+@interface SIDProxy : C64ComponentProxy
 
 - (SIDInfo)getInfo:(NSInteger)nr;
 - (VoiceInfo)getVoiceInfo:(NSInteger)nr voice:(NSInteger)voice;
@@ -421,7 +416,7 @@
 // Keyboard
 //
 
-@interface KeyboardProxy : C64ComponentProxy { }
+@interface KeyboardProxy : C64ComponentProxy
 
 - (BOOL)keyIsPressed:(NSInteger)nr;
 - (BOOL)keyIsPressedAtRow:(NSInteger)row col:(NSInteger)col;
@@ -472,7 +467,7 @@
 // ExpansionPort
 //
 
-@interface ExpansionPortProxy : C64ComponentProxy { }
+@interface ExpansionPortProxy : C64ComponentProxy
 
 - (CartridgeInfo)getInfo;
 - (CartridgeRomInfo)getRomInfo:(NSInteger)nr;
@@ -513,7 +508,7 @@
 // IEC bus
 //
 
-@interface IECProxy : C64ComponentProxy { }
+@interface IECProxy : C64ComponentProxy
 
 @property (readonly) BOOL transferring;
 
@@ -584,7 +579,7 @@
 // VIA
 //
 
-@interface VIAProxy : C64ComponentProxy { }
+@interface VIAProxy : C64ComponentProxy
 
 @end
 
@@ -593,7 +588,7 @@
 // ParCable
 //
 
-@interface ParCableProxy : C64ComponentProxy { }
+@interface ParCableProxy : C64ComponentProxy
 
 @end
 
@@ -602,7 +597,7 @@
 // Disk
 //
 
-@interface DiskProxy : C64ComponentProxy { }
+@interface DiskProxy : C64ComponentProxy
     
 @property BOOL writeProtected;
 - (void)toggleWriteProtection;
@@ -613,10 +608,9 @@
 // DiskAnalyzer
 //
 
-@interface DiskAnalyzerProxy : Proxy { }
+@interface DiskAnalyzerProxy : Proxy
 
 - (instancetype) initWithDisk:(DiskProxy *)disk;
-- (void)dealloc;
 
 - (NSInteger)lengthOfTrack:(Track)t;
 - (NSInteger)lengthOfHalftrack:(Halftrack)ht;
@@ -638,7 +632,7 @@
 // Datasette
 //
 
-@interface DatasetteProxy : C64ComponentProxy { }
+@interface DatasetteProxy : C64ComponentProxy
 
 @property (readonly) BOOL hasTape;
 @property (readonly) NSInteger type;
@@ -658,7 +652,7 @@
 // Mouse
 //
 
-@interface MouseProxy : C64ComponentProxy { }
+@interface MouseProxy : C64ComponentProxy
 
 - (BOOL)detectShakeAbs:(NSPoint)pos;
 - (BOOL)detectShakeRel:(NSPoint)pos;
@@ -673,7 +667,7 @@
 // Joystick
 //
 
-@interface JoystickProxy : C64ComponentProxy { }
+@interface JoystickProxy : C64ComponentProxy
 
 - (void) trigger:(GamePadAction)event;
 
@@ -684,7 +678,7 @@
 // Recorder
 //
 
-@interface RecorderProxy : Proxy { }
+@interface RecorderProxy : Proxy
 
 @property NSString *path;
 - (NSString *)findFFmpeg:(NSInteger)nr;
@@ -711,7 +705,7 @@ exception:(ExceptionWrapper *)ex;
 // RetroShell
 //
 
-@interface RetroShellProxy : Proxy { }
+@interface RetroShellProxy : Proxy
 
 @property (readonly) NSInteger cursorRel;
 
