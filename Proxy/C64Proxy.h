@@ -110,8 +110,7 @@
 // Host
 //
 
-@interface HostProxy : CoreComponentProxy {
-}
+@interface HostProxy : CoreComponentProxy
 
 @property double sampleRate;
 @property NSInteger refreshRate;

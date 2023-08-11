@@ -41,7 +41,6 @@
 		501B80C325B1702500C90284 /* MyDocumentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 501B80C225B1702500C90284 /* MyDocumentController.swift */; };
 		501C46BE2965C54200C4B27B /* StrWriter.h in Sources */ = {isa = PBXBuildFile; fileRef = 501C46BC2965C54200C4B27B /* StrWriter.h */; };
 		501C46BF2965C54200C4B27B /* StrWriter.h in Sources */ = {isa = PBXBuildFile; fileRef = 501C46BC2965C54200C4B27B /* StrWriter.h */; };
-		5020434C1EE71B47006C3FD3 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		50300AEE258B2C5400D261E3 /* FSDirEntry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50300AEC258B2C5400D261E3 /* FSDirEntry.cpp */; };
 		5031D59C200B81D20088C802 /* Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5031D59B200B81D20088C802 /* Animation.swift */; };
 		5036E0B7261AEF000048E66A /* Interpreter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5036E0AF261AEF000048E66A /* Interpreter.cpp */; };
