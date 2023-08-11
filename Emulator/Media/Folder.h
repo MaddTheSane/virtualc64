@@ -11,12 +11,14 @@
 
 #include "AnyCollection.h"
 
+namespace vc64 {
+
 class Folder : public AnyCollection {
     
     class FileSystem *fs = nullptr;
-            
+
 public:
-        
+
     static bool isCompatible(const string &path);
     static bool isCompatible(std::istream &stream) { return false; }
 
@@ -38,9 +40,9 @@ private:
     
     void init(const string &path) throws;
     
-        
+
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
     
 public:
@@ -74,3 +76,5 @@ public:
     
     FileSystem *getFS() { return fs; }
 };
+
+}

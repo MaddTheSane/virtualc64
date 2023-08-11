@@ -9,9 +9,11 @@
 
 #pragma once
 
-#include "C64Object.h"
+#include "CoreObject.h"
 #include "DiskTypes.h"
 #include "FSTypes.h"
+
+namespace vc64 {
 
 /* To create a FSDevice, the layout parameters of the represendet device have
  * to be provided. This is done by passing a structure of type FSDeviceLayout
@@ -24,7 +26,7 @@
  * file.
  */
 
-struct FSDeviceDescriptor : C64Object {
+struct FSDeviceDescriptor : CoreObject {
     
     // DOS type
     DOSType dos = DOS_TYPE_NODOS;
@@ -34,7 +36,7 @@ struct FSDeviceDescriptor : C64Object {
     
     // Number of heads
     isize numHeads = 0;
-        
+
     
     //
     // Initializing
@@ -97,3 +99,5 @@ public:
     bool nextBlock(Block b, Block *nb) const;
     TSLink nextBlockRef(TSLink b) const;
 };
+
+}

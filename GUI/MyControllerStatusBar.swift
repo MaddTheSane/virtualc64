@@ -8,7 +8,20 @@
 // -----------------------------------------------------------------------------
 
 extension MyController {
-    
+
+    var hourglassIcon: NSImage? {
+
+        if WarpMode(rawValue: config.warpMode) == .AUTO {
+
+            return NSImage(named: c64.warpMode ? "hourglass3Template" : "hourglass1Template")
+
+        } else {
+
+            return NSImage(named: c64.warpMode ? "warpOnTemplate" : "warpOffTemplate")
+        }
+    }
+
+    /*
     var hourglass: NSImage? {
         
         switch pref.warpMode {
@@ -22,7 +35,8 @@ extension MyController {
             return NSImage(named: "warpOnTemplate")
         }
     }
-    
+    */
+
     var cartridgeSwitch: NSImage? {
         
         if !c64.expansionport.hasSwitch { return nil }
@@ -42,8 +56,7 @@ extension MyController {
         let on9 = c64.drive9.isSwitchedOn
 
         let running = c64.running
-        let debug = c64.debugMode
-        let jammed = c64.cpu.isJammed
+        let track = c64.trackMode
         let warp = c64.warpMode
         
         let hasCrt = c64.expansionport.cartridgeAttached
@@ -69,7 +82,7 @@ extension MyController {
             trackNumber9: connected9 && on9,
             
             haltIcon: jammed,
-            debugIcon: debug,
+            trackIcon: track,
             muteIcon: warp || muted,
             
             tapeIcon: c64.datasette.hasTape,
@@ -207,7 +220,7 @@ extension MyController {
 
     func refreshStatusBarWarpIcon() {
 
-        warpIcon.image = hourglass
+        warpIcon.image = hourglassIcon
     }
 
     func showStatusBar(_ value: Bool) {
@@ -218,13 +231,13 @@ extension MyController {
 
                 metal.adjustHeight(-26.0)
                 window?.setContentBorderThickness(26, for: .minY)
-                adjustWindowSize(26.0)
+                adjustWindowSize(dy: 26.0)
 
             } else {
 
                 metal.adjustHeight(26.0)
                 window?.setContentBorderThickness(0.0, for: .minY)
-                adjustWindowSize(-26.0)
+                adjustWindowSize(dy: -26.0)
             }
 
             statusBar = value
@@ -234,24 +247,61 @@ extension MyController {
 
     func updateSpeedometer() {
 
-        speedometer.updateWith(cycle: c64.cpu.clock, frame: renderer.frames)
+        func setColor(color: [NSColor]) {
+
+            let min = activityBar.minValue
+            let max = activityBar.maxValue
+            let cur = (activityBar.doubleValue - min) / (max - min)
+
+            let index =
+            cur < 0.15 ? 0 :
+            cur < 0.40 ? 1 :
+            cur < 0.60 ? 2 :
+            cur < 0.85 ? 3 : 4
+
+            activityBar.fillColor = color[index]
+        }
+
+        speedometer.updateWith(cycle: c64.cpu.clock,
+                               emuFrame: Int64(c64.frame),
+                               gpuFrame: renderer.frames)
 
         switch activityType.selectedTag() {
 
         case 0:
             let mhz = speedometer.mhz
+            activityBar.maxValue = 20
             activityBar.doubleValue = 10 * mhz
             activityInfo.stringValue = String(format: "%.2f MHz", mhz)
+            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
 
         case 1:
-            let cpu = c64.cpuLoad
-            activityBar.integerValue = cpu
-            activityInfo.stringValue = String(format: "%d%% CPU", cpu)
+            let fps = speedometer.emuFps
+            activityBar.maxValue = 120
+            activityBar.doubleValue = fps
+            activityInfo.stringValue = String(format: "%d Hz", Int(fps))
+            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
 
         case 2:
-            let fps = speedometer.fps
+            let cpu = c64.cpuLoad
+            activityBar.maxValue = 100
+            activityBar.integerValue = cpu
+            activityInfo.stringValue = String(format: "%d%% CPU", cpu)
+            setColor(color: [.systemGreen, .systemGreen, .systemGreen, .systemYellow, .systemRed])
+
+        case 3:
+            let fps = speedometer.gpsFps
+            activityBar.maxValue = 120
             activityBar.doubleValue = fps
             activityInfo.stringValue = String(format: "%d FPS", Int(fps))
+            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+
+        case 4:
+            let fill = c64.sid.getStats().fillLevel * 100.0
+            activityBar.maxValue = 100
+            activityBar.doubleValue = fill
+            activityInfo.stringValue = String(format: "Fill level %d%%", Int(fill))
+            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
 
         default:
             activityBar.integerValue = 0
@@ -270,6 +320,23 @@ extension MyController {
 
     @IBAction func warpAction(_ sender: Any!) {
 
+        switch WarpMode(rawValue: config.warpMode) {
+
+        case .AUTO: config.warpMode = WarpMode.NEVER.rawValue
+        case .NEVER: config.warpMode = WarpMode.ALWAYS.rawValue
+        case .ALWAYS: config.warpMode = WarpMode.AUTO.rawValue
+
+        default:
+            fatalError()
+        }
+
+        refreshStatusBar()
+        myAppDelegate.prefController?.refresh()
+    }
+    
+    /*
+    @IBAction func warpAction(_ sender: Any!) {
+
         switch pref.warpMode {
 
         case .auto: pref.warpMode = .off
@@ -279,16 +346,20 @@ extension MyController {
 
         refreshStatusBar()
     }
+    */
 
     @IBAction func activityTypeAction(_ sender: NSPopUpButton!) {
 
-        var min, max, warn, crit: Double
+        /*
+        var min, max: Double
 
         switch sender.selectedTag() {
 
-        case 0: min = 0; max = 20; warn = 13; crit = 16
-        case 1: min = 0; max = 100; warn = 50; crit = 75
-        case 2: min = 0; max = 120; warn = 75; crit = 100
+        case 0: min = 0; max = 20;
+        case 1: min = 0; max = 120;
+        case 2: min = 0; max = 100;
+        case 3: min = 0; max = 120;
+        case 4: min = 0; max = 100;
 
         default:
             fatalError()
@@ -296,8 +367,9 @@ extension MyController {
 
         activityBar.minValue = min
         activityBar.maxValue = max
-        activityBar.warningValue = warn
-        activityBar.criticalValue = crit
+        // activityBar.warningValue = warn
+        // activityBar.criticalValue = crit
+        */
 
         refreshStatusBar()
     }

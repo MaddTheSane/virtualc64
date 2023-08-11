@@ -18,7 +18,7 @@ class MediaManager {
         static let protect     = Option(rawValue: 1 << 2)
         static let reset       = Option(rawValue: 1 << 3)
         static let autostart   = Option(rawValue: 1 << 4)
-
+        static let flash       = Option(rawValue: 1 << 5)
     }
 
     // References to other objects
@@ -206,7 +206,7 @@ class MediaManager {
     //
 
     func addMedia(url: URL,
-                  allowedTypes types: [FileType],
+                  allowedTypes types: [FileType] = FileType.all,
                   drive id: Int = DRIVE8,
                   options: [Option] = [.remember]) throws {
 
@@ -238,7 +238,11 @@ class MediaManager {
         }
 
         // Process file
-        try addMedia(proxy: file, drive: c64.drive(id), options: options)
+        if options.contains(.flash) {
+            try flashMedia(proxy: file, options: options)
+        } else {
+            try addMedia(proxy: file, drive: c64.drive(id), options: options)
+        }
     }
 
     func addMedia(proxy: AnyFileProxy,
@@ -295,6 +299,51 @@ class MediaManager {
             debug(.media, "T64, PRG, P00")
             if proceedUnsaved {
                 drive!.insertCollection(proxy, protected: options.contains(.protect))
+            }
+
+        default:
+            fatalError()
+        }
+    }
+
+    func flashMedia(proxy: AnyFileProxy,
+                    options: [Option] = []) throws {
+
+        switch proxy {
+
+        case let proxy as SnapshotProxy:
+
+            debug(.media, "Snapshot")
+            try c64.flash(proxy)
+
+        case let proxy as ScriptProxy:
+
+            debug(.media, "Script")
+            console.runScript(script: proxy)
+
+        case let proxy as CRTFileProxy:
+
+            debug(.media, "CRT")
+            try c64.expansionport.attachCartridge(proxy, reset: true)
+
+        case let proxy as TAPFileProxy:
+
+            debug(.media, "TAP")
+            c64.datasette.insertTape(proxy)
+
+            if options.contains(.autostart) {
+                controller.keyboard.type("load\n")
+                c64.datasette.pressPlay()
+            }
+
+        case let proxy as AnyCollectionProxy:
+
+            debug(.media, "AnyCollection")
+            if let volume = try? FileSystemProxy.make(with: proxy) {
+
+                try? c64.flash(volume, item: 0)
+                controller.keyboard.type("run\n")
+                controller.renderer.rotateLeft()
             }
 
         default:

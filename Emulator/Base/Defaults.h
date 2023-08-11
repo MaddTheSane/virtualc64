@@ -9,10 +9,12 @@
 
 #pragma once
 
-#include "C64Component.h"
+#include "CoreComponent.h"
 #include "IOUtils.h"
 
-class Defaults : public C64Object {
+namespace vc64 {
+
+class Defaults : public CoreObject {
 
     mutable util::ReentrantMutex mutex;
 
@@ -35,7 +37,7 @@ public:
 
 
     //
-    // Methods from AmigaObject
+    // Methods from CoreObject
     //
 
 private:
@@ -93,3 +95,5 @@ public:
     void remove(Option option, isize nr) throws;
     void remove(Option option, std::vector <isize> nrs) throws;
 };
+
+}

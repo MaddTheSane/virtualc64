@@ -7,13 +7,6 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
-enum WarpMode: Int {
-
-    case auto
-    case off
-    case on
-}
-
 protocol MessageReceiver {
     func processMessage(_ msg: Message)
 }
@@ -29,7 +22,7 @@ class MyController: NSWindowController, MessageReceiver {
     var c64: C64Proxy!
 
     // Media manager (handles the import and export of media files)
-    var mm: MediaManager!
+    var mm: MediaManager { return mydocument.mm }
 
     // Inspector panel of this emulator instance
     var inspector: Inspector?
@@ -66,10 +59,10 @@ class MyController: NSWindowController, MessageReceiver {
     
     // Speedometer to measure clock frequence and frames per second
     var speedometer: Speedometer!
-    
-    // Used inside the timer function to fine tune timed events
-    var animationCounter = 0
-    
+
+    // Remembers if an illegal instruction has jammed the CPU
+    var jammed = false
+
     // Remembers if audio is muted (master volume of both channels is 0)
     var muted = false
 
@@ -78,9 +71,6 @@ class MyController: NSWindowController, MessageReceiver {
     // The flags are utilized, e.g., to alter behaviour when a key on the
     // TouchBar is pressed.
     var modifierFlags: NSEvent.ModifierFlags = []
-
-    // Indicates if the mouse is currently hidden
-    var hideMouse = false
 
     // Indicates if a status bar is shown
     var statusBar = true
@@ -116,7 +106,7 @@ class MyController: NSWindowController, MessageReceiver {
     @IBOutlet weak var spinning9: NSProgressIndicator!
     
     @IBOutlet weak var haltIcon: NSButton!
-    @IBOutlet weak var debugIcon: NSButton!
+    @IBOutlet weak var trackIcon: NSButton!
     @IBOutlet weak var muteIcon: NSButton!
     @IBOutlet weak var tapeIcon: NSButton!
     @IBOutlet weak var tapeCounter: NSTextField!
@@ -165,9 +155,6 @@ extension MyController {
     override open func windowDidLoad() {
 
         debug(.lifetime)
-
-        // Show the mouse
-        hideMouse = false
         
         // Create keyboard controller
         keyboard = KeyboardController(parent: self)
@@ -190,7 +177,7 @@ extension MyController {
         configureWindow()
 
         // Enable message processing
-        registerAsListener()
+        launch()
 
         do {
             // Let the C64 throw an exception if it is not ready to power on
@@ -204,6 +191,9 @@ extension MyController {
             // Open the Rom dialog
             openConfigurator(tab: "Roms")
         }
+
+        // Add media file (if provided on startup)
+        if let url = mydocument.launchUrl { try? mm.addMedia(url: url) }
 
         // Create speed monitor
         speedometer = Speedometer()
@@ -232,21 +222,18 @@ extension MyController {
         window?.collectionBehavior = .fullScreenPrimary
     }
     
-    func registerAsListener() {
+    func launch() {
 
         // Convert 'self' to a void pointer
         let myself = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
         
-        c64.setListener(myself) { (ptr, type, d1, d2, d3, d4) in
+        c64.launch(myself) { (ptr, msg: Message) in
 
             // Convert void pointer back to 'self'
             let myself = Unmanaged<MyController>.fromOpaque(ptr!).takeUnretainedValue()
 
             // Process message in the main thread
-            DispatchQueue.main.async {
-                myself.processMessage(Message(type: MsgType(rawValue: type)!,
-                                              data1: d1, data2: d2, data3: d3, data4: d4))
-            }
+            DispatchQueue.main.async { myself.processMessage(msg) }
         }
     }
     
@@ -254,31 +241,32 @@ extension MyController {
     // Timer and message processing
     //
     
-    func timerFunc() {
+    func update(frames: Int64) {
 
-        animationCounter += 1
+        if frames % 5 == 0 {
 
-        // Animate the inspector
-        if inspector?.window?.isVisible == true { inspector!.continuousRefresh() }
-        
-        // Update the cartridge LED
-        if c64.expansionport.hasLed {
-            let led = c64.expansionport.led ? 1 : 0
-            if crtIcon.tag != led {
-                crtIcon.tag = led
-                crtIcon.image = NSImage(named: led == 1 ? "crtLedOnTemplate" : "crtTemplate")
-                crtIcon.needsDisplay = true
+            // Animate the inspector
+            if inspector?.window?.isVisible == true { inspector!.continuousRefresh() }
+
+            // Update the cartridge LED
+            if c64.expansionport.hasLed {
+                let led = c64.expansionport.led ? 1 : 0
+                if crtIcon.tag != led {
+                    crtIcon.tag = led
+                    crtIcon.image = NSImage(named: led == 1 ? "crtLedOnTemplate" : "crtTemplate")
+                    crtIcon.needsDisplay = true
+                }
             }
         }
 
-        // Do less frequently...
-        if (animationCounter % 4) == 0 {
+        // Do less times...
+        if (frames % 16) == 0 {
             
             updateSpeedometer()
         }
         
         // Do lesser times...
-        if (animationCounter % 32) == 0 {
+        if (frames % 256) == 0 {
             
             // Let the cursor disappear in fullscreen mode
             if renderer.fullscreen &&
@@ -288,59 +276,43 @@ extension MyController {
             }
         }
     }
-    
-    func updateWarp() {
-        
-        var warp: Bool
-        
-        switch pref.warpMode {
-        case .auto: warp = c64.iec.transferring
-        case .off: warp = false
-        case .on: warp = true
-        }
-        
-        if warp != c64.warpMode {  c64.warpMode = warp }
-    }
 
     func processMessage(_ msg: Message) {
 
-        var data1: Int { return Int(msg.data1) }
-        var data2: Int { return Int(msg.data2) }
-        var data3: Int { return Int(msg.data3) }
-        var data4: Int { return Int(msg.data4) }
-
-        var driveNr: Int { return data1 }
-        var halftrack: Int { return data2; }
-        var vol: Int { return data3; }
-        var pan: Int { return data4; }
+        var value: Int { return Int(msg.value) }
+        var driveNr: Int { return Int(msg.drive.nr) }
+        var halftrack: Int { return Int(msg.drive.value) }
+        var pc: Int { return Int(msg.cpu.pc) }
+        var vol: Int { return Int(msg.drive.volume) }
+        var pan: Int { return Int(msg.drive.pan) }
 
         // Only proceed if the proxy object is still alive
         guard let c64 = c64 else { return }
 
         switch msg.type {
 
-        case .REGISTER:
-            debug(.lifetime, "Registered to message queue")
-
-        case .UNREGISTER:
-            debug(.lifetime, "Unregistered from message queue")
-
         case .CONFIG:
             inspector?.fullRefresh()
             refreshStatusBar()
 
-        case .POWER_ON:
-            renderer.canvas.open(delay: 2)
-            virtualKeyboard = nil
-            toolbar.updateToolbar()
-            inspector?.powerOn()
+        case .POWER:
 
-        case .POWER_OFF:
-            toolbar.updateToolbar()
-            inspector?.powerOff()
+            if value != 0 {
+
+                renderer.canvas.open(delay: 2)
+                virtualKeyboard = nil
+                toolbar.updateToolbar()
+                inspector?.powerOn()
+
+            } else {
+
+                toolbar.updateToolbar()
+                inspector?.powerOff()
+            }
 
         case .RUN:
             needsSaving = true
+            jammed = false
             toolbar.updateToolbar()
             inspector?.run()
             refreshStatusBar()
@@ -355,23 +327,30 @@ extension MyController {
             inspector?.step()
 
         case .RESET:
-            updateWarp()
             inspector?.reset()
 
-        case .HALT:
+        case .SHUTDOWN:
             shutDown()
 
-        case .MUTE_ON:
-            muted = true
+        case .ABORT:
+            debug(.shutdown, "Aborting with exit code \(value)")
+            exit(Int32(value))
+
+        case .WARP, .TRACK:
             refreshStatusBar()
 
-        case .MUTE_OFF:
-            muted = false
+        case .MUTE:
+            muted = value != 0
             refreshStatusBar()
 
-        case .WARP_ON,
-                .WARP_OFF:
-            refreshStatusBar()
+        case .CONSOLE_CLOSE:
+            renderer.console.close(delay: 0.25)
+
+        case .CONSOLE_UPDATE:
+            renderer.console.isDirty = true
+
+        case .CONSOLE_DEBUGGER:
+            break
 
         case .SCRIPT_DONE,
                 .SCRIPT_PAUSE,
@@ -391,17 +370,18 @@ extension MyController {
         case .ROM_MISSING:
             break
 
-        case .CPU_OK:
-            break
-
         case .BREAKPOINT_REACHED:
-            inspector?.signalBreakPoint(pc: Int(msg.data1))
+            inspector?.signalBreakPoint(pc: pc)
 
         case .WATCHPOINT_REACHED:
-            inspector?.signalWatchPoint(pc: Int(msg.data1))
+            inspector?.signalWatchPoint(pc: pc)
 
         case .CPU_JAMMED:
+            jammed = true
             refreshStatusBar()
+
+        case .CPU_JUMPED:
+            inspector?.signalGoto(pc: pc)
 
         case .PAL, .NTSC:
             renderer.canvas.updateTextureRect()
@@ -432,12 +412,11 @@ extension MyController {
 
         case .IEC_BUS_BUSY,
                 .IEC_BUS_IDLE:
-            updateWarp()
-            refreshStatusBarDriveActivity()
+            refreshStatusBar()
 
         case .DRIVE_MOTOR_ON,
                 .DRIVE_MOTOR_OFF:
-            refreshStatusBarDriveActivity()
+            refreshStatusBar()
 
         case .DRIVE_CONNECT,
                 .DRIVE_DISCONNECT,
@@ -454,8 +433,7 @@ extension MyController {
                 .DRIVE_POWER_SAVE_OFF:
             break
 
-        case .VC1530_CONNECT,
-                .VC1530_DISCONNECT:
+        case .VC1530_CONNECT:
             hideOrShowDriveMenus()
             refreshStatusBar()
 
@@ -474,13 +452,10 @@ extension MyController {
         case .CRT_ATTACHED:
             refreshStatusBar()
 
-        case .CRT_DETACHED:
-            refreshStatusBar()
-
         case .CART_SWITCH:
             break
 
-        case .KB_AUTO_RELEASE:
+        case .KB_AUTO_RELEASE, .KB_AUTO_PRESS:
             if virtualKeyboard?.window?.isVisible == true {
                 virtualKeyboard!.refresh()
             }
@@ -516,17 +491,11 @@ extension MyController {
             refreshStatusBar()
             showAlert(.recorderAborted)
 
-        case .CLOSE_CONSOLE:
-            renderer.console.close(delay: 0.25)
+        case .DMA_DEBUG:
+            value != 0 ? renderer.zoomTextureOut() : renderer.zoomTextureIn()
 
-        case .UPDATE_CONSOLE:
-            renderer.console.isDirty = true
-
-        case .DMA_DEBUG_ON:
-            renderer.zoomTextureOut()
-
-        case .DMA_DEBUG_OFF:
-            renderer.zoomTextureIn()
+        case .ALARM:
+            debug(.events, "Received Alarm \(msg.value)")
 
         default:
             warn("Unknown message: \(msg)")

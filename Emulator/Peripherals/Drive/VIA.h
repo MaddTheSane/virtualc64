@@ -11,6 +11,8 @@
 
 #include "SubComponent.h"
 
+namespace vc64 {
+
 /*
  * This implementation is mainly based on the document
  *
@@ -202,10 +204,10 @@ protected:
     u8 tiredness;
     
     // Wakeup cycle
-    u64 wakeUpCycle;
+    i64 wakeUpCycle;
     
     // Number of skipped executions
-    u64 idleCounter;
+    i64 idleCounter;
     
     
     //
@@ -220,7 +222,7 @@ public:
 
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 public:
@@ -233,13 +235,13 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
     
     void _reset(bool hard) override;
-        
+
     template <class T>
     void applyToPersistentItems(T& worker)
     {
@@ -551,3 +553,5 @@ public:
     void pullDownIrqLine() override;
     void releaseIrqLine() override;
 };
+
+}

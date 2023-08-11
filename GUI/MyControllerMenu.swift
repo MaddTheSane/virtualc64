@@ -55,12 +55,18 @@ extension MyController: NSMenuItemValidation {
         case #selector(MyController.toggleStatusBarAction(_:)):
             item.title = statusBar ? "Hide Status Bar" : "Show Status Bar"
             return true
-            
-        case #selector(MyController.hideMouseAction(_:)):
-            item.title = hideMouse ? "Show Mouse Cursor" : "Hide Mouse Cursor"
-            return true
-            
+
         // Keyboard menu
+        case #selector(MyController.mapLeftCmdKeyAction(_:)):
+            item.state = myAppDelegate.mapLeftCmdKey?.nr == item.tag ? .on : .off
+            return true
+        case #selector(MyController.mapRightCmdKeyAction(_:)):
+            print("item.tag = \(item.tag)")
+            item.state = myAppDelegate.mapRightCmdKey?.nr == item.tag ? .on : .off
+            return true
+        case #selector(MyController.mapCapsLockWarpAction(_:)):
+            item.state = myAppDelegate.mapCapsLockWarp ? .on : .off
+            return true
         case #selector(MyController.shiftLockAction(_:)):
             item.state = c64.keyboard.shiftLockIsPressed ? .on : .off
             return true
@@ -109,7 +115,18 @@ extension MyController: NSMenuItemValidation {
         // Cartridge menu
         case #selector(MyController.attachRecentCartridgeAction(_:)):
             return validateURLlist(MediaManager.attachedCartridges, image: smallCart)
-            
+
+        case #selector(MyController.attachReuDummyAction(_:)):
+            item.state = (c64.expansionport.cartridgeType == .REU) ? .on : .off
+
+        case #selector(MyController.attachReuAction(_:)):
+            item.state = (c64.expansionport.cartridgeType == .REU &&
+                          c64.expansionport.ramCapacity == item.tag * 1024) ? .on : .off
+
+        case #selector(MyController.reuBatteryAction(_:)):
+            item.state = c64.expansionport.hasBattery ? .on : .off
+            return c64.expansionport.cartridgeType == .REU
+
         case #selector(MyController.attachGeoRamDummyAction(_:)):
             item.state = (c64.expansionport.cartridgeType == .GEO_RAM) ? .on : .off
             
@@ -433,24 +450,7 @@ extension MyController: NSMenuItemValidation {
         
         showStatusBar(!statusBar)
     }
-    
-    @IBAction func hideMouseAction(_ sender: Any!) {
-        
-        undoManager?.registerUndo(withTarget: self) { targetSelf in
-            targetSelf.hideMouseAction(sender)
-        }
-        
-        if hideMouse {
-            NSCursor.unhide()
-            CGAssociateMouseAndMouseCursorPosition(boolean_t(truncating: true))
-        } else {
-            NSCursor.hide()
-            CGAssociateMouseAndMouseCursorPosition(boolean_t(truncating: false))
-        }
-        
-        hideMouse = !hideMouse
-    }
-    
+
     //
     // Action methods (Keyboard menu)
     //
@@ -469,7 +469,33 @@ extension MyController: NSMenuItemValidation {
 
         virtualKeyboard?.showWindow()
     }
-    
+
+    @IBAction func mapLeftCmdKeyAction(_ sender: NSMenuItem!) {
+
+        let s = sender.state
+        let tag = sender.tag
+        print("State: \(s) Tag: \(tag)")
+
+        myAppDelegate.mapLeftCmdKey = sender.state == .off ? C64Key(sender.tag) : nil
+        refreshStatusBar()
+    }
+
+    @IBAction func mapRightCmdKeyAction(_ sender: NSMenuItem!) {
+
+        let s = sender.state
+        let tag = sender.tag
+        print("State: \(s) Tag: \(tag)")
+
+        myAppDelegate.mapRightCmdKey = sender.state == .off ? C64Key(sender.tag) : nil
+        refreshStatusBar()
+    }
+
+    @IBAction func mapCapsLockWarpAction(_ sender: NSMenuItem!) {
+
+        myAppDelegate.mapCapsLockWarp = !myAppDelegate.mapCapsLockWarp
+        refreshStatusBar()
+    }
+
     @IBAction func clearKeyboardMatrixAction(_ sender: Any!) {
         
         c64.keyboard.releaseAll()
@@ -478,7 +504,7 @@ extension MyController: NSMenuItemValidation {
     // -----------------------------------------------------------------
     @IBAction func pressAction(_ sender: NSMenuItem!) {
      
-        keyboard.pressKey(C64Key(sender.tag), duration: 4)
+        keyboard.pressKey(key: C64Key(sender.tag), duration: 0.08)
         virtualKeyboard?.refresh()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.virtualKeyboard?.refresh()
@@ -487,7 +513,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func pressWithShiftAction(_ sender: NSMenuItem!) {
         
-        keyboard.pressKeys([C64Key.shift, C64Key(sender.tag)], duration: 4)
+        keyboard.pressKeyCombination(key1: C64Key(sender.tag), key2: C64Key.shift, duration: 0.08)
         virtualKeyboard?.refresh()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.virtualKeyboard?.refresh()
@@ -495,8 +521,8 @@ extension MyController: NSMenuItemValidation {
     }
 
     @IBAction func pressRunstopRestoreAction(_ sender: Any!) {
-        
-        keyboard.pressKeys([C64Key.runStop, C64Key.restore], duration: 4)
+
+        keyboard.pressKeyCombination(key1: C64Key.runStop, key2: C64Key.restore, duration: 0.08)
         virtualKeyboard?.refresh()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.virtualKeyboard?.refresh()
@@ -504,35 +530,35 @@ extension MyController: NSMenuItemValidation {
     }
 
     @IBAction func runstopAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.runStop, duration: 4)
+        keyboard.pressKey(key: C64Key.runStop, duration: 0.08)
     }
     
     @IBAction func restoreAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.restore, duration: 4)
+        keyboard.pressKey(key: C64Key.restore, duration: 0.08)
     }
     
     @IBAction func commodoreKeyAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.commodore, duration: 4)
+        keyboard.pressKey(key: C64Key.commodore, duration: 0.08)
     }
     
     @IBAction func clearKeyAction(_ sender: Any!) {
-        keyboard.pressKeys([C64Key.home, C64Key.shift], duration: 4)
+        keyboard.pressKeyCombination(key1: C64Key.home, key2: C64Key.shift, duration: 0.08)
     }
     
     @IBAction func homeKeyAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.home, duration: 4)
+        keyboard.pressKey(key: C64Key.home, duration: 0.08)
     }
     
     @IBAction func insertKeyAction(_ sender: Any!) {
-        keyboard.pressKeys([C64Key.delete, C64Key.shift], duration: 4)
+        keyboard.pressKeyCombination(key1: C64Key.delete, key2: C64Key.shift, duration: 0.08)
     }
     
     @IBAction func deleteKeyAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.delete, duration: 4)
+        keyboard.pressKey(key: C64Key.delete, duration: 0.08)
     }
     
     @IBAction func leftarrowKeyAction(_ sender: Any!) {
-        keyboard.pressKey(C64Key.leftArrow, duration: 4)
+        keyboard.pressKey(key: C64Key.leftArrow, duration: 0.08)
     }
     
     @IBAction func shiftLockAction(_ sender: Any!) {
@@ -545,19 +571,19 @@ extension MyController: NSMenuItemValidation {
 
     // -----------------------------------------------------------------
     @IBAction func loadDirectoryAction(_ sender: Any!) {
-        keyboard.type("LOAD \"$\",8")
+        keyboard.type("load \"$\",8:\n")
     }
     @IBAction func listAction(_ sender: Any!) {
-        keyboard.type("LIST")
+        keyboard.type("list:\n")
     }
     @IBAction func loadFirstFileAction(_ sender: Any!) {
-        keyboard.type("LOAD \"*\",8,1")
+        keyboard.type("load \"*\",8,1:\n")
     }
     @IBAction func runProgramAction(_ sender: Any!) {
-        keyboard.type("RUN")
+        keyboard.type("run:")
     }
     @IBAction func formatDiskAction(_ sender: Any!) {
-        keyboard.type("OPEN 1,8,15,\"N:TEST, ID\": CLOSE 1")
+        keyboard.type("open 1,8,15,\"n:test, id\": close 1\n:")
     }
     
     //
@@ -869,6 +895,20 @@ extension MyController: NSMenuItemValidation {
         c64.expansionport.detachCartridgeAndReset()
     }
 
+    @IBAction func attachReuDummyAction(_ sender: Any!) {
+        // Dummy action method to enable menu item validation
+    }
+
+    @IBAction func attachReuAction(_ sender: NSMenuItem!) {
+
+        let capacity = sender.tag
+        c64.expansionport.attachReuCartridge(capacity)
+    }
+
+    @IBAction func reuBatteryAction(_ sender: Any!) {
+        c64.expansionport.setBattery(!c64.expansionport.hasBattery)
+    }
+
     @IBAction func attachGeoRamDummyAction(_ sender: Any!) {
         // Dummy action method to enable menu item validation
     }
@@ -878,15 +918,15 @@ extension MyController: NSMenuItemValidation {
         let capacity = sender.tag
         c64.expansionport.attachGeoRamCartridge(capacity)
     }
-    
-    @IBAction func attachIsepicAction(_ sender: Any!) {
-        c64.expansionport.attachIsepicCartridge()
-    }
-    
+
     @IBAction func geoRamBatteryAction(_ sender: Any!) {
         c64.expansionport.setBattery(!c64.expansionport.hasBattery)
     }
-    
+
+    @IBAction func attachIsepicAction(_ sender: Any!) {
+        c64.expansionport.attachIsepicCartridge()
+    }
+
     @IBAction func pressCartridgeButton1Action(_ sender: NSButton!) {
         
         c64.expansionport.pressButton(1)
@@ -912,28 +952,16 @@ extension MyController: NSMenuItemValidation {
     @IBAction func setSwitchNeutralAction(_ sender: Any!) {
         
         c64.expansionport.switchPosition = 0
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // TODO: Delete or call a method here if it is really needed.
-        }
     }
 
     @IBAction func setSwitchLeftAction(_ sender: Any!) {
         
         c64.expansionport.switchPosition = -1
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // TODO: Delete or call a method here if it is really needed.
-        }
     }
 
     @IBAction func setSwitchRightAction(_ sender: Any!) {
         
         c64.expansionport.switchPosition = 1
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // TODO: Delete or call a method here if it is really needed.
-        }
     }
 
     @IBAction func setSwitchDummyAction(_ sender: Any!) {
@@ -944,5 +972,22 @@ extension MyController: NSMenuItemValidation {
 
         let panel = CartridgeInspector(with: self, nibName: "CartridgeInspector")
         panel?.show(expansionPort: c64.expansionport)
+    }
+
+    //
+    // Action methods (Window menu)
+    //
+
+    // Resizes the window such that every texture line hits a display line
+    @IBAction func autoResizeWindow(_ sender: NSMenuItem!) {
+
+        let height = renderer.canvas.visible.height * 2
+
+        debug(.metal, "Old metal view: \(metal.frame)")
+        debug(.metal, "Visible texture lines: \(height)")
+
+        adjustWindowSize(height: height)
+
+        debug(.metal, "New metal view: \(metal.frame)")
     }
 }

@@ -9,12 +9,14 @@
 
 #pragma once
 
-#include "C64Object.h"
+#include "CoreObject.h"
 #include "FileTypes.h"
 #include "PETName.h"
 
 #include <sstream>
 #include <fstream>
+
+namespace vc64 {
 
 /* All media files are organized in the class hierarchy displayed below. Two
  * abstract classes are involed: AnyFile and AnyCollection. AnyFiles provides
@@ -47,11 +49,11 @@
  *              | T64File | | PRGFile |  | P00File |  | Folder  |
  *               ---------   ---------    ---------    ---------
  */
-  
-class AnyFile : public C64Object {
+
+class AnyFile : public CoreObject {
     
 public:
-	     
+
     // Physical location of this file
     string path = "";
     
@@ -94,10 +96,10 @@ public:
 
     // Returns the media type of this file
     virtual FileType type() const { return FILETYPE_UNKNOWN; }
-     
+
     // Returns a data byte
     u8 getData(isize nr) { return (data && nr < size) ? data[nr] : 0; }
-        
+
     // Returns a fingerprint (hash value) for this file
     u64 fnv() const;
     
@@ -140,3 +142,5 @@ private:
     virtual void finalizeRead() throws { };
     virtual void finalizeWrite() throws { };
 };
+
+}

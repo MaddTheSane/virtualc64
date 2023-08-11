@@ -13,6 +13,8 @@
 #include "DriveTypes.h"
 #include "SubComponent.h"
 
+namespace vc64 {
+
 class ParCable : public SubComponent {
     
     //
@@ -25,7 +27,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -35,13 +37,13 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
     
     void _reset(bool hard) override;
-        
+
     template <class T>
     void applyToPersistentItems(T& worker)
     {
@@ -55,7 +57,7 @@ private:
     isize _size() override { COMPUTE_SNAPSHOT_SIZE }
     u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
-    isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }    
+    isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
 
     
     //
@@ -66,7 +68,7 @@ public:
     
     // Returns the current value on the cable
     u8 getValue() const;
-        
+
     // Sends a handshake signal
     void driveHandshake();
     void c64Handshake();
@@ -82,3 +84,5 @@ private:
     u8 getVIA(const Drive &drive) const;
     u8 getPIA(const Drive &drive) const;
 };
+
+}

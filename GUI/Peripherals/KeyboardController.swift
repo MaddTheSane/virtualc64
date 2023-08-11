@@ -23,6 +23,7 @@ class KeyboardController: NSObject {
     var leftControl = false, rightControl = false
     var leftOption  = false, rightOption  = false
     var leftCommand = false, rightCommand = false
+    var capsLock    = false
 
     /// Remembers the currently pressed keys and their assigned C64 key list.
     ///
@@ -96,7 +97,24 @@ class KeyboardController: NSObject {
         case kVK_RightOption:
             rightOption = event.modifierFlags.contains(.option) ? !rightOption : false
             rightOption ? keyDown(with: MacKey.rightOption) : keyUp(with: MacKey.rightOption)
-                        
+
+        case kVK_Command where myAppDelegate.mapLeftCmdKey != nil:
+            let key = myAppDelegate.mapLeftCmdKey!
+            leftCommand = event.modifierFlags.contains(.command) ? !leftCommand : false
+            myApp.disableCmdKey = leftCommand
+            leftCommand ? keyDown(with: key) : keyUp(with: key)
+
+        case kVK_RightCommand where myAppDelegate.mapRightCmdKey != nil:
+            let key = myAppDelegate.mapRightCmdKey!
+            rightCommand = event.modifierFlags.contains(.command) ? !rightCommand : false
+            myApp.disableCmdKey = rightCommand
+            rightCommand ? keyDown(with: key) : keyUp(with: key)
+
+        case kVK_CapsLock where myAppDelegate.mapCapsLockWarp:
+            capsLock = event.modifierFlags.contains(.capsLock)
+            capsLock ? capsLockDown() : capsLockUp()
+            // pref.warpMode = event.modifierFlags.contains(.capsLock) ? .on : .off
+
         default:
             break
         }
@@ -132,18 +150,23 @@ class KeyboardController: NSObject {
                 for key in c64Keys {
                     keyboard.pressKey(atRow: key.row, col: key.col)
                 }
+
+                parent.virtualKeyboard?.refresh()
             }
         }
-        parent.virtualKeyboard?.refresh()
     }
     
     func keyDown(with macKey: MacKey, keyMap: [MacKey: C64Key]) {
         
-        if let key = keyMap[macKey] {
-            keyboard.pressKey(key.nr)
-        }
+        if let c64Key = keyMap[macKey] { keyDown(with: c64Key) }
     }
-        
+
+    func keyDown(with c64Key: C64Key) {
+
+        keyboard.pressKey(c64Key.nr)
+        parent.virtualKeyboard?.refresh()
+    }
+
     func keyUp(with macKey: MacKey) {
         
         // Check if this key is used to emulate a game device
@@ -168,17 +191,22 @@ class KeyboardController: NSObject {
                     keyboard.releaseKey(atRow: key.row, col: key.col)
                 }
             }
+
+            parent.virtualKeyboard?.refresh()
         }
-        parent.virtualKeyboard?.refresh()
     }
     
     func keyUp(with macKey: MacKey, keyMap: [MacKey: C64Key]) {
         
-        if let key = keyMap[macKey] {
-            keyboard.releaseKey(key.nr)
-        }
+        if let c64Key = keyMap[macKey] { keyUp(with: c64Key) }
     }
-    
+
+    func keyUp(with c64Key: C64Key) {
+
+        keyboard.releaseKey(c64Key.nr)
+        parent.virtualKeyboard?.refresh()
+    }
+
     // Standard physical key map
     static let standardKeyMap: [MacKey: C64Key] = [
         
@@ -305,63 +333,40 @@ class KeyboardController: NSObject {
         }
     }
     
-    func pressKey(_ key: C64Key, duration numFrames: Int? = nil) {
+    func pressKey(key: C64Key, duration: TimeInterval? = nil) {
     
         // Press key
         keyboard.pressKey(key.nr)
 
         // Schedule the key release
-        if let numFrames = numFrames {
-            keyboard.scheduleKeyRelease(key.nr, delay: numFrames)
+        if let seconds = duration {
+            keyboard.scheduleKeyRelease(key.nr, delay: seconds)
         }
     }
 
-    func pressKeys(_ keys: [C64Key], duration numFrames: Int? = nil) {
-        
+    func pressKeyCombination(key1: C64Key, key2: C64Key, duration: TimeInterval? = nil) {
+
         // Press keys
-        for key in keys {
-            keyboard.pressKey(key.nr)
-        }
-        
+        keyboard.pressKeyCombination(key1.nr, with: key2.nr)
+
         // Schedule the key releases
-        if let numFrames = numFrames {
-            for key in keys {
-                keyboard.scheduleKeyRelease(key.nr, delay: numFrames)
-            }
+        if let seconds = duration {
+            keyboard.scheduleKeyReleases(key1.nr, with: key2.nr, delay: seconds)
         }
     }
-    
-    func type(_ string: String?, initialDelay seconds: Double = 0.0) {
-        
-        if var truncated = string {
-            
-            // Shorten string if it is too large
-            if truncated.count > 2048 {
-                truncated = truncated.prefix(2048) + "…"
-            }
 
-            // Set the initial delay for the first key (in frames)
-            var delay = Int(seconds / 50.0)
+    func capsLockDown() {
 
-            // Record events
-            for c in truncated.lowercased() {
+        parent.config.warpMode = WarpMode.ALWAYS.rawValue
+    }
 
-                let keyList = C64Key.translate(char: String(c))
-                
-                // Press keys
-                for key in keyList {
-                    keyboard.scheduleKeyPress(atRow: key.row, col: key.col, delay: delay)
-                    delay = 0
-                }
-                delay = 1
+    func capsLockUp() {
 
-                // Release keys
-                for key in keyList {
-                    keyboard.scheduleKeyRelease(atRow: key.row, col: key.col, delay: delay)
-                    delay = 0
-                }
-                delay = 1
-            }
-        }
-    }    
+        parent.config.warpMode = WarpMode.NEVER.rawValue
+    }
+
+    func type(_ string: String) {
+
+        keyboard.autoType(string)
+    }
 }

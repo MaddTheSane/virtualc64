@@ -14,6 +14,8 @@
 #include "CartridgeRom.h"
 #include "CRTFile.h"
 
+using namespace vc64;
+
 class Cartridge : public SubComponent {
     
     //
@@ -150,7 +152,7 @@ public:
 
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 protected:
@@ -160,7 +162,7 @@ protected:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
     
 protected:
@@ -198,10 +200,15 @@ protected:
 protected:
     
     isize _size() override;
-    u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
+    u64 _checksum() override;
     isize _load(const u8 *buffer) override;
     isize _save(u8 *buffer) override;
         
+    virtual isize __size() { return 0; }
+    virtual u64 __checksum() { return 0; }
+    virtual isize __load(const u8 *buffer) { return 0; }
+    virtual isize __save(u8 *buffer) { return 0; }
+
     
     //
     // Analyzing
@@ -218,15 +225,7 @@ public:
     // Checks whether this cartridge is supported by the emulator yet
     bool isSupported() const { return isSupportedType(getCartridgeType()); }
         
-    
-    //
-    // Serializing
-    //
-    
-private:
-    
- 
-        
+
     //
     // Accessing
     //
@@ -310,8 +309,8 @@ public:
     void setBattery(bool value) { battery = value; }
 
     // Reads or write RAM cells
-    u8 peekRAM(u16 addr) const;
-    void pokeRAM(u16 addr, u8 value);
+    u8 peekRAM(u32 addr) const;
+    void pokeRAM(u32 addr, u8 value);
     void eraseRAM(u8 value);
 
     

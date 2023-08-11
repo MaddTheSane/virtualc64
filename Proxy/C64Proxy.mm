@@ -14,6 +14,8 @@
 #import "VirtualC64-Swift.h"
 #import "Script.h"
 
+using namespace vc64;
+
 //
 // Exception wrapper
 //
@@ -41,6 +43,7 @@
 
 @end
 
+
 //
 // Base Proxy
 //
@@ -60,18 +63,20 @@
 
 @end
 
+
 //
-// C64Component proxy
+// CoreComponent proxy
 //
 
-@implementation C64ComponentProxy
+@implementation CoreComponentProxy
 
--(C64Component *)component
+-(CoreComponent *)component
 {
-    return (C64Component *)obj;
+    return (CoreComponent *)obj;
 }
 
 @end
+
 
 //
 // Defaults
@@ -158,6 +163,7 @@
 }
 
 @end
+
 
 //
 // Guards (Breakpoints, Watchpoints)
@@ -247,15 +253,16 @@
 
 @end
 
+
 //
 // CPU proxy
 //
 
 @implementation CPUProxy
 
-- (CPU<C64Memory> *)cpu
+- (CPU *)cpu
 {
-    return (CPU<C64Memory> *)obj;
+    return (CPU *)obj;
 }
 
 - (CPUInfo)info
@@ -298,61 +305,109 @@
     [self cpu]->debugger.clearLog();
 }
 
-- (BOOL)isJammed
-{
-    return [self cpu]->isJammed();
-}
-
 - (void)setHex
 {
-    [self cpu]->debugger.hex = true;
+    DasmNumberFormat instrFormat = {
+
+        .prefix = "",
+        .radix = 16,
+        .upperCase = true,
+        .fill = '0',
+        .plainZero = false
+    };
+
+    DasmNumberFormat dataFormat = {
+
+        .prefix = "",
+        .radix = 16,
+        .upperCase = true,
+        .fill = '0',
+        .plainZero = false
+    };
+
+    [self cpu]->disassembler.setNumberFormat(instrFormat, dataFormat);
 }
 
 - (void)setDec
 {
-    [self cpu]->debugger.hex = false;
+    DasmNumberFormat instrFormat = {
+
+        .prefix = "",
+        .radix = 10,
+        .upperCase = true,
+        .fill = '\0',
+        .plainZero = false
+    };
+
+    DasmNumberFormat dataFormat = {
+
+        .prefix = "",
+        .radix = 10,
+        .upperCase = true,
+        .fill = '0',
+        .plainZero = false
+    };
+
+    [self cpu]->disassembler.setNumberFormat(instrFormat, dataFormat);
 }
 
 - (NSString *)disassembleRecordedInstr:(NSInteger)i length:(NSInteger *)len
 {
-    const char *str = [self cpu]->debugger.disassembleRecordedInstr((int)i, len);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[32];
+
+    (void)[self cpu]->debugger.disassembleRecordedInstr(i, result);
+    return @(result);
 }
 
 - (NSString *)disassembleRecordedBytes:(NSInteger)i
 {
-    const char *str = [self cpu]->debugger.disassembleRecordedBytes((int)i);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[16];
+
+    (void)[self cpu]->debugger.disassembleRecordedBytes(i, result);
+    return @(result);
 }
 
 - (NSString *)disassembleRecordedFlags:(NSInteger)i
 {
-    const char *str = [self cpu]->debugger.disassembleRecordedFlags((int)i);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[16];
+
+    (void)[self cpu]->debugger.disassembleRecordedFlags(i, result);
+    return @(result);
 }
 
 - (NSString *)disassembleRecordedPC:(NSInteger)i
 {
-    const char *str = [self cpu]->debugger.disassembleRecordedPC((int)i);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[16];
+
+    (void)[self cpu]->debugger.disassembleRecordedPC(i, result);
+    return @(result);
 }
 
 - (NSString *)disassembleInstr:(NSInteger)addr length:(NSInteger *)len
 {
-    const char *str = [self cpu]->debugger.disassembleInstr((u16)addr, len);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[32];
+
+    auto length = [self cpu]->disassembler.disassemble(result, u16(addr));
+
+    *len = (NSInteger)length;
+    return @(result);
 }
 
 - (NSString *)disassembleBytes:(NSInteger)addr
 {
-    const char *str = [self cpu]->debugger.disassembleBytes((u16)addr);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[32];
+
+    auto length = [self cpu]->getLengthOfInstructionAt(u16(addr));
+    [self cpu]->disassembler.dumpBytes(result, u16(addr), length);
+    return @(result);
 }
 
 - (NSString *)disassembleAddr:(NSInteger)addr
 {
-    const char *str = [self cpu]->debugger.disassembleAddr((u16)addr);
-    return str ? [NSString stringWithUTF8String:str] : NULL;
+    char result[32];
+
+    [self cpu]->disassembler.dumpWord(result, u16(addr));
+    return @(result);
 }
 
 @end
@@ -406,7 +461,7 @@
 
 - (NSString *)memdump:(NSInteger)addr num:(NSInteger)num hex:(BOOL)hex src:(MemoryType)src
 {
-    return @([self mem]->memdump((u16)addr, num, hex, src).c_str());
+    return @([self mem]->memdump((u16)addr, num, hex, hex ? 2 : 1, src).c_str());
 }
 - (NSString *)txtdump:(NSInteger)addr num:(NSInteger)num src:(MemoryType)src
 {
@@ -414,6 +469,7 @@
 }
 
 @end
+
 
 //
 // CIA
@@ -432,6 +488,7 @@
 }
 
 @end
+
 
 //
 // VICII
@@ -506,6 +563,7 @@
 
 @end
 
+
 //
 // Dma Debugger
 //
@@ -523,6 +581,7 @@
 }
 
 @end
+
 
 //
 // SID
@@ -626,6 +685,7 @@
 
 @end
 
+
 //
 // IEC bus
 //
@@ -643,6 +703,7 @@
 }
 
 @end
+
 
 //
 // Keyboard
@@ -692,7 +753,14 @@
 
 - (void)pressKey:(NSInteger)nr
 {
-    [self kb]->press(nr);
+    [self kb]->abortAutoTyping();
+    [self kb]->press(C64Key(nr));
+}
+
+- (void)pressKeyCombination:(NSInteger)nr with: (NSInteger)nr2
+{
+    [self kb]->press(C64Key(nr));
+    [self kb]->press(C64Key(nr2));
 }
 
 - (void)pressKeyAtRow:(NSInteger)row col:(NSInteger)col
@@ -707,7 +775,13 @@
 
 - (void)releaseKey:(NSInteger)nr
 {
-    [self kb]->release(nr);
+    [self kb]->release(C64Key(nr));
+}
+
+- (void)releaseKeyCombination:(NSInteger)nr with: (NSInteger)nr2
+{
+    [self kb]->release(C64Key(nr));
+    [self kb]->release(C64Key(nr2));
 }
 
 - (void)releaseKeyAtRow:(NSInteger)row col:(NSInteger)col
@@ -740,32 +814,48 @@
     [self kb]->toggleShiftLock();
 }
 
-- (void)scheduleKeyPress:(NSInteger)nr delay:(NSInteger)delay
+- (void)scheduleKeyPress:(NSInteger)nr delay:(double)seconds
 {
-    [self kb]->scheduleKeyPress(C64Key(nr), delay);
+    [self kb]->scheduleKeyPress(C64Key(nr), seconds);
 }
 
-- (void)scheduleKeyPressAtRow:(NSInteger)row col:(NSInteger)col delay:(NSInteger)delay
+- (void)scheduleKeyPresses:(NSInteger)nr with:(NSInteger)nr2 delay:(double)seconds
 {
-    [self kb]->scheduleKeyPress(C64Key(row, col), delay);
+    [self kb]->scheduleKeyPress(std::vector<C64Key> { C64Key(nr), C64Key(nr2) }, seconds);
 }
 
-- (void)scheduleKeyRelease:(NSInteger)nr delay:(NSInteger)delay
+- (void)scheduleKeyPressAtRow:(NSInteger)row col:(NSInteger)col delay:(double)seconds
 {
-    [self kb]->scheduleKeyRelease(C64Key(nr), delay);
+    [self kb]->scheduleKeyPress(C64Key(row, col), seconds);
 }
 
-- (void)scheduleKeyReleaseAtRow:(NSInteger)row col:(NSInteger)col delay:(NSInteger)delay
+- (void)scheduleKeyRelease:(NSInteger)nr delay:(double)seconds
 {
-    [self kb]->scheduleKeyRelease(C64Key(row, col), delay);
+    [self kb]->scheduleKeyRelease(C64Key(nr), seconds);
 }
 
-- (void)scheduleKeyReleaseAll:(NSInteger)delay
+- (void)scheduleKeyReleases:(NSInteger)nr with:(NSInteger)nr2 delay:(double)seconds
 {
-    [self kb]->scheduleKeyReleaseAll(delay);
+    [self kb]->scheduleKeyRelease(std::vector<C64Key> { C64Key(nr), C64Key(nr2) }, seconds);
+}
+
+- (void)scheduleKeyReleaseAtRow:(NSInteger)row col:(NSInteger)col delay:(double)seconds
+{
+    [self kb]->scheduleKeyRelease(C64Key(row, col), seconds);
+}
+
+- (void)scheduleKeyReleaseAll:(double)seconds
+{
+    [self kb]->scheduleKeyReleaseAll(seconds);
+}
+
+- (void)autoType:(NSString *)text
+{
+    [self kb]->autoType(string([text UTF8String]));
 }
 
 @end
+
 
 //
 // Control port
@@ -794,6 +884,7 @@
 }
 
 @end
+
 
 //
 // Expansion port
@@ -832,9 +923,14 @@
     catch (VC64Error &err) { [ex save:err]; }
 }
 
+- (void)attachReuCartridge:(NSInteger)capacity
+{
+    [self eport]->attachReu(capacity);
+}
+
 - (void)attachGeoRamCartridge:(NSInteger)capacity
 {
-    [self eport]->attachGeoRamCartridge(capacity);
+    [self eport]->attachGeoRam(capacity);
 }
 
 - (void)attachIsepicCartridge
@@ -944,6 +1040,7 @@
 
 @end
 
+
 //
 // Disk
 //
@@ -976,6 +1073,7 @@
 }
 
 @end
+
 
 //
 // DiskAnalyzer
@@ -1063,6 +1161,7 @@
 
 @end
 
+
 //
 // VIA
 //
@@ -1075,6 +1174,7 @@
 }
 
 @end
+
 
 //
 // Drive
@@ -1389,6 +1489,7 @@
 
 @end
 
+
 //
 // Joystick proxy
 //
@@ -1406,6 +1507,7 @@
 }
 
 @end
+
 
 //
 // Recorder
@@ -1570,9 +1672,19 @@
 	[self shell]->press(RSKEY_DEL);
 }
 
+- (void)pressCut
+{
+    [self shell]->press(RSKEY_CUT);
+}
+
 - (void)pressReturn
 {
 	[self shell]->press(RSKEY_RETURN);
+}
+
+- (void)pressShiftReturn
+{
+    [self shell]->press(RSKEY_RETURN, true);
 }
 
 - (void)pressTab
@@ -1586,6 +1698,7 @@
 }
 
 @end
+
 
 //
 // AnyFile
@@ -1712,6 +1825,7 @@
 
 @end
 
+
 //
 // Script proxy
 //
@@ -1749,6 +1863,7 @@
 
 @end
 
+
 //
 // RomFile proxy
 //
@@ -1773,6 +1888,7 @@
 }
 
 @end
+
 
 //
 // CRT proxy
@@ -1829,6 +1945,7 @@
 
 @end
 
+
 //
 // TAP
 //
@@ -1863,6 +1980,7 @@
 }
 
 @end
+
 
 //
 // AnyCollection
@@ -1909,6 +2027,7 @@
 
 @end
 
+
 //
 // PRG
 //
@@ -1940,6 +2059,7 @@
 
 @end
 
+
 //
 // P00 proxy
 //
@@ -1970,6 +2090,7 @@
 }
 
 @end
+
 
 //
 // D64 proxy
@@ -2007,6 +2128,7 @@
 
 @end
 
+
 //
 // G64 proxy
 //
@@ -2037,6 +2159,7 @@
 }
 
 @end
+
 
 //
 // FileSystem
@@ -2314,6 +2437,7 @@
 
 @end
 
+
 //
 // Folder proxy
 //
@@ -2343,6 +2467,57 @@
 
 @end
 
+
+//
+// HostProxy
+//
+
+@implementation HostProxy
+
+- (Host *)host
+{
+    return (Host *)obj;
+}
+
++ (instancetype)make:(Host *)file
+{
+    return file ? [[self alloc] initWith:file] : nil;
+}
+
+- (double)sampleRate
+{
+    return [self host]->getSampleRate();
+}
+
+- (void)setSampleRate:(double)hz
+{
+    [self host]->setSampleRate(hz);
+}
+
+- (NSInteger)refreshRate
+{
+    return (NSInteger)[self host]->getHostRefreshRate();
+}
+
+- (void)setRefreshRate:(NSInteger)value
+{
+    [self host]->setHostRefreshRate((double)value);
+}
+
+- (NSSize)frameBufferSize
+{
+    auto size = [self host]->getFrameBufferSize();
+    return NSMakeSize((CGFloat)size.first, (CGFloat)size.second);
+}
+
+- (void)setFrameBufferSize:(NSSize)size
+{
+    [self host]->setFrameBufferSize(std::pair<isize, isize>(size.width, size.height));
+}
+
+@end
+
+
 //
 // C64
 //
@@ -2358,6 +2533,7 @@
 @synthesize drive8;
 @synthesize drive9;
 @synthesize expansionport;
+@synthesize host;
 @synthesize iec;
 @synthesize keyboard;
 @synthesize mem;
@@ -2376,9 +2552,11 @@
     
     if (!(self = [super init])) return self;
     
+    // Create the emulator instance
     C64 *c64 = new C64();
     obj = c64;
-    
+
+    // Create sub proxys
     breakpoints = [[GuardsProxy alloc] initWith:&c64->cpu.debugger.breakpoints];
     cia1 = [[CIAProxy alloc] initWith:&c64->cia1];
     cia2 = [[CIAProxy alloc] initWith:&c64->cia2];
@@ -2388,6 +2566,7 @@
     drive8 = [[DriveProxy alloc] initWithVC1541:&c64->drive8];
     drive9 = [[DriveProxy alloc] initWithVC1541:&c64->drive9];
     expansionport = [[ExpansionPortProxy alloc] initWith:&c64->expansionport];
+    host = [[HostProxy alloc] initWith:&c64->host];
     iec = [[IECProxy alloc] initWith:&c64->iec];
     keyboard = [[KeyboardProxy alloc] initWith:&c64->keyboard];
     mem = [[MemoryProxy alloc] initWith:&c64->mem];
@@ -2432,9 +2611,14 @@
     return releaseBuild;
 }
 
+- (NSInteger)frame
+{
+    return [self c64]->frame;
+}
+
 - (BOOL)warpMode
 {
-    return [self c64]->inWarpMode();
+    return [self c64]->isWarping();
 }
 
 - (void)setWarpMode:(BOOL)enable
@@ -2442,14 +2626,18 @@
     enable ? [self c64]->warpOn() : [self c64]->warpOff();
 }
 
-- (BOOL)debugMode
+- (BOOL)trackMode
 {
-    return [self c64]->inDebugMode();
+    return [self c64]->isTracking();
 }
 
-- (void)setDebugMode:(BOOL)enable
+- (void)setTrackMode:(BOOL)value
 {
-    enable ? [self c64]->debugOn() : [self c64]->debugOff();
+    if (value) {
+        [self c64]->trackOn();
+    } else {
+        [self c64]->trackOff();
+    }
 }
 
 - (NSInteger)cpuLoad
@@ -2476,6 +2664,21 @@
 - (void)inspect
 {
     [self c64]->inspect();
+}
+
+- (EventInfo)eventInfo
+{
+    return [self c64]->getEventInfo();
+}
+
+- (EventSlotInfo)getEventSlotInfo:(NSInteger)slot
+{
+    return [self c64]->getSlotInfo(slot);
+}
+
+- (void)launch:(const void *)listener function:(Callback *)func
+{
+    [self c64]->launch(listener, func);
 }
 
 - (void)hardReset
@@ -2663,6 +2866,11 @@
     [self c64]->msgQueue.setListener(sender, func);
 }
 
+- (void)wakeUp
+{
+    [self c64]->wakeUp();
+}
+
 - (void)stopAndGo
 {
     [self c64]->stopAndGo();
@@ -2677,18 +2885,6 @@
 {
     [self c64]->stepOver();
 }
-
-/*
-- (NSInteger)breakpointPC
-{
-    return [self c64]->cpu.debugger.breakpointPC;
-}
-
-- (NSInteger)watchpointPC
-{
-    return [self c64]->cpu.debugger.watchpointPC;
-}
-*/
 
 - (BOOL) hasRom:(RomType)type
 {
@@ -2827,6 +3023,16 @@
 {
     try { [self c64]->flash(*(FileSystem *)proxy->obj, (unsigned)nr); }
     catch (VC64Error &error) { [ex save:error]; }
+}
+
+- (void)setAlarmAbs:(NSInteger)cycle payload:(NSInteger)value
+{
+    [self c64]->setAlarmAbs(cycle, value);
+}
+
+- (void)setAlarmRel:(NSInteger)cycle payload:(NSInteger)value
+{
+    [self c64]->setAlarmRel(cycle, value);
 }
 
 @end

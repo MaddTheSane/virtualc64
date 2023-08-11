@@ -19,32 +19,7 @@ public:
     const char *getDescription() const override { return "StructuredBasic"; }
     CartridgeType getCartridgeType() const override { return CRT_STRUCTURED_BASIC; }
         
-    
-    //
-    // Serializing
-    //
-    
-private:
-    
-    template <class T>
-    void applyToPersistentItems(T& worker)
-    {
-    }
-    
-    template <class T>
-    void applyToResetItems(T& worker, bool hard = true)
-    {
-    }
-    
-    isize __size() { COMPUTE_SNAPSHOT_SIZE }
-    isize __load(const u8 *buffer) { LOAD_SNAPSHOT_ITEMS }
-    isize __save(u8 *buffer) { SAVE_SNAPSHOT_ITEMS }
-    
-    isize _size() override { return Cartridge::_size() + __size(); }
-    isize _load(const u8 *buf) override { return Cartridge::_load(buf) + __load(buf); }
-    isize _save(u8 *buf) override { return Cartridge::_save(buf) + __save(buf); }
-    
-    
+
     //
     // Accessing cartridge memory
     //

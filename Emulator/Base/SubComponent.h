@@ -9,13 +9,15 @@
 
 #pragma once
 
-#include "C64Component.h"
+#include "CoreComponent.h"
+#include "CPUTypes.h"
+
+namespace vc64 {
 
 class C64;
 class C64Memory;
 class DriveMemory;
-template <typename M> class CPU;
-class ProcessorPort;
+class CPU;
 class VICII;
 class CIA1;
 class CIA2;
@@ -24,6 +26,7 @@ class SIDStream;
 class Keyboard;
 class ControlPort;
 class ExpansionPort;
+class Host;
 class IEC;
 class Drive;
 class Datasette;
@@ -37,7 +40,6 @@ class ParCable;
 class Recorder;
 class RegressionTester;
 class RetroShell;
-
 class AnyFile;
 class AnyCollection;
 class TAPFile;
@@ -50,10 +52,10 @@ class CRTFile;
 class RomFile;
 class Snapshot;
 
-/* This class extends the C64Component class with references to all components
+/* This class extends the CoreComponent class with references to all components
  * that are part of the C64 class.
  */
-class SubComponent : public C64Component {
+class SubComponent : public CoreComponent {
 
 protected:
 
@@ -62,11 +64,12 @@ protected:
     CIA2 &cia2;
     ControlPort &port1;
     ControlPort &port2;
-    CPU<C64Memory> &cpu;
+    CPU &cpu;
     Datasette &datasette;
     Drive &drive8;
     Drive &drive9;
     ExpansionPort &expansionport;
+    Host &host;
     IEC &iec;
     Keyboard &keyboard;
     C64Memory &mem;
@@ -98,3 +101,5 @@ public:
     
     void prefix() const override;
 };
+
+}

@@ -11,6 +11,8 @@
 #include "SubComponent.h"
 #include "C64.h"
 
+namespace vc64 {
+
 SubComponent::SubComponent(C64& ref) :
 
 c64(ref),
@@ -23,6 +25,7 @@ datasette(ref.datasette),
 drive8(ref.drive8),
 drive9(ref.drive9),
 expansionport(ref.expansionport),
+host(ref.host),
 iec(ref.iec),
 keyboard(ref.keyboard),
 mem(ref.mem),
@@ -89,4 +92,6 @@ void
 SubComponent::prefix() const
 {
     c64.prefix();
+}
+
 }

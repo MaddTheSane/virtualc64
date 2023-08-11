@@ -10,9 +10,12 @@
 #pragma once
 
 #include "DatasetteTypes.h"
+#include "C64Types.h"
 #include "SubComponent.h"
 #include "Constants.h"
 #include "Chrono.h"
+
+namespace vc64 {
 
 class Pulse {
     
@@ -21,7 +24,7 @@ public:
     i32 cycles;
 
 public:
-        
+
     Pulse() : cycles(0) { };
     Pulse(i32 value) : cycles(value) { };
     
@@ -52,7 +55,7 @@ class Datasette : public SubComponent {
     
     // Number of pulses stored in the pulse buffer
     isize size = 0;
-            
+
 
     //
     // Tape drive
@@ -76,16 +79,13 @@ class Datasette : public SubComponent {
     // Next scheduled falling edge on data line
     i64 nextFallingEdge = 0;
     
-    // Frame counter for controlling the amout of messages sent to the GUI
-    isize msgMotorDelay = 0;
-
     
     //
     // Initializing
     //
     
 public:
- 
+
     Datasette(C64 &ref) : SubComponent(ref) { };
     ~Datasette();
     
@@ -94,7 +94,7 @@ public:
 
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -104,7 +104,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -129,8 +129,7 @@ private:
         << playKey
         << motor
         << nextRisingEdge
-        << nextFallingEdge
-        << msgMotorDelay;
+        << nextFallingEdge;
     }
     
     isize _size() override;
@@ -180,23 +179,10 @@ public:
 
     // Returns the tape type (TAP format, 0 or 1)
     u8 getType() const { return type; }
-        
-    
-    //
-    // Operating the read/write head
-    //
 
-public:
-    
-    // Puts the read/write head at the beginning of the tape
-    void rewind(isize seconds = 0);
-
-    // Advances the read/write head one pulse
-    void advanceHead();
-    
     
     //
-    // Running the device
+    // Operating the device
     //
     
 public:
@@ -205,10 +191,28 @@ public:
     bool getPlayKey() const { return playKey; }
 
     // Presses the play key
-    void pressPlay(); 
+    void pressPlay();
 
     // Presses the stop key
     void pressStop();
+
+private:
+
+    // Performs the pressPlay action
+    void play();
+
+    // Performs the pressStop action
+    void stop();
+
+
+    //
+    // Emulating the device
+    //
+
+public:
+
+    // Puts the read/write head at the beginning of the tape
+    void rewind(isize seconds = 0);
 
     // Returns true if the datasette motor is switched on
     bool getMotor() const { return motor; }
@@ -216,23 +220,32 @@ public:
     // Switches the motor on or off
     void setMotor(bool value);
 
-    
-    //
-    // Performing periodic events
-    //
-    
-public:
-    
-    void vsyncHandler();
+private:
 
-    // Emulates the datasette
-    void execute() { if (playKey && motor) _execute(); }
+    // Advances the read/write head one pulse
+    void advanceHead();
+
+
+
+    //
+    // Processing events
+    //
+
+public:
+
+    void processMotEvent(EventID event);
+    void processDatEvent(EventID event, i64 cycles);
 
 private:
 
-    // Internal execution function
-    void _execute();
-    
-    // Schedules a pulse
+    // Updates the event in the DAT slot
+    void updateDatEvent();
+
+    // Schedules the next event in the DAT slot
+    void scheduleNextDatEvent();
+
+    // Schedules the rising and falling edge of the next pulse
     void schedulePulse(isize nr);
 };
+
+}

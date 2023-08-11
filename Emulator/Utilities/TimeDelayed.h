@@ -12,6 +12,8 @@
 #include "Macros.h"
 #include <algorithm>
 
+namespace util {
+
 template <class T, isize delay> class TimeDelayed {
     
     static constexpr isize capacity = delay + 1;
@@ -36,17 +38,17 @@ template <class T, isize delay> class TimeDelayed {
     
 public:
     
-    TimeDelayed(u64 *clock) {
+    TimeDelayed(i64 *clock) {
         
         timeStamp = 0;
-        this->clock = (i64 *)clock;
+        this->clock = clock;
         clear();
     }
     
     TimeDelayed() : TimeDelayed(nullptr) { };
     
     // Sets the reference clock (either the C64 clock or a drive clock)
-    void setClock(u64 *clock) { this->clock = (i64 *)clock; }
+    void setClock(i64 *clock) { this->clock = clock; }
     
     // Overwrites all pipeline entries with a reset value
     void reset(T value) {
@@ -123,3 +125,5 @@ public:
         return pipeline[std::max(0LL, timeStamp - *clock + d)];
     }
 };
+
+}

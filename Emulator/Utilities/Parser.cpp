@@ -21,11 +21,23 @@ parseBool(string& token)
     throw ParseBoolError("");
 }
 
+bool
+parseOnOff(string& token)
+{
+    if (token == "on") return true;
+    if (token == "off") return false;
+
+    throw ParseOnOffError(token);
+}
+
 long
 parseNum(string& token)
 {
     long result;
-    
+
+    // Replace leading '$' by '0x'
+    if (!token.empty() && token[0] == '$') token = "0x" + token.erase(0, 1);
+
     try { result = stol(token, nullptr, 0); }
     catch (std::exception&) { throw ParseNumError(token); }
 

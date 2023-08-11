@@ -11,6 +11,8 @@
 
 #include "SubComponent.h"
 
+namespace vc64 {
+
 class PIA6821 : public SubComponent {
     
     friend class Drive;
@@ -24,7 +26,7 @@ protected:
     // Peripheral ports (pin values)
     u8 pa;
     u8 pb;
-        
+
     // Output registers
     u8 ora;
     u8 orb;
@@ -54,7 +56,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -63,13 +65,13 @@ private:
     
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
     
     void _reset(bool hard) override;
-        
+
     template <class T>
     void applyToPersistentItems(T& worker)
     {
@@ -102,11 +104,11 @@ private:
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     
-        
+
     //
     // Managing interrupts
     //
-        
+
 public:
     
     void setCA1External(bool value);
@@ -176,7 +178,7 @@ public:
     const char *getDescription() const override { return "PiaDolphin"; }
     
 private:
-        
+
     void ca2HasChangedTo(bool value) override;
     void cb2HasChangedTo(bool value) override;
     void irqAHasOccurred() const override;
@@ -190,3 +192,5 @@ public:
     u8 spypeek(u16 addr) const;
     void poke(u16 addr, u8 value);
 };
+
+}

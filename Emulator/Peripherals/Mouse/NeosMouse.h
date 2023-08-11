@@ -11,6 +11,8 @@
 
 #include "SubComponent.h"
 
+namespace vc64 {
+
 class NeosMouse : public SubComponent {
     
     // Mouse position
@@ -36,7 +38,7 @@ class NeosMouse : public SubComponent {
     u8 state;
 
     // CPU cycle of the most recent trigger event
-    u64 triggerCycle;
+    i64 triggerCycle;
     
     // Latched mouse position
     i64 latchedX;
@@ -57,7 +59,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -66,7 +68,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -108,7 +110,7 @@ public:
     
     // Returns the control port bits triggered by the mouse
     u8 readControlPort() const;
-        
+
     // Triggers a state change
     void risingStrobe(i64 targetX, i64 targetY);
     void fallingStrobe(i64 targetX, i64 targetY);
@@ -118,3 +120,5 @@ private:
     // Latches the current mouse position and computed the transmission deltas
     void latchPosition(i64 targetX, i64 targetY);
 };
+
+}

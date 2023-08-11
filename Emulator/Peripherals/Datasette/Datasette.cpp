@@ -11,6 +11,8 @@
 #include "Datasette.h"
 #include "C64.h"
 
+namespace vc64 {
+
 util::Time
 Pulse::delay() const
 {
@@ -129,7 +131,7 @@ Datasette::didSaveToBuffer(u8 *buffer)
     
     // Save pulses to buffer
     for (isize i = 0; i < size; i++) writer << pulses[i].cycles;
-        
+
     return (isize)(writer.ptr - buffer);
 }
 
@@ -175,8 +177,14 @@ Datasette::setConfigItem(Option option, i64 value)
 
         case OPT_DAT_CONNECT:
 
-            config.connected = bool(value);
-            msgQueue.put(value ? MSG_VC1530_CONNECT : MSG_VC1530_DISCONNECT);
+            if (config.connected != bool(value)) {
+
+                SUSPENDED
+
+                config.connected = bool(value);
+                updateDatEvent();
+                msgQueue.put(MSG_VC1530_CONNECT, value);
+            }
             return;
 
         default:
@@ -200,7 +208,7 @@ void
 Datasette::insertTape(TAPFile &file)
 {
     {   SUSPENDED
-                
+
         // Allocate pulse buffer
         isize numPulses = file.numPulses();
         alloc(numPulses);
@@ -217,7 +225,10 @@ Datasette::insertTape(TAPFile &file)
         
         // Rewind the tape
         rewind();
-        
+
+        // Update the execution event slot
+        updateDatEvent();
+
         // Inform the GUI
         msgQueue.put(MSG_VC1530_TAPE, 1);
     }
@@ -267,7 +278,7 @@ Datasette::advanceHead()
     assert(head < size);
     
     i64 old = (i64)counter.asSeconds();
-        
+
     counter += pulses[head].delay();
     head++;
     
@@ -282,19 +293,36 @@ Datasette::pressPlay()
 {
     debug(TAP_DEBUG, "pressPlay\n");
 
+    // Never call this function inside the emulator thread
+    assert(!c64.isEmulatorThread());
+
     // Only proceed if the device is connected
     if (!config.connected) return;
 
     // Only proceed if a tape is present
     if (!hasTape()) return;
-    
-    playKey = true;
 
-    // Schedule the first pulse
-    schedulePulse(head);
-    advanceHead();
-    
-    msgQueue.put(MSG_VC1530_PLAY, 1);
+    // Pause the emulator and press press
+    { SUSPENDED play(); }
+}
+
+void
+Datasette::play()
+{
+    if (!playKey) {
+
+        playKey = true;
+
+        // Schedule the first pulse
+        schedulePulse(head);
+        advanceHead();
+
+        // Update the execution event slot
+        updateDatEvent();
+
+        // Inform the GUI
+        msgQueue.put(MSG_VC1530_PLAY, 1);
+    }
 }
 
 void
@@ -302,13 +330,29 @@ Datasette::pressStop()
 {
     debug(TAP_DEBUG, "pressStop\n");
 
+    // Never call this function inside the emulator thread
+    assert(!c64.isEmulatorThread());
+
     // Only proceed if the device is connected
     if (!config.connected) return;
 
-    playKey = false;
-    motor = false;
+    // Pause the emulator and press press
+    { SUSPENDED stop(); }
+}
 
-    msgQueue.put(MSG_VC1530_PLAY, 0);
+void
+Datasette::stop()
+{
+    if (playKey) {
+        
+        playKey = false;
+        motor = false;
+
+        // Update the execution event slot
+        scheduleNextDatEvent();
+
+        msgQueue.put(MSG_VC1530_PLAY, 0);
+    }
 }
 
 void
@@ -320,7 +364,10 @@ Datasette::setMotor(bool value)
         if (!config.connected) return;
 
         motor = value;
-        
+
+        // Update the execution event slot
+        scheduleNextDatEvent();
+
         /* When the motor is switched on or off, a MSG_VC1530_MOTOR message is
          * sent to the GUI. However, if we sent the message immediately, we
          * would risk to flood the message queue, because some C64 switch the
@@ -328,44 +375,82 @@ Datasette::setMotor(bool value)
          * counter and let the vsync handler send the message once the counter
          * has timed out.
          */
-        msgMotorDelay = 10;
+        c64.scheduleRel<SLOT_MOT>(MSEC(200), motor ? MOT_START : MOT_STOP);
     }
 }
 
 void
-Datasette::vsyncHandler()
+Datasette::processMotEvent(EventID event)
 {
-    if (--msgMotorDelay == 0) {
-        msgQueue.put(MSG_VC1530_MOTOR, motor);
+    switch (event) {
+
+        case MOT_START: msgQueue.put(MSG_VC1530_MOTOR, true);
+        case MOT_STOP:  msgQueue.put(MSG_VC1530_MOTOR, false);
+
+        default:
+            break;
     }
+
+    c64.cancel<SLOT_MOT>();
 }
 
 void
-Datasette::_execute()
+Datasette::processDatEvent(EventID event, i64 cycles)
 {
-    // Only proceed if the datasette is active
-    if (!hasTape() || !playKey || !motor) return;
-        
-    if (--nextRisingEdge == 0) {
-        
-        cia1.triggerRisingEdgeOnFlagPin();
-    }
+    assert(event == DAT_EXECUTE);
 
-    if (--nextFallingEdge == 0) {
-        
-        cia1.triggerFallingEdgeOnFlagPin();
+    for (isize i = 0; i < cycles; i++) {
 
-        if (head < size) {
+        if (--nextRisingEdge == 0) {
 
-            // Schedule the next pulse
-            schedulePulse(head);
-            advanceHead();
-            
-        } else {
-            
-            // Press the stop key
-            pressStop();
+            cia1.triggerRisingEdgeOnFlagPin();
         }
+
+        if (--nextFallingEdge == 0) {
+
+            cia1.triggerFallingEdgeOnFlagPin();
+
+            if (head < size) {
+
+                schedulePulse(head);
+                advanceHead();
+
+            } else {
+
+                pressStop();
+            }
+        }
+    }
+
+    scheduleNextDatEvent();
+}
+
+void
+Datasette::updateDatEvent()
+{
+    if (playKey && motor && hasTape() && config.connected) {
+
+        scheduleNextDatEvent();
+
+    } else {
+
+        c64.cancel<SLOT_DAT>();
+    }
+}
+
+void
+Datasette::scheduleNextDatEvent()
+{
+    static constexpr Cycle period = 16;
+
+    if (playKey && motor && hasTape() && config.connected) {
+
+        // Call the execution handler periodically
+        c64.scheduleRel<SLOT_DAT>(period, DAT_EXECUTE, period);
+
+    } else {
+
+        c64.cancel<SLOT_DAT>();
     }
 }
 
@@ -377,4 +462,6 @@ Datasette::schedulePulse(isize nr)
     // The VC1530 uses square waves with a 50% duty cycle
     nextRisingEdge = pulses[nr].cycles / 2;
     nextFallingEdge = pulses[nr].cycles;
+}
+
 }

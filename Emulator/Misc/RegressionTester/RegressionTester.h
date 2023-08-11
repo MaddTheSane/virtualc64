@@ -12,18 +12,28 @@
 #include "SubComponent.h"
 #include "C64Types.h"
 
+namespace vc64 {
+
+class C64;
+
 class RegressionTester : public SubComponent {
-   
+
+    // Pixel area ritten to the test image
+    static constexpr isize X1 = 104;
+    static constexpr isize Y1 = 17;
+    static constexpr isize X2 = 488;
+    static constexpr isize Y2 = 291;
+
 public:
     
     // Filename of the test image
     string dumpTexturePath = "texture";
     
-    // Texture cutout
-    isize x1 = 104;
-    isize y1 = 17;
-    isize x2 = 488;
-    isize y2 = 291;
+    // Pixel area that is written to the test image
+    isize x1 = X1;
+    isize y1 = Y1;
+    isize x2 = X2;
+    isize y2 = Y2;
 
 private:
 
@@ -38,17 +48,24 @@ private:
 public:
     
     using SubComponent::SubComponent;
-    const char *getDescription() const override { return "RegressionTester"; }
-    
+
+    //
+    // Methods from CoreObject
+    //
+
 private:
+
+    const char *getDescription() const override { return "RegressionTester"; }
+    void _dump(Category category, std::ostream& os) const override { }
+
     
+    //
+    // Methods from CoreComponent
+    //
+
+private:
+
     void _reset(bool hard) override { };
-    
-    
-    //
-    // Serializing
-    //
-    
     isize _size() override { return 0; }
     u64 _checksum() override { return 0; }
     isize _load(const u8 *buffer) override { return 0; }
@@ -61,13 +78,16 @@ private:
 
 public:
 
-    // Reverts everything to factory settings
-    void prepare(class C64 &c64, C64Model model);
-    
+    // Reverts to factory settings
+    void prepare(C64 &c64, C64Model model);
+
+    // Runs a test case
+    void run(string path);
+
     // Creates the test image and exits the emulator
-    void dumpTexture(class C64 &c64);
-    void dumpTexture(class C64 &c64, const string &filename);
-    void dumpTexture(class C64 &c64, std::ostream& os);
+    void dumpTexture(C64 &c64);
+    void dumpTexture(C64 &c64, const string &filename);
+    void dumpTexture(C64 &c64, std::ostream& os);
 
     
     //
@@ -79,3 +99,5 @@ public:
     // Emulates the debugcart feature (used by VICE tests)
     void debugcart(u8 value);
 };
+
+}

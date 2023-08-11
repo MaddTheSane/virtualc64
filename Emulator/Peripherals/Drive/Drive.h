@@ -10,6 +10,7 @@
 #pragma once
 
 #include "DriveTypes.h"
+#include "C64Types.h"
 #include "SubComponent.h"
 #include "CPU.h"
 #include "Disk.h"
@@ -18,6 +19,8 @@
 #include "VIA.h"
 #include "PIA.h"
 
+namespace vc64 {
+
 /*
  * This implementation is based on the following two documents written
  * by Ruud Baltissen. Ruud, thank you for this excellent work!
@@ -25,9 +28,9 @@
  * Description: http://www.baltissen.org/newhtm/1541a.htm
  * Schematics:  http://www.baltissen.org/images/1540.gif
  */
- 
+
 class Drive : public SubComponent {
-        
+
     friend class DriveMemory;
     friend class VIA1;
     friend class VIA2;
@@ -42,7 +45,7 @@ class Drive : public SubComponent {
      * the run loop. As a effect, the current drive state is frozen until the
      * drive is woken up.
      */
-    const i64 powerSafeThreshold = 100;
+    static constexpr i64 powerSafeThreshold = 100;
     
     /* Time between two carry pulses of UE7 in 1/10 nano seconds. The VC1541
      * drive is clocked by 16 Mhz. The base frequency is divided by N where N
@@ -73,8 +76,8 @@ class Drive : public SubComponent {
     
 public:
     
-	DriveMemory mem = DriveMemory(c64, *this);
-    DriveCPU cpu = DriveCPU(c64, mem);
+    DriveMemory mem = DriveMemory(c64, *this);
+    CPU cpu = CPU(MOS_6502, c64);
     VIA1 via1 = VIA1(c64, *this);
     VIA2 via2 = VIA2(c64, *this);
     PiaDolphin pia = PiaDolphin(c64, *this);
@@ -89,17 +92,14 @@ public:
     
     // A disk waiting to be inserted
     std::unique_ptr<Disk> diskToInsert;
-    
-    // State change delay counter (checked in the vsync handler)
-    i64 diskChangeCounter = 0;
-    
+        
     
     //
     // Drive state
     //
     
 private:
-        
+
     // Indicates whether the disk is rotating
     bool spinning = false;
     
@@ -108,7 +108,7 @@ private:
     
     // Indicates if or how a disk is inserted
     InsertionStatus insertionStatus = DISK_FULLY_EJECTED;
-        
+
     
     //
     // Clocking logic
@@ -123,7 +123,7 @@ private:
      * the two VIA chips.
      */
     i64 nextClock = 0;
-     
+
     /* Indicates when the next carry output pulse occurs on UE7. The 16 MHz
      * signal is also fed into UE7, a 74SL193 4-bit couter, which generates a
      * carry output signal on overflow. The pre-load inputs of this counter are
@@ -212,10 +212,10 @@ public:
     //
     
     // Idle counter
-    i64 idleCounter = 0;
+    i64 watchdog = INT64_MAX;
 
     // Indicates whether execute() should be called inside the run loop
-    bool needsEmulation = false; 
+    bool needsEmulation = false;
     
     
     //
@@ -228,7 +228,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -238,7 +238,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -276,7 +276,6 @@ private:
         
         << spinning
         << redLED
-        << idleCounter
         << elapsedTime
         << nextClock
         << nextCarry
@@ -290,7 +289,8 @@ private:
         << readShiftreg
         << writeShiftreg
         << sync
-        << byteReady;
+        << byteReady
+        << watchdog;
     }
     
     isize _size() override;
@@ -304,7 +304,7 @@ private:
     //
     
 public:
-        
+
     static DriveConfig getDefaultConfig();
     const DriveConfig &getConfig() const { return config; }
     void resetConfig() override;
@@ -328,7 +328,11 @@ public:
     
     // Returns the device number
     isize getDeviceNr() const { return deviceNr; }
-        
+
+    // Convenience wrappers
+    bool isDrive8() { return getDeviceNr() == DRIVE8; }
+    bool isDrive9() { return getDeviceNr() == DRIVE9; }
+
     // Returns true iff the red drive LED is on
     bool getRedLED() const { return redLED; };
 
@@ -342,10 +346,10 @@ public:
     void setRotating(bool b);
     
     // Wakes up the drive (clears the idle state)
-    void wakeUp();
-    
+    void wakeUp(isize awakeness = powerSafeThreshold);
+
     // Checks whether the drive has been idle for a while
-    bool isIdle() const { return idleCounter >= powerSafeThreshold; }
+    bool isIdle() const { return watchdog < 0; }
     
     // Checks whether the drive is connected and switched on
     bool connectedAndOn() { return config.connected && config.switchedOn; }
@@ -379,7 +383,7 @@ public:
      */
     bool getLightBarrier() const {
         return
-        (cpu.clock < 1500000)
+        cpu.clock < 1500000
         || hasPartiallyRemovedDisk()
         || hasProtectedDisk();
     }
@@ -427,7 +431,7 @@ public:
     // Returns the current halftrack or track number
     Halftrack getHalftrack() const { return halftrack; }
     Track getTrack() const { return (halftrack + 1) / 2; }
-        
+
     // Returns the number of bits in a halftrack
     isize sizeOfHalftrack(Halftrack ht) {
         return hasDisk() ? disk->lengthOfHalftrack(ht) : 0; }
@@ -473,8 +477,18 @@ public:
     // Performs periodic actions
     void vsyncHandler();
     
-private:
-    
-    // Execute the disk state transition for a single frame
-    void executeStateTransition();    
+
+    //
+    // Processing events
+    //
+
+public:
+
+    // Initiates the disk change procedure
+    void scheduleFirstDiskChangeEvent(EventID id);
+
+    // Carries out the disk change procedure
+    void processDiskChangeEvent(EventID id);
 };
+
+}

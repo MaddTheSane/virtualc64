@@ -12,6 +12,8 @@
 #include "SubComponent.h"
 #include "DriveTypes.h"
 
+namespace vc64 {
+
 class DriveMemory : public SubComponent {
     
 private:
@@ -35,7 +37,7 @@ public:
      */
     u8 ram[0xA000];
     u8 rom[0x8000] = {};
-            
+
     // Memory usage table (one entry for each KB)
     DrvMemType usage[64];
     
@@ -50,7 +52,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -60,7 +62,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -128,7 +130,7 @@ public:
     //
     
 public:
-        
+
     // Reads a value from memory
     u8 peek(u16 addr);
     u8 peekZP(u8 addr) { return ram[addr]; }
@@ -147,7 +149,9 @@ public:
     void poke(u16 addr, u8 value);
     void pokeZP(u8 addr, u8 value) { ram[addr] = value; }
     void pokeStack(u8 sp, u8 value) { ram[0x100 + sp] = value; }
-        
+
     // Updates the bank map
     void updateBankMap();
 };
+
+}

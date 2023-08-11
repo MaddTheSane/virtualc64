@@ -13,11 +13,13 @@
 #include "SubComponent.h"
 #include "RingBuffer.h"
 
+namespace vc64 {
+
 class MsgQueue : public SubComponent {
-        
+
     // Ring buffer storing all pending messages
     util::RingBuffer <Message, 128> queue;
-                
+
     // The registered listener
     const void *listener = nullptr;
     
@@ -33,17 +35,17 @@ class MsgQueue : public SubComponent {
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
     
 private:
-        
+
     const char *getDescription() const override { return "MsgQueue"; }
     void _dump(Category category, std::ostream& os) const override { }
 
 
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -63,7 +65,16 @@ public:
     
     // Registers a listener together with it's callback function
     void setListener(const void *listener, Callback *func);
-            
+
     // Sends a message
-    void put(MsgType type, isize = 0, isize = 0, isize = 0, isize = 0);
+    void put(const Message &msg);
+    void put(MsgType type, i64 payload = 0);
+    void put(MsgType type, CpuMsg payload);
+    void put(MsgType type, DriveMsg payload);
+    void put(MsgType type, ScriptMsg payload);
+
+    // Reads a message
+    bool get(Message &msg);
 };
+
+}

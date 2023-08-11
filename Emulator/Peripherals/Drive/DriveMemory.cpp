@@ -13,6 +13,8 @@
 #include "Checksum.h"
 #include "IOUtils.h"
 
+namespace vc64 {
+
 DriveMemory::DriveMemory(C64 &ref, Drive &dref) : SubComponent(ref), drive(dref)
 {
     updateBankMap();
@@ -105,12 +107,6 @@ DriveMemory::_dump(Category category, std::ostream& os) const
                 oldsrc = newsrc; oldi = i;
             }
         }
-    }
-    
-    if (category == Category::State) {
-        
-        os << tab("Drive ROM");
-        os << bol(c64.hasRom(ROM_TYPE_VC1541)) << std::endl;
     }
 }
 
@@ -212,7 +208,7 @@ DriveMemory::saveRom(const string &path)
 {
     u16 addr = romAddr();
     u16 size = romSize();
-            
+
     debug(true, "Saving Rom at %x (%x bytes)\n", addr, size);
     
     RomFile file = RomFile(rom + (addr & 0x7FFF), size);
@@ -321,7 +317,7 @@ void
 DriveMemory::poke(u16 addr, u8 value)
 {
     switch (usage[addr >> 10]) {
-                        
+
         case DRVMEM_RAM:
             
             ram[addr & 0x07FF] = value;
@@ -402,4 +398,6 @@ DriveMemory::updateBankMap()
         
         for (isize i = 20; i < 24; i++) usage[i] = DRVMEM_PIA;
     }
+}
+
 }

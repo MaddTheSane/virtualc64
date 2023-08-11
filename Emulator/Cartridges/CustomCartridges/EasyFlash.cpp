@@ -13,7 +13,7 @@
 
 EasyFlash::EasyFlash(C64 &ref) : Cartridge(ref)
 {
-    subComponents = std::vector <C64Component *> {
+    subComponents = std::vector <CoreComponent *> {
         
         &flashRomL,
         &flashRomH
@@ -48,11 +48,19 @@ EasyFlash::_dump(Category category, std::ostream& os) const
     using namespace util;
 
     Cartridge::_dump(category, os);
-    
+
     if (category == Category::State) {
+
+        os << std::endl;
         
-        os << tab("EasyFlash bank");
+        os << tab("Bank Register");
+        os << hex(bankReg) << std::endl;
+        os << tab("Mode Register");
+        os << hex(modeReg) << std::endl;
+        os << tab("Selected bank");
         os << dec(bank);
+        os << tab("GameLine Jumper");
+        os << bol(jumper);
     }
 
     flashRomL.dump(category, os);

@@ -14,7 +14,7 @@
 bool
 Cartridge::isKnownType(CartridgeType type)
 {
-    if (FORCE_CRT_UNKNOWN) return false;
+    if constexpr (FORCE_CRT_UNKNOWN) return false;
     
     return type >= CRT_NORMAL && type <= CRT_GMOD2;
 }
@@ -22,10 +22,10 @@ Cartridge::isKnownType(CartridgeType type)
 bool
 Cartridge::isSupportedType(CartridgeType type)
 {
-    if (FORCE_CRT_UNSUPPORTED) return false;
-    
+    if constexpr (FORCE_CRT_UNSUPPORTED) return false;
+
     switch (type) {
-        
+
         case CRT_NORMAL:
         case CRT_ACTION_REPLAY:
         case CRT_KCS_POWER:
@@ -39,38 +39,42 @@ Cartridge::isSupportedType(CartridgeType type)
         case CRT_EPYX_FASTLOAD:
         case CRT_WESTERMANN:
         case CRT_REX:
-            
+
         case CRT_WARPSPEED:
         case CRT_DINAMIC:
         case CRT_ZAXXON:
         case CRT_MAGIC_DESK:
-            
+
         case CRT_COMAL80:
         case CRT_STRUCTURED_BASIC:
-            
+
         case CRT_MIKRO_ASSEMBLER:
 
         case CRT_STARDOS:
         case CRT_EASYFLASH:
-            
+
         case CRT_ACTION_REPLAY3:
-            
+
         case CRT_GAME_KILLER:
-            
+
         case CRT_FREEZE_FRAME:
 
         case CRT_MACH5:
-            
+
         case CRT_PAGEFOX:
         case CRT_KINGSOFT:
-            
+
         case CRT_ISEPIC:
         case CRT_GEO_RAM:
+        case CRT_REU:
+
             return true;
-            
+
         default:
-            return false;
+            break;
     }
+
+    return false;
 }
 
 bool
@@ -92,40 +96,40 @@ Cartridge::makeWithType(C64 &c64, CartridgeType type)
 {
     switch (type) {
             
-        case CRT_NORMAL:           return new Cartridge(c64);
-        case CRT_ACTION_REPLAY:    return new ActionReplay(c64);
-        case CRT_KCS_POWER:        return new KcsPower(c64);
-        case CRT_FINAL_III:        return new FinalIII(c64);
-        case CRT_SIMONS_BASIC:     return new SimonsBasic(c64);
-        case CRT_OCEAN:            return new Ocean(c64);
-        case CRT_EXPERT:           return new Expert(c64);
-        case CRT_FUNPLAY:          return new Funplay(c64);
-        case CRT_SUPER_GAMES:      return new SuperGames(c64);
-        case CRT_ATOMIC_POWER:     return new AtomicPower(c64);
-        case CRT_EPYX_FASTLOAD:    return new Epyx(c64);
-        case CRT_WESTERMANN:       return new Westermann(c64);
-        case CRT_REX:              return new Rex(c64);
-        case CRT_WARPSPEED:        return new WarpSpeed(c64);
-        case CRT_DINAMIC:          return new Dinamic(c64);
-        case CRT_ZAXXON:           return new Zaxxon(c64);
-        case CRT_MAGIC_DESK:       return new MagicDesk(c64);
-        case CRT_COMAL80:          return new Comal80(c64);
-        case CRT_STRUCTURED_BASIC: return new StructuredBasic(c64);
-        case CRT_MIKRO_ASSEMBLER:  return new MikroAss(c64);
-        case CRT_STARDOS:          return new StarDos(c64);
-        case CRT_EASYFLASH:        return new EasyFlash(c64);
-        case CRT_ACTION_REPLAY3:   return new ActionReplay3(c64);
-        case CRT_GAME_KILLER:      return new GameKiller(c64);
-        case CRT_FREEZE_FRAME:     return new FreezeFrame(c64);
-        case CRT_MACH5:            return new Mach5(c64);
-        case CRT_PAGEFOX:          return new PageFox(c64);
-        case CRT_KINGSOFT:         return new Kingsoft(c64);
-        case CRT_ISEPIC:           return new Isepic(c64);
-        case CRT_GEO_RAM:          return new GeoRAM(c64);
-            
+        case CRT_NORMAL:            return new Cartridge(c64);
+        case CRT_ACTION_REPLAY:     return new ActionReplay(c64);
+        case CRT_KCS_POWER:         return new KcsPower(c64);
+        case CRT_FINAL_III:         return new FinalIII(c64);
+        case CRT_SIMONS_BASIC:      return new SimonsBasic(c64);
+        case CRT_OCEAN:             return new Ocean(c64);
+        case CRT_EXPERT:            return new Expert(c64);
+        case CRT_FUNPLAY:           return new Funplay(c64);
+        case CRT_SUPER_GAMES:       return new SuperGames(c64);
+        case CRT_ATOMIC_POWER:      return new AtomicPower(c64);
+        case CRT_EPYX_FASTLOAD:     return new Epyx(c64);
+        case CRT_WESTERMANN:        return new Westermann(c64);
+        case CRT_REX:               return new Rex(c64);
+        case CRT_WARPSPEED:         return new WarpSpeed(c64);
+        case CRT_DINAMIC:           return new Dinamic(c64);
+        case CRT_ZAXXON:            return new Zaxxon(c64);
+        case CRT_MAGIC_DESK:        return new MagicDesk(c64);
+        case CRT_COMAL80:           return new Comal80(c64);
+        case CRT_STRUCTURED_BASIC:  return new StructuredBasic(c64);
+        case CRT_MIKRO_ASSEMBLER:   return new MikroAss(c64);
+        case CRT_STARDOS:           return new StarDos(c64);
+        case CRT_EASYFLASH:         return new EasyFlash(c64);
+        case CRT_ACTION_REPLAY3:    return new ActionReplay3(c64);
+        case CRT_GAME_KILLER:       return new GameKiller(c64);
+        case CRT_FREEZE_FRAME:      return new FreezeFrame(c64);
+        case CRT_MACH5:             return new Mach5(c64);
+        case CRT_PAGEFOX:           return new PageFox(c64);
+        case CRT_KINGSOFT:          return new Kingsoft(c64);
+        case CRT_ISEPIC:            return new Isepic(c64);
+        case CRT_GEO_RAM:           return new GeoRAM(c64);
+        case CRT_REU:               return new Reu(c64);
+
         default:
-            throw VC64Error(ERROR_CRT_UNSUPPORTED,
-                            std::to_string(type) + " (" + CartridgeTypeEnum::key(type) + ")");
+            throw VC64Error(ERROR_CRT_UNSUPPORTED, CRTFile::cartridgeTypeName(type));
     }
 }
 
@@ -211,8 +215,6 @@ Cartridge::_dump(Category category, std::ostream& os) const
     
     if (category == Category::State) {
         
-        os << tab("Cartridge type");
-        os << getCartridgeType() << std::endl;
         os << tab("Game line in CRT");
         os << bol(gameLineInCrtFile) << std::endl;
         os << tab("Exrom line in CRT");
@@ -226,6 +228,14 @@ Cartridge::_dump(Category category, std::ostream& os) const
             os << dec(packet[i]->size / 1024) << " KB starting at ";
             os << hex(packet[i]->loadAddress) << std::endl;
         }
+
+        if (getRamCapacity()) {
+
+            os << tab("On-Board RAM");
+            os << dec(getRamCapacity() / 1024) << " KB" << std::endl;
+            os << tab("Battery");
+            os << bol(getBattery()) << std::endl;
+        }
     }
 }
 
@@ -235,15 +245,29 @@ Cartridge::_size()
     util::SerCounter counter;
     applyToPersistentItems(counter);
     applyToResetItems(counter);
- 
-    // Determine size of all packets
-    isize packetSize = 0;
-    for (isize i = 0; i < numPackets; i++) {
-        assert(packet[i] != nullptr);
-        packetSize += packet[i]->_size();
-    }
-    
-    return ramCapacity + packetSize + counter.count;
+
+    isize result = counter.count;
+
+    // Add ROM size
+    for (isize i = 0; i < numPackets; i++) result += packet[i]->_size();
+
+    // Add RAM size
+    result += ramCapacity;
+
+    // Add sub-class members
+    result += __size();
+
+    return result;
+}
+
+u64
+Cartridge::_checksum()
+{
+    util::SerChecker checker;
+    applyToPersistentItems(checker);
+    applyToResetItems(checker);
+
+    return util::fnvIt64(checker.hash, __checksum());
 }
 
 isize
@@ -254,20 +278,25 @@ Cartridge::_load(const u8 *buffer)
     util::SerReader reader(buffer);
     applyToPersistentItems(reader);
     applyToResetItems(reader);
-        
-    // Load ROM packets
+
+    // Load ROM
     for (isize i = 0; i < numPackets; i++) {
+
         assert(packet[i] == nullptr);
         packet[i] = new CartridgeRom(c64);
         reader.ptr += packet[i]->_load(reader.ptr);
     }
 
-    // Load on-board RAM
+    // Load RAM
     if (ramCapacity) {
+
         assert(externalRam == nullptr);
         externalRam = new u8[ramCapacity];
-        for (isize i = 0; i < ramCapacity; i++) externalRam[i] = util::read8(reader.ptr);
+        reader.copy(externalRam, ramCapacity);
     }
+
+    // Load sub-class members
+    reader.ptr += __load(reader.ptr);
 
     trace(SNP_DEBUG, "Recreated from %ld bytes\n", isize(reader.ptr - buffer));
     return isize(reader.ptr - buffer);
@@ -279,21 +308,24 @@ Cartridge::_save(u8 *buffer)
     util::SerWriter writer(buffer);
     applyToPersistentItems(writer);
     applyToResetItems(writer);
-    
-    // Save ROM packets
+
+    // Save ROM
     for (isize i = 0; i < numPackets; i++) {
+
         assert(packet[i] != nullptr);
         writer.ptr += packet[i]->_save(writer.ptr);
     }
     
-    // Save on-board RAM
+    // Save RAM
     if (ramCapacity) {
+
         assert(externalRam != nullptr);
-        for (isize i = 0; i < ramCapacity; i++) {
-            util::write8(writer.ptr, externalRam[i]);
-        }
+        writer.copy(externalRam, ramCapacity);
     }
-    
+
+    // Save sub-class members
+    writer.ptr += __save(writer.ptr);
+
     trace(SNP_DEBUG, "Serialized %ld bytes\n", isize(writer.ptr - buffer));
     return isize(writer.ptr - buffer);
 }
@@ -444,14 +476,14 @@ Cartridge::setRamCapacity(isize size)
 }
 
 u8
-Cartridge::peekRAM(u16 addr) const
+Cartridge::peekRAM(u32 addr) const
 {
     assert(addr < ramCapacity);
     return externalRam[addr];
 }
 
 void
-Cartridge::pokeRAM(u16 addr, u8 value)
+Cartridge::pokeRAM(u32 addr, u8 value)
 {
     assert(addr < ramCapacity);
     externalRam[addr] = value;

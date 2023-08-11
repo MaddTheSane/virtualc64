@@ -15,15 +15,15 @@
 
 // Version number
 #define VER_MAJOR 4
-#define VER_MINOR 5
+#define VER_MINOR 6
 #define VER_SUBMINOR 0
-#define VER_BETA 1
+#define VER_BETA 0
 
 // Snapshot version number
 #define SNP_MAJOR 4
-#define SNP_MINOR 5
+#define SNP_MINOR 6
 #define SNP_SUBMINOR 0
-#define SNP_BETA 1
+#define SNP_BETA 0
 
 // Uncomment these settings in a release build
 #define RELEASEBUILD
@@ -32,6 +32,7 @@
 //
 // Build settings
 //
+
 
 #if defined(__clang__)
 #pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
@@ -45,9 +46,6 @@
 //
 
 #define OVERRIDES { }
-
-// Uncomment to fallback to an older style thread messaging mechanism
-// #define USE_CONDITION_VARIABLE
 
 
 //
@@ -115,6 +113,7 @@ static const int LIP_DEBUG       = 0; // Light pen
 
 // Other components
 static const int REC_DEBUG       = 0; // Screen recorder
+static const int REU_DEBUG       = 0; // REU memory expansion
 
 
 //
@@ -151,8 +150,3 @@ static const bool betaRelease = 1;
 #endif
 
 #include <assert.h>
-
-
-// IDEAS:
-// Update IEC bus inside CIA and VIA. Use delay flags if neccessary.
-// Call CA1 action in VIA class only if the pin value really has changed.

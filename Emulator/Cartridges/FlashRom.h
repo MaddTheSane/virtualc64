@@ -12,6 +12,8 @@
 #include "SubComponent.h"
 #include "CartridgeTypes.h"
 
+using namespace vc64;
+
 /* This class implements a Flash Rom module of type Am29F040B. Flash Roms
  * of this type are used, e.g., by the EasyFlash cartridge. The implementation
  * is based on the following ressources:
@@ -64,7 +66,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -74,7 +76,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -95,8 +97,7 @@ private:
     {
     }
     
-    isize __size() { COMPUTE_SNAPSHOT_SIZE }
-    isize _size() override { return __size() + romSize; }
+    isize _size() override { return [&](){COMPUTE_SNAPSHOT_SIZE}() + romSize; }
     u64 _checksum() override { COMPUTE_SNAPSHOT_CHECKSUM }
     isize _load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
     isize _save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }

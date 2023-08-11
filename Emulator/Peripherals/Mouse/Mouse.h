@@ -17,6 +17,8 @@
 #include "Mouse1351.h"
 #include "NeosMouse.h"
 
+namespace vc64 {
+
 class ShakeDetector {
     
     // Horizontal position
@@ -66,7 +68,7 @@ class Mouse : public SubComponent {
     
     // A Neos (analog) mouse
     NeosMouse mouseNeos = NeosMouse(c64);
-        
+
     /* Target mouse position. In order to achieve a smooth mouse movement, a
      * new mouse coordinate is not written directly into mouseX and mouseY.
      * Instead, these variables are set. In execute(), mouseX and mouseY are
@@ -74,7 +76,7 @@ class Mouse : public SubComponent {
      */
     double targetX = 0.0;
     double targetY = 0.0;
-  
+
     // Scaling factors applied to the raw mouse coordinates in setXY()
     double scaleX = 1.0;
     double scaleY = 1.0;
@@ -90,7 +92,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -100,7 +102,7 @@ private:
 
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
@@ -140,7 +142,7 @@ private:
     
     void updateScalingFactors();
     
- 
+
     //
     // Accessing
     //
@@ -183,3 +185,5 @@ public:
     // Performs periodic actions for this device
     void execute();
 };
+
+}

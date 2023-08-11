@@ -15,9 +15,13 @@
 #include "SubComponent.h"
 #include "PETName.h"
 
-class DiskAnalyzer;
 
-class Disk : public C64Object {
+namespace vc64 {
+
+class DiskAnalyzer;
+class FileSystem;
+
+class Disk : public CoreObject {
     
     friend class Drive;
     
@@ -28,7 +32,7 @@ public:
     //
     
     static const TrackDefaults trackDefaults[43];
- 
+
     // GCR encoding table. Maps 4 data bits to 5 GCR bits.
     static constexpr u8 gcr[16] = {
         
@@ -106,7 +110,7 @@ public:
     Disk();
     Disk(const string &path, bool wp = false) { init(path, wp); } throws
     Disk(DOSType type, PETName<16> name, bool wp = false) { init(type, name, wp); }
-    Disk(const class FileSystem &device, bool wp = false) { init(device, wp); }
+    Disk(const FileSystem &device, bool wp = false) { init(device, wp); }
     Disk(const G64File &g64, bool wp = false) { init(g64, wp); }
     Disk(const D64File &d64, bool wp = false) { init(d64, wp); } throws
     Disk(AnyCollection &archive, bool wp = false) { init(archive, wp); } throws
@@ -124,7 +128,7 @@ private:
 
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -134,7 +138,7 @@ private:
 
     
     //
-    // Serializing
+    // Methods from CoreComponent
     //
     
 private:
@@ -149,7 +153,7 @@ private:
         >> data
         >> length;
     }
-        
+
     
     //
     // Accessing
@@ -184,17 +188,6 @@ public:
      */
     void encodeGcr(u8 value, Track t, HeadPos offset);
     void encodeGcr(u8 *values, isize length, Track t, HeadPos offset);
-    
-    
-    /* Decodes a nibble (4 bit) from a previously encoded GCR bitstream.
-     * Returns 0xFF, if no valid GCR sequence is found.
-     */
-    // [[deprecated]] u8 decodeGcrNibble(u8 *gcrBits);
-
-    /* Decodes a byte (8 bit) form a previously encoded GCR bitstream. Returns
-     * an unpredictable result if invalid GCR sequences are found.
-     */
-    // [[deprecated]] u8 decodeGcr(u8 *gcrBits);
 
     
     //
@@ -222,7 +215,7 @@ public:
      */
     u8 _readBitFromHalftrack(Halftrack ht, HeadPos pos) const {
         assert(isValidHeadPos(ht, pos));
-        return (data.halftrack[ht][pos / 8] & (0x80 >> (pos % 8))) != 0;
+        return (data.halftrack[ht][pos >> 3] & (0x80 >> (pos & 7))) != 0;
     }
     u8 readBitFromHalftrack(Halftrack ht, HeadPos pos) const {
         return _readBitFromHalftrack(ht, wrap(ht, pos));
@@ -230,9 +223,9 @@ public:
     void _writeBitToHalftrack(Halftrack ht, HeadPos pos, bool bit) {
         assert(isValidHeadPos(ht, pos));
         if (bit) {
-            data.halftrack[ht][pos / 8] |= (0x0080 >> (pos % 8));
+            data.halftrack[ht][pos >> 3] |= (0x0080 >> (pos & 7));
         } else {
-            data.halftrack[ht][pos / 8] &= (0xFF7F >> (pos % 8));
+            data.halftrack[ht][pos >> 3] &= (0xFF7F >> (pos & 7));
         }
     }
     void _writeBitToTrack(Track t, HeadPos pos, bool bit) {
@@ -251,7 +244,7 @@ public:
             writeBitToHalftrack(ht, pos++, bit);
     }
     void writeBitToTrack(Track t, HeadPos pos, bool bit, isize count) {
-            writeBitToHalftrack(2 * t - 1, pos, bit, count);
+        writeBitToHalftrack(2 * t - 1, pos, bit, count);
     }
 
     // Writes a single byte
@@ -273,7 +266,7 @@ public:
     }
 
     // Clears a single halftrack
-    void clearHalftrack(Halftrack ht); 
+    void clearHalftrack(Halftrack ht);
 
     // Reverts to a factory-fresh disk
     void clearDisk();
@@ -309,7 +302,7 @@ public:
      * determine how many bytes will be written.
      */
     isize decodeDisk(u8 *dest);
- 
+
 private:
     
     isize decodeDisk(u8 *dest, isize numTracks, DiskAnalyzer &analyzer);
@@ -352,4 +345,6 @@ private:
      */
     isize encodeSector(const FileSystem &fs, Track t, Sector sector, HeadPos start, isize gap);
 };
+
+}
  

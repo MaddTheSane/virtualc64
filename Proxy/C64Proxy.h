@@ -21,7 +21,7 @@
 #import "ExpansionPortTypes.h"
 #import "FileTypes.h"
 #import "FSTypes.h"
-#import "C64ComponentTypes.h"
+#import "CoreComponentTypes.h"
 #import "JoystickTypes.h"
 #import "MemoryTypes.h"
 #import "MouseTypes.h"
@@ -33,6 +33,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MetalKit/MetalKit.h>
+
 
 //
 // Forward declarations
@@ -55,6 +56,7 @@
 @class FileSystemProxy;
 @class G64FileProxy;
 @class GuardsProxy;
+@class HostProxy;
 @class IECProxy;
 @class JoystickProxy;
 @class KeyboardProxy;
@@ -74,6 +76,7 @@
 @class TAPFileProxy;
 @class VIAProxy;
 @class VICProxy;
+
 
 //
 // Exception wrapper
@@ -99,14 +102,29 @@
 }
 @end
 
-@interface C64ComponentProxy : Proxy
+@interface CoreComponentProxy : Proxy
 @end
+
+
+//
+// Host
+//
+
+@interface HostProxy : CoreComponentProxy {
+}
+
+@property double sampleRate;
+@property NSInteger refreshRate;
+@property NSSize frameBufferSize;
+
+@end
+
 
 //
 // C64
 //
 
-@interface C64Proxy : C64ComponentProxy {
+@interface C64Proxy : CoreComponentProxy {
         
     CIAProxy *cia1;
     CIAProxy *cia2;
@@ -144,6 +162,7 @@
 @property (readonly, strong) ExpansionPortProxy *expansionport;
 @property (readonly, strong) GuardsProxy *breakpoints;
 @property (readonly, strong) GuardsProxy *watchpoints;
+@property (readonly, strong) HostProxy *host;
 @property (readonly, strong) IECProxy *iec;
 @property (readonly, strong) KeyboardProxy *keyboard;
 @property (readonly, strong) MemoryProxy *mem;
@@ -157,13 +176,19 @@
 
 - (void)kill;
 
+@property (readonly) NSInteger frame;
 @property BOOL warpMode;
-@property BOOL debugMode;
+@property BOOL trackMode;
 @property (readonly) NSInteger cpuLoad;
 
 @property InspectionTarget inspectionTarget;
 - (void) removeInspectionTarget;
 - (void)inspect;
+
+@property (readonly) EventInfo eventInfo;
+- (EventSlotInfo)getEventSlotInfo:(NSInteger)slot;
+
+- (void)launch:(const void *)listener function:(Callback *)func;
 
 - (void)hardReset;
 - (void)softReset;
@@ -202,6 +227,8 @@
 
 - (void)setListener:(const void *)sender function:(Callback *)func;
 
+- (void)wakeUp;
+
 - (void)stopAndGo;
 - (void)stepInto;
 - (void)stepOver;
@@ -226,6 +253,9 @@
 
 - (void)flash:(AnyFileProxy *)container exception:(ExceptionWrapper *)ex;
 - (void)flash:(FileSystemProxy *)proxy item:(NSInteger)nr exception:(ExceptionWrapper *)ex;
+
+- (void)setAlarmAbs:(NSInteger)cycle payload:(NSInteger)value;
+- (void)setAlarmRel:(NSInteger)cycle payload:(NSInteger)value;
 
 @end
 
@@ -288,7 +318,7 @@
 // CPU
 //
 
-@interface CPUProxy : C64ComponentProxy
+@interface CPUProxy : CoreComponentProxy { }
 
 @property (readonly) CPUInfo info;
 @property (readonly) i64 clock;
@@ -298,7 +328,6 @@
 - (NSInteger)loggedPCRel:(NSInteger)nr;
 - (NSInteger)loggedPCAbs:(NSInteger)nr;
 - (void)clearLog;
-@property (readonly, getter=isJammed) BOOL jammed;
 
 - (void)setHex;
 - (void)setDec;
@@ -319,7 +348,7 @@
 // CIA
 //
 
-@interface CIAProxy : C64ComponentProxy
+@interface CIAProxy : CoreComponentProxy
 
 - (CIAInfo)getInfo;
 
@@ -330,7 +359,7 @@
 // Memory
 //
 
-@interface MemoryProxy : C64ComponentProxy
+@interface MemoryProxy : CoreComponentProxy
 
 - (MemInfo)getInfo;
 
@@ -353,7 +382,7 @@
 //
 
 
-@interface VICProxy : C64ComponentProxy
+@interface VICProxy : CoreComponentProxy
 
 @property (readonly) NSInteger hPixels;
 @property (readonly) NSInteger vPixels;
@@ -375,8 +404,7 @@
 // DmaDebugger
 //
 
-
-@interface DmaDebuggerProxy : C64ComponentProxy
+@interface DmaDebuggerProxy : CoreComponentProxy
 
 - (DmaDebuggerConfig)getConfig;
 
@@ -387,7 +415,7 @@
 // SID
 //
 
-@interface SIDProxy : C64ComponentProxy
+@interface SIDProxy : CoreComponentProxy
 
 - (SIDInfo)getInfo:(NSInteger)nr;
 - (VoiceInfo)getVoiceInfo:(NSInteger)nr voice:(NSInteger)voice;
@@ -416,7 +444,7 @@
 // Keyboard
 //
 
-@interface KeyboardProxy : C64ComponentProxy
+@interface KeyboardProxy : CoreComponentProxy
 
 - (BOOL)keyIsPressed:(NSInteger)nr;
 - (BOOL)keyIsPressedAtRow:(NSInteger)row col:(NSInteger)col;
@@ -427,10 +455,12 @@
 @property (readonly) BOOL shiftLockIsPressed;
 
 - (void)pressKey:(NSInteger)nr;
+- (void)pressKeyCombination:(NSInteger)nr with: (NSInteger)nr2;
 - (void)pressKeyAtRow:(NSInteger)row col:(NSInteger)col;
 - (void)pressShiftLock;
 
 - (void)releaseKey:(NSInteger)nr;
+- (void)releaseKeyCombination:(NSInteger)nr with: (NSInteger)nr2;
 - (void)releaseKeyAtRow:(NSInteger)row col:(NSInteger)col;
 - (void)releaseShiftLock;
 - (void)releaseAll;
@@ -439,19 +469,24 @@
 - (void)toggleKeyAtRow:(NSInteger)row col:(NSInteger)col;
 - (void)toggleShiftLock;
 
-- (void)scheduleKeyPress:(NSInteger)nr delay:(NSInteger)delay;
-- (void)scheduleKeyPressAtRow:(NSInteger)row col:(NSInteger)col delay:(NSInteger)delay;
-- (void)scheduleKeyRelease:(NSInteger)nr delay:(NSInteger)delay;
-- (void)scheduleKeyReleaseAtRow:(NSInteger)row col:(NSInteger)col delay:(NSInteger)delay;
-- (void)scheduleKeyReleaseAll:(NSInteger)delay;
+- (void)scheduleKeyPress:(NSInteger)nr delay:(double)seconds;
+- (void)scheduleKeyPresses:(NSInteger)nr with:(NSInteger)nr2 delay:(double)seconds;
+- (void)scheduleKeyPressAtRow:(NSInteger)row col:(NSInteger)col delay:(double)seconds;
+- (void)scheduleKeyRelease:(NSInteger)nr delay:(double)seconds;
+- (void)scheduleKeyReleases:(NSInteger)nr with:(NSInteger)nr2 delay:(double)seconds;
+- (void)scheduleKeyReleaseAtRow:(NSInteger)row col:(NSInteger)col delay:(double)seconds;
+- (void)scheduleKeyReleaseAll:(double)seconds;
+
+- (void)autoType:(NSString *)text;
 
 @end
+
 
 //
 // ControlPort
 //
 
-@interface ControlPortProxy : C64ComponentProxy {
+@interface ControlPortProxy : CoreComponentProxy {
     
     JoystickProxy *joystick;
     MouseProxy *mouse;
@@ -467,7 +502,7 @@
 // ExpansionPort
 //
 
-@interface ExpansionPortProxy : C64ComponentProxy
+@interface ExpansionPortProxy : CoreComponentProxy
 
 - (CartridgeInfo)getInfo;
 - (CartridgeRomInfo)getRomInfo:(NSInteger)nr;
@@ -475,6 +510,7 @@
 @property (readonly) BOOL cartridgeAttached;
 @property (readonly) CartridgeType cartridgeType;
 - (void)attachCartridge:(CRTFileProxy *)c reset:(BOOL)reset exception:(ExceptionWrapper *)ex;
+- (void)attachReuCartridge:(NSInteger)capacity;
 - (void)attachGeoRamCartridge:(NSInteger)capacity;
 - (void)attachIsepicCartridge;
 - (void)detachCartridgeAndReset;
@@ -508,7 +544,7 @@
 // IEC bus
 //
 
-@interface IECProxy : C64ComponentProxy
+@interface IECProxy : CoreComponentProxy
 
 @property (readonly) BOOL transferring;
 
@@ -519,7 +555,7 @@
 // Drive
 //
 
-@interface DriveProxy : C64ComponentProxy {
+@interface DriveProxy : CoreComponentProxy {
     
     VIAProxy *via1;
     VIAProxy *via2;
@@ -550,12 +586,8 @@
 
 - (BOOL)redLED;
 - (void)setModificationFlag:(BOOL)value;
-// - (void)setProtectionFlag:(BOOL)value;
 - (void)markDiskAsModified;
 - (void)markDiskAsUnmodified;
-// - (void)toggleWriteProtection;
-
-// - (void)setModifiedDisk:(BOOL)b;
 - (void)insertNewDisk:(DOSType)fstype name:(NSString *)name;
 - (void)insertD64:(D64FileProxy *)proxy protected:(BOOL)wp;
 - (void)insertG64:(G64FileProxy *)proxy protected:(BOOL)wp;
@@ -579,7 +611,7 @@
 // VIA
 //
 
-@interface VIAProxy : C64ComponentProxy
+@interface VIAProxy : CoreComponentProxy
 
 @end
 
@@ -588,7 +620,7 @@
 // ParCable
 //
 
-@interface ParCableProxy : C64ComponentProxy
+@interface ParCableProxy : CoreComponentProxy
 
 @end
 
@@ -597,12 +629,13 @@
 // Disk
 //
 
-@interface DiskProxy : C64ComponentProxy
+@interface DiskProxy : CoreComponentProxy
     
 @property BOOL writeProtected;
 - (void)toggleWriteProtection;
 
 @end
+
 
 //
 // DiskAnalyzer
@@ -628,11 +661,12 @@
 
 @end
 
+
 //
 // Datasette
 //
 
-@interface DatasetteProxy : C64ComponentProxy
+@interface DatasetteProxy : CoreComponentProxy
 
 @property (readonly) BOOL hasTape;
 @property (readonly) NSInteger type;
@@ -648,11 +682,12 @@
 
 @end
 
+
 //
 // Mouse
 //
 
-@interface MouseProxy : C64ComponentProxy
+@interface MouseProxy : CoreComponentProxy
 
 - (BOOL)detectShakeAbs:(NSPoint)pos;
 - (BOOL)detectShakeRel:(NSPoint)pos;
@@ -667,7 +702,7 @@
 // Joystick
 //
 
-@interface JoystickProxy : C64ComponentProxy
+@interface JoystickProxy : CoreComponentProxy
 
 - (void) trigger:(GamePadAction)event;
 
@@ -718,7 +753,9 @@ exception:(ExceptionWrapper *)ex;
 - (void)pressEnd;
 - (void)pressBackspace;
 - (void)pressDelete;
+- (void)pressCut;
 - (void)pressReturn;
+- (void)pressShiftReturn;
 - (void)pressTab;
 - (void)pressKey:(char)c;
 
@@ -757,6 +794,7 @@ exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithFolder:(NSString *)path exception:(ExceptionWrapper *)ex;
 @end
 
+
 //
 // AnyFile
 //
@@ -774,6 +812,7 @@ exception:(ExceptionWrapper *)ex;
 
 @end
 
+
 //
 // AnyCollection
 //
@@ -781,6 +820,7 @@ exception:(ExceptionWrapper *)ex;
 @interface AnyCollectionProxy : AnyFileProxy
 
 @end
+
 
 //
 // Snapshot
@@ -800,6 +840,7 @@ exception:(ExceptionWrapper *)ex;
 
 @end
 
+
 //
 // Script
 //
@@ -813,6 +854,7 @@ exception:(ExceptionWrapper *)ex;
 
 @end
 
+
 //
 // RomFile
 //
@@ -823,6 +865,7 @@ exception:(ExceptionWrapper *)ex;
 + (instancetype)makeWithBuffer:(const void *)buf length:(NSInteger)len exception:(ExceptionWrapper *)ex;
  
 @end
+
 
 //
 // CRTFile
@@ -841,6 +884,7 @@ exception:(ExceptionWrapper *)ex;
 
 @end
 
+
 //
 // TAPFile
 //
@@ -853,6 +897,7 @@ exception:(ExceptionWrapper *)ex;
 @property (readonly) TAPVersion version;
 
 @end
+
 
 //
 // T64File
@@ -867,6 +912,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 @end
 
+
 //
 // PRGFile
 //
@@ -879,6 +925,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 + (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
+
 
 //
 // P00File
@@ -893,6 +940,7 @@ AnyCollectionProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 
 @end
 
+
 //
 // D64File
 //
@@ -905,6 +953,7 @@ AnyFileProxy <MakeWithFile, MakeWithBuffer, MakeWithFileSystem>
 + (instancetype)makeWithFileSystem:(FileSystemProxy *)proxy exception:(ExceptionWrapper *)ex;
 
 @end
+
 
 //
 // G64File
@@ -919,6 +968,7 @@ AnyFileProxy <MakeWithFile, MakeWithBuffer, MakeWithDisk>
 
 @end
 
+
 //
 // Folder
 //
@@ -931,6 +981,7 @@ AnyCollectionProxy <MakeWithFolder>
 @property (readonly) FileSystemProxy *fileSystem;
 
 @end
+
 
 //
 // FileSystem

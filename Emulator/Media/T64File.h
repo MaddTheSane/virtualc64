@@ -11,8 +11,10 @@
 
 #include "AnyCollection.h"
 
+namespace vc64 {
+
 class T64File : public AnyCollection {
-     
+
 public:
 
     static bool isCompatible(const string &name);
@@ -38,7 +40,7 @@ private:
 
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
     
     const char *getDescription() const override { return "T64File"; }
@@ -79,3 +81,5 @@ public:
     // Checks if the header contains information at the specified location
     bool directoryItemIsPresent(isize n);
 };
+
+}

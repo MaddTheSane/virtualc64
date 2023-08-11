@@ -11,6 +11,8 @@
 
 #include "SubComponent.h"
 
+namespace vc64 {
+
 class Mouse1350 : public SubComponent {
     
 private:
@@ -45,7 +47,7 @@ public:
     
     
     //
-    // Methods from C64Object
+    // Methods from CoreObject
     //
 
 private:
@@ -54,13 +56,13 @@ private:
     
     
     //
-    // Methods from C64Component
+    // Methods from CoreComponent
     //
 
 private:
     
     void _reset(bool hard) override;
-        
+
     template <class T>
     void applyToPersistentItems(T& worker)
     {
@@ -97,3 +99,5 @@ public:
     // Execution function (Translates movement deltas into joystick events)
     void execute(i64 targetX, i64 targetY);
 };
+
+}

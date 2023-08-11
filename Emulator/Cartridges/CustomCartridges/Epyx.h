@@ -23,7 +23,7 @@ private:
     // either read from ROML or I/O space 1. Both operations discharge the
     // capacitor and keep the ROM alive.
     
-    u64 cycle = 0;
+    Cycle cycle = 0;
     
     
     //
@@ -40,9 +40,18 @@ private:
     
     void _reset(bool hard) override;
 
-    
+
     //
-    // Serializing
+    // Methods from CoreObject
+    //
+
+private:
+
+    void _dump(Category category, std::ostream& os) const override;
+
+
+    //
+    // Methods from CoreComponent
     //
     
 private:
@@ -63,14 +72,10 @@ private:
         }
     }
     
-    isize __size() { COMPUTE_SNAPSHOT_SIZE }
-    isize __load(const u8 *buffer) { LOAD_SNAPSHOT_ITEMS }
-    isize __save(u8 *buffer) { SAVE_SNAPSHOT_ITEMS }
+    isize __size() override { COMPUTE_SNAPSHOT_SIZE }
+    isize __load(const u8 *buffer) override { LOAD_SNAPSHOT_ITEMS }
+    isize __save(u8 *buffer) override { SAVE_SNAPSHOT_ITEMS }
     
-    isize _size() override { return Cartridge::_size() + __size(); }
-    isize _load(const u8 *buf) override { return Cartridge::_load(buf) + __load(buf); }
-    isize _save(u8 *buf) override { return Cartridge::_save(buf) + __save(buf); }
-
  
     //
     // Methods from Cartridge

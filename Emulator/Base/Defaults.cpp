@@ -12,15 +12,21 @@
 #include "C64.h"
 #include "StringUtils.h"
 
+namespace vc64 {
+
 Defaults::Defaults()
 {
+    setFallback(OPT_WARP_BOOT, 0);
+    setFallback(OPT_WARP_MODE, WARP_NEVER);
+    setFallback(OPT_SYNC_MODE, SYNC_NATIVE_FPS);
+    setFallback(OPT_PROPOSED_FPS, 60);
+
     setFallback(OPT_POWER_GRID, GRID_STABLE_50HZ);
 
     setFallback(OPT_CIA_REVISION, MOS_6526);
     setFallback(OPT_TIMER_B_BUG, true);
 
     setFallback(OPT_VIC_REVISION, VICII_PAL_8565);
-    setFallback(OPT_VIC_SPEED, VICII_NATIVE);
     setFallback(OPT_VIC_POWER_SAVE, true);
     setFallback(OPT_GRAY_DOT_BUG, true);
     setFallback(OPT_GLUE_LOGIC, GLUE_LOGIC_DISCRETE);
@@ -213,7 +219,9 @@ Defaults::load(std::stringstream &stream)
             throw VC64Error(ERROR_SYNTAX, line);
         }
 
-        debug(DEF_DEBUG, "%ld keys accepted, %ld ignored\n", accepted, skipped);
+        if (accepted || skipped) {
+            debug(DEF_DEBUG, "%ld keys accepted, %ld ignored\n", accepted, skipped);
+        }
     }
 }
 
@@ -469,4 +477,6 @@ void
 Defaults::remove(Option option, std::vector <isize> nrs)
 {
     for (auto &nr : nrs) remove(option, nr);
+}
+
 }

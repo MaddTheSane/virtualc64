@@ -7,8 +7,6 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
-// swiftlint:disable colon
-
 import Carbon.HIToolbox
 
 //
@@ -46,11 +44,11 @@ extension DefaultsProxy {
                 try load(url: path)
                 debug(.defaults, "Successfully loaded user defaults from file \(path)")
             } catch {
-                debug(.defaults, "Failed to load user defaults from file \(path)")
+                warn("Failed to load user defaults from file \(path)")
             }
 
         } catch {
-            debug(.defaults, "Failed to access application support folder")
+            warn("Failed to access application support folder")
         }
     }
 
@@ -207,8 +205,19 @@ extension UserDefaults {
         return folder?.appendingPathComponent(name)
     }
 
-    static var basicRomUrl:  URL? { return romUrl(name: "basic.bin") }
-    static var charRomUrl:   URL? { return romUrl(name: "char.bin") }
+    static func romUrl(fingerprint: Int) -> URL? {
+
+        return romUrl(name: String(format: "%08x", fingerprint) + ".rom")
+    }
+
+    static func mediaUrl(name: String) -> URL? {
+
+        let folder = try? URL.appSupportFolder("Media")
+        return folder?.appendingPathComponent(name)
+    }
+
+    static var basicRomUrl: URL? { return romUrl(name: "basic.bin") }
+    static var charRomUrl: URL? { return romUrl(name: "char.bin") }
     static var kernalRomUrl: URL? { return romUrl(name: "kernal.bin") }
     static var vc1541RomUrl: URL? { return romUrl(name: "vc1541.bin") }
 }
@@ -230,7 +239,7 @@ extension DefaultsProxy {
 
         registerHardwareUserDefaults()
         registerPeripheralsUserDefaults()
-        registerCompatibilityUserDefaults()
+        registerPerformanceUserDefaults()
         registerAudioUserDefaults()
         registerVideoUserDefaults()
     }
@@ -240,7 +249,7 @@ extension Preferences {
 
     func applyUserDefaults() {
 
-        debug(.defaults)
+        debug(.defaults, "Applying user defaults")
 
         applyGeneralUserDefaults()
         applyControlsUserDefaults()
@@ -257,7 +266,7 @@ extension Configuration {
 
         applyHardwareUserDefaults()
         applyPeripheralsUserDefaults()
-        applyCompatibilityUserDefaults()
+        applyPerformanceUserDefaults()
         applyAudioUserDefaults()
         applyVideoUserDefaults()
     }
@@ -289,10 +298,7 @@ struct Keys {
         // Fullscreen
         static let keepAspectRatio        = "General.FullscreenKeepAspectRatio"
         static let exitOnEsc              = "General.FullscreenExitOnEsc"
-                
-        // Warp mode
-        static let warpMode               = "General.WarpMode"
-        
+
         // Miscellaneous
         static let ejectWithoutAsking     = "General.EjectWithoutAsking"
         static let closeWithoutAsking     = "General.CloseWithoutAsking"
@@ -325,9 +331,6 @@ extension DefaultsProxy {
         register(Keys.Gen.keepAspectRatio, false)
         register(Keys.Gen.exitOnEsc, true)
 
-        // Warp mode
-        register(Keys.Gen.warpMode, WarpMode.off.rawValue)
-
         // Misc
         register(Keys.Gen.ejectWithoutAsking, false)
         register(Keys.Gen.closeWithoutAsking, false)
@@ -352,8 +355,6 @@ extension DefaultsProxy {
 
                      Keys.Gen.keepAspectRatio,
                      Keys.Gen.exitOnEsc,
-
-                     Keys.Gen.warpMode,
 
                      Keys.Gen.ejectWithoutAsking,
                      Keys.Gen.closeWithoutAsking,
@@ -386,8 +387,6 @@ extension Preferences {
         defaults.set(Keys.Gen.keepAspectRatio, keepAspectRatio)
         defaults.set(Keys.Gen.exitOnEsc, exitOnEsc)
 
-        defaults.set(Keys.Gen.warpMode, warpModeIntValue)
-
         defaults.set(Keys.Gen.ejectWithoutAsking, ejectWithoutAsking)
         defaults.set(Keys.Gen.closeWithoutAsking, closeWithoutAsking)
         defaults.set(Keys.Gen.pauseInBackground, pauseInBackground)
@@ -414,8 +413,6 @@ extension Preferences {
 
         keepAspectRatio = defaults.bool(Keys.Gen.keepAspectRatio)
         exitOnEsc = defaults.bool(Keys.Gen.exitOnEsc)
-
-        warpModeIntValue = defaults.int(Keys.Gen.warpMode)
 
         ejectWithoutAsking = defaults.bool(Keys.Gen.ejectWithoutAsking)
         closeWithoutAsking = defaults.bool(Keys.Gen.closeWithoutAsking)
@@ -749,7 +746,6 @@ extension DefaultsProxy {
         debug(.defaults)
 
         remove(.VIC_REVISION)
-        remove(.VIC_SPEED)
         remove(.VIC_POWER_SAVE)
 
         remove(.CIA_REVISION)
@@ -777,7 +773,6 @@ extension Configuration {
         c64.suspend()
 
         defaults.set(.VIC_REVISION, vicRevision)
-        defaults.set(.VIC_SPEED, vicSpeed)
         defaults.set(.GRAY_DOT_BUG, vicGrayDotBug)
 
         defaults.set(.CIA_REVISION, ciaRevision)
@@ -810,7 +805,6 @@ extension Configuration {
         c64.suspend()
 
         vicRevision = defaults.get(.VIC_REVISION)
-        vicSpeed = defaults.get(.VIC_SPEED)
         vicGrayDotBug = defaults.get(.GRAY_DOT_BUG) != 0
 
         ciaRevision = defaults.get(.CIA_REVISION)
@@ -933,18 +927,18 @@ extension Configuration {
 }
 
 //
-// User defaults (Compatibility)
+// User defaults (Performance)
 //
 
 extension DefaultsProxy {
 
-    func registerCompatibilityUserDefaults() {
+    func registerPerformanceUserDefaults() {
 
         debug(.defaults)
         // No GUI related items in this sections
     }
 
-    func removeCompatibilityUserDefaults() {
+    func removePerformanceUserDefaults() {
 
         debug(.defaults)
 
@@ -954,12 +948,14 @@ extension DefaultsProxy {
         remove(.SID_POWER_SAVE)
         remove(.SS_COLLISIONS)
         remove(.SB_COLLISIONS)
+        remove(.WARP_MODE)
+        remove(.WARP_BOOT)
     }
 }
 
 extension Configuration {
 
-    func saveCompatibilityUserDefaults() {
+    func savePerformanceUserDefaults() {
 
         debug(.defaults)
         let defaults = C64Proxy.defaults!
@@ -972,12 +968,14 @@ extension Configuration {
         defaults.set(.SID_POWER_SAVE, sidPowerSave)
         defaults.set(.SS_COLLISIONS, ssCollisions)
         defaults.set(.SB_COLLISIONS, sbCollisions)
+        defaults.set(.WARP_MODE, warpMode)
+        defaults.set(.WARP_BOOT, warpBoot)
         defaults.save()
 
         c64.resume()
     }
 
-    func applyCompatibilityUserDefaults() {
+    func applyPerformanceUserDefaults() {
 
         debug(.defaults)
         let defaults = C64Proxy.defaults!
@@ -990,6 +988,8 @@ extension Configuration {
         sidPowerSave = defaults.get(.SID_POWER_SAVE) != 0
         ssCollisions = defaults.get(.SS_COLLISIONS) != 0
         sbCollisions = defaults.get(.SB_COLLISIONS) != 0
+        warpMode = defaults.get(.WARP_MODE)
+        warpBoot = defaults.get(.WARP_BOOT)
 
         c64.resume()
     }
@@ -1339,7 +1339,7 @@ extension Configuration {
         c64.suspend()
 
         hCenter = defaults.float(Keys.Vid.hCenter)
-        hCenter = defaults.float(Keys.Vid.vCenter)
+        vCenter = defaults.float(Keys.Vid.vCenter)
         hZoom = defaults.float(Keys.Vid.hZoom)
         vZoom = defaults.float(Keys.Vid.vZoom)
 
