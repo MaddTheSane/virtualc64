@@ -23,10 +23,8 @@ class MediaManager {
 
     // References to other objects
     var document: MyDocument!
-    var c64: C64Proxy { return document.c64 }
+    var emu: EmulatorProxy? { return document.emu }
     var controller: MyController { return document.parent }
-
-    // Computed references
     var console: Console { return controller.renderer.console }
 
     // Shared list of recently inserted tapes
@@ -142,7 +140,7 @@ class MediaManager {
     // Loading media files
     //
 
-    func createFileProxy(from url: URL, allowedTypes: [FileType]) throws -> AnyFileProxy {
+    func createFileProxy(from url: URL, allowedTypes: [vc64.FileType]) throws -> MediaFileProxy {
 
         debug(.media, "Reading file \(url.lastPathComponent)")
 
@@ -156,40 +154,40 @@ class MediaManager {
                 switch type {
 
                 case .SNAPSHOT:
-                    return try SnapshotProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .SNAPSHOT)
 
                 case .SCRIPT:
-                    return try ScriptProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .SCRIPT)
 
                 case .CRT:
-                    return try CRTFileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .CRT)
 
                 case .D64:
-                    return try D64FileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .D64)
 
                 case .T64:
-                    return try T64FileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .T64)
 
                 case .PRG:
-                    return try PRGFileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .PRG)
 
                 case .P00:
-                    return try P00FileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .P00)
 
                 case .G64:
-                    return try G64FileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .G64)
 
                 case .TAP:
-                    return try TAPFileProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .TAP)
 
                 case .FOLDER:
-                    return try FolderProxy.make(with: newUrl)
+                    return try MediaFileProxy.make(with: newUrl, type: .FOLDER)
 
                 default:
                     fatalError()
                 }
 
-            } catch let error as VC64Error {
+            } catch let error as AppError {
                 if error.errorCode != .FILE_TYPE_MISMATCH {
                     throw error
                 }
@@ -197,7 +195,7 @@ class MediaManager {
         }
 
         // None of the allowed types matched the file
-        throw VC64Error(.FILE_TYPE_MISMATCH,
+        throw AppError(.FILE_TYPE_MISMATCH,
                         "The type of this file is not known to the emulator.")
     }
 
@@ -206,46 +204,49 @@ class MediaManager {
     //
 
     func addMedia(url: URL,
-                  allowedTypes types: [FileType] = FileType.all,
+                  allowedTypes types: [vc64.FileType] = vc64.FileType.all,
                   drive id: Int = DRIVE8,
                   options: [Option] = [.remember]) throws {
 
         debug(.media, "url = \(url) types = \(types)")
 
-        // Read file
-        let file = try createFileProxy(from: url, allowedTypes: types)
+        if let emu = emu {
 
-        // Remember the URL if requested
-        if options.contains(.remember) {
+            // Read file
+            let file = try createFileProxy(from: url, allowedTypes: types)
 
-            switch file {
+            // Remember the URL if requested
+            if options.contains(.remember) {
 
-            case let file as SnapshotProxy:
-                document.snapshots.append(file)
+                switch file.type {
 
-            case is CRTFileProxy:
-                MediaManager.noteNewRecentlyAtachedCartridgeURL(url)
+                case .SNAPSHOT:
+                    document.snapshots.append(file, size: file.size)
 
-            case is TAPFileProxy:
-                MediaManager.noteNewRecentlyInsertedTapeURL(url)
+                case .CRT:
+                    MediaManager.noteNewRecentlyAtachedCartridgeURL(url)
 
-            case is D64FileProxy, is G64FileProxy, is AnyCollectionProxy:
-                MediaManager.noteNewRecentlyInsertedDiskURL(url)
+                case .TAP:
+                    MediaManager.noteNewRecentlyInsertedTapeURL(url)
 
-            default:
-                break
+                case .T64, .P00, .PRG, .D64, .G64:
+                    MediaManager.noteNewRecentlyInsertedDiskURL(url)
+
+                default:
+                    break
+                }
             }
-        }
 
-        // Process file
-        if options.contains(.flash) {
-            try flashMedia(proxy: file, options: options)
-        } else {
-            try addMedia(proxy: file, drive: c64.drive(id), options: options)
+            // Process file
+            if options.contains(.flash) {
+                try flashMedia(proxy: file, options: options)
+            } else {
+                try addMedia(proxy: file, drive: emu.drive(id), options: options)
+            }
         }
     }
 
-    func addMedia(proxy: AnyFileProxy,
+    func addMedia(proxy: MediaFileProxy,
                   drive: DriveProxy? = nil,
                   options: [Option] = []) throws {
 
@@ -253,101 +254,93 @@ class MediaManager {
             return options.contains(.force) || proceedWithUnsavedFloppyDisk(drive: drive!)
         }
 
-        switch proxy {
+        if let emu = emu {
 
-        case let proxy as SnapshotProxy:
+            switch proxy.type {
 
-            debug(.media, "Snapshot")
-            try c64.flash(proxy)
+            case .SNAPSHOT:
 
-        case let proxy as ScriptProxy:
+                debug(.media, "Snapshot")
+                try emu.flash(proxy)
+                debug(.media, "Snapshot flashed")
 
-            debug(.media, "Script")
-            console.runScript(script: proxy)
+            case .CRT:
 
-        case let proxy as CRTFileProxy:
+                debug(.media, "CRT")
+                try emu.expansionport.attachCartridge(proxy, reset: true)
 
-            debug(.media, "CRT")
-            try c64.expansionport.attachCartridge(proxy, reset: true)
+            case .TAP:
 
-        case let proxy as TAPFileProxy:
+                debug(.media, "TAP")
+                emu.datasette.insertTape(proxy)
 
-            debug(.media, "TAP")
-            c64.datasette.insertTape(proxy)
+                if options.contains(.autostart) {
+                    controller.keyboard.type("LOAD\n")
+                    emu.datasette.pressPlay()
+                }
 
-            if options.contains(.autostart) {
-                controller.keyboard.type("LOAD\n")
-                c64.datasette.pressPlay()
+            case .T64, .PRG, .P00, .D64, .G64, .FOLDER:
+
+                debug(.media, "T64, PRG, P00, D64, G64, FOLDER")
+                if proceedUnsaved {
+                    drive!.insertMedia(proxy, protected: options.contains(.protect))
+                }
+
+            case .SCRIPT:
+
+                debug(.media, "Script")
+                console.runScript(script: proxy)
+
+            default:
+                break
             }
-
-        case let proxy as D64FileProxy:
-
-            debug(.media, "D64")
-            if proceedUnsaved {
-                drive!.insertD64(proxy, protected: options.contains(.protect))
-            }
-
-        case let proxy as G64FileProxy:
-
-            debug(.media, "G64")
-            if proceedUnsaved {
-                drive!.insertG64(proxy, protected: options.contains(.protect))
-            }
-
-        case let proxy as AnyCollectionProxy:
-
-            debug(.media, "T64, PRG, P00")
-            if proceedUnsaved {
-                drive!.insertCollection(proxy, protected: options.contains(.protect))
-            }
-
-        default:
-            fatalError()
         }
     }
 
-    func flashMedia(proxy: AnyFileProxy,
-                    options: [Option] = []) throws {
+    func flashMedia(proxy: MediaFileProxy, options: [Option] = []) throws {
 
-        switch proxy {
+        if let emu = emu {
 
-        case let proxy as SnapshotProxy:
+            switch proxy.type {
 
-            debug(.media, "Snapshot")
-            try c64.flash(proxy)
+            case .SNAPSHOT:
 
-        case let proxy as ScriptProxy:
+                debug(.media, "Snapshot")
+                try emu.flash(proxy)
 
-            debug(.media, "Script")
-            console.runScript(script: proxy)
+            case .CRT:
 
-        case let proxy as CRTFileProxy:
+                debug(.media, "CRT")
+                try emu.expansionport.attachCartridge(proxy, reset: true)
 
-            debug(.media, "CRT")
-            try c64.expansionport.attachCartridge(proxy, reset: true)
+            case .TAP:
 
-        case let proxy as TAPFileProxy:
+                debug(.media, "TAP")
+                emu.datasette.insertTape(proxy)
 
-            debug(.media, "TAP")
-            c64.datasette.insertTape(proxy)
+                if options.contains(.autostart) {
+                    controller.keyboard.type("load\n")
+                    emu.datasette.pressPlay()
+                }
 
-            if options.contains(.autostart) {
-                controller.keyboard.type("load\n")
-                c64.datasette.pressPlay()
+            case .PRG, .P00, .T64:
+
+                debug(.media, "PRG, P00, T64")
+                if let volume = try? FileSystemProxy.make(with: proxy) {
+
+                    try? emu.flash(volume, item: 0)
+                    controller.keyboard.type("run\n")
+                    controller.renderer.rotateLeft()
+                }
+
+            case .SCRIPT:
+
+                debug(.media, "Script")
+                console.runScript(script: proxy)
+
+            default:
+                break
             }
-
-        case let proxy as AnyCollectionProxy:
-
-            debug(.media, "AnyCollection")
-            if let volume = try? FileSystemProxy.make(with: proxy) {
-
-                try? c64.flash(volume, item: 0)
-                controller.keyboard.type("run\n")
-                controller.renderer.rotateLeft()
-            }
-
-        default:
-            fatalError()
         }
     }
 
@@ -359,19 +352,22 @@ class MediaManager {
 
         debug(.media, "drive: \(id) to: \(url)")
 
-        let drive = c64.drive(id)
-        try export(disk: drive.disk, to: url)
+        if let emu = emu {
+            
+            let drive = emu.drive(id)
+            try export(disk: drive, to: url)
 
-        drive.markDiskAsUnmodified()
+            emu.put(.DSK_MODIFIED, value: id)
+        }
     }
 
-    func export(disk: DiskProxy, to url: URL) throws {
+    func export(disk: DriveProxy, to url: URL) throws {
 
         debug(.media, "disk: \(disk) to: \(url)")
 
         if url.c64FileType == .G64 {
 
-            let g64 = try G64FileProxy.make(with: disk)
+            let g64 = try MediaFileProxy.make(with: disk, type: .G64)
             try export(file: g64, to: url)
 
         } else {
@@ -393,32 +389,32 @@ class MediaManager {
 
         debug(.media, "fs: \(fs) to: \(url)")
 
-        var file: AnyFileProxy?
+        var file: MediaFileProxy?
 
         switch url.c64FileType {
 
         case .D64:
-            file = try D64FileProxy.make(with: fs)
+            file = try MediaFileProxy.make(with: fs, type: .D64)
 
         case .T64:
-            file = try T64FileProxy.make(with: fs)
+            file = try MediaFileProxy.make(with: fs, type: .T64)
 
         case .PRG:
             if fs.numFiles > 1 { showAlert(format: "PRG") }
-            file = try PRGFileProxy.make(with: fs)
+            file = try MediaFileProxy.make(with: fs, type: .PRG)
 
         case .P00:
             if fs.numFiles > 1 { showAlert(format: "P00") }
-            file = try P00FileProxy.make(with: fs)
+            file = try MediaFileProxy.make(with: fs, type: .P00)
 
         default:
-            throw VC64Error(ErrorCode.FILE_TYPE_MISMATCH)
+            throw AppError(vc64.Fault.FILE_TYPE_MISMATCH)
         }
 
         try export(file: file!, to: url)
     }
 
-    func export(file: AnyFileProxy, to url: URL) throws {
+    func export(file: MediaFileProxy, to url: URL) throws {
 
         try file.writeTo(url)
     }

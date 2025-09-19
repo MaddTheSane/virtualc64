@@ -11,94 +11,85 @@ extension MyController {
 
     var hourglassIcon: NSImage? {
 
-        if WarpMode(rawValue: config.warpMode) == .AUTO {
+        if vc64.Warp(rawValue: config.warpMode) == .AUTO {
 
-            return NSImage(named: c64.warpMode ? "hourglass3Template" : "hourglass1Template")
+            return NSImage(named: emu?.info.warping == true ? "hourglass3Template" : "hourglass1Template")
 
         } else {
 
-            return NSImage(named: c64.warpMode ? "warpOnTemplate" : "warpOffTemplate")
+            return NSImage(named: emu?.info.warping == true ? "warpOnTemplate" : "warpOffTemplate")
         }
     }
 
-    /*
-    var hourglass: NSImage? {
-        
-        switch pref.warpMode {
-        case .auto where c64.warpMode == true:
-            return NSImage(named: "hourglass3Template")
-        case .auto:
-            return NSImage(named: "hourglass1Template")
-        case .off:
-            return NSImage(named: "warpOffTemplate")
-        case .on:
-            return NSImage(named: "warpOnTemplate")
-        }
-    }
-    */
-
-    var cartridgeSwitch: NSImage? {
-        
-        if !c64.expansionport.hasSwitch { return nil }
-        
-        let pos = c64.expansionport.switchPosition
-        
-        if pos < 0 { return NSImage(named: "crtSwitchLeftTemplate") }
-        if pos > 0 { return NSImage(named: "crtSwitchRightTemplate") }
-        return NSImage(named: "crtSwitchNeutralTemplate")
-    }
-    
     public func refreshStatusBar() {
 
-        let connected8 = c64.drive8.isConnected
-        let connected9 = c64.drive9.isConnected
-        let on8 = c64.drive8.isSwitchedOn
-        let on9 = c64.drive9.isSwitchedOn
+        if let emu = emu {
 
-        let running = c64.running
-        let track = c64.trackMode
-        let warp = c64.warpMode
-        
-        let hasCrt = c64.expansionport.cartridgeAttached
+            let dsstate = emu.datasette.info
 
-        // Floppy drives
-        refreshStatusBarDriveItems(drive: DRIVE8)
-        refreshStatusBarDriveItems(drive: DRIVE9)
+            let c64state = emu.info
+            let running = c64state.running
+            let tracking = c64state.tracking
+            let warping = c64state.warping
+            let boost = emu.get(.C64_SPEED_BOOST)
 
-        // Datasette
-        refreshStatusBarDatasette()
-        
-        // Warp mode
-        refreshStatusBarWarpIcon()
-        
-        // Visibility
-        let items: [NSView: Bool] = [
-            
-            redLED8: connected8,
-            redLED9: connected9,
-            greenLED8: connected8,
-            greenLED9: connected9,
-            trackNumber8: connected8 && on8,
-            trackNumber9: connected9 && on9,
-            
-            haltIcon: jammed,
-            trackIcon: track,
-            muteIcon: warp || muted,
-            
-            tapeIcon: c64.datasette.hasTape,
-            tapeCounter: c64.datasette.hasTape,
-            tapeProgress: c64.datasette.motor,
-            
-            crtIcon: hasCrt,
-            
-            warpIcon: running,
-            activityType: running,
-            activityInfo: running,
-            activityBar: running
-        ]
-        
-        for (item, visible) in items {
-            item.isHidden = !visible || !statusBar
+            let config8 = emu.drive8.config
+            let config9 = emu.drive9.config
+            let connected8 = config8.connected
+            let connected9 = config9.connected
+            let on8 = config8.switchedOn
+            let on9 = config9.switchedOn
+
+            let hasCrt = emu.expansionport.cartridgeAttached()
+
+            // Floppy drives
+            refreshStatusBarDriveItems(drive: DRIVE8)
+            refreshStatusBarDriveItems(drive: DRIVE9)
+
+            // Datasette
+            refreshStatusBarDatasette()
+
+            // Remote server icon
+            refreshStatusBarServerIcon()
+
+            // Warp mode
+            refreshStatusBarWarpIcon()
+
+            // Speed adjust
+            speedStepper.integerValue = boost
+            speedStepper.toolTip = "\(boost) %"
+
+            // Visibility
+            let items: [NSView: Bool] = [
+
+                redLED8: connected8,
+                redLED9: connected9,
+                greenLED8: connected8,
+                greenLED9: connected9,
+                trackNumber8: connected8 && on8,
+                trackNumber9: connected9 && on9,
+
+                haltIcon: jammed,
+                serverIcon: true,
+                trackIcon: tracking,
+                muteIcon: warping || muted,
+
+                tapeIcon: dsstate.hasTape,
+                tapeCounter: dsstate.hasTape,
+                tapeProgress: dsstate.motor,
+
+                crtIcon: hasCrt,
+
+                warpIcon: running,
+                activityType: running,
+                activityInfo: running,
+                activityBar: running,
+                speedStepper: running
+            ]
+
+            for (item, visible) in items {
+                item.isHidden = !visible || !statusBar
+            }
         }
     }
     
@@ -112,58 +103,73 @@ extension MyController {
     
     func refreshStatusBarLEDs(drive: Int) {
         
-        switch drive {
+        if let emu = emu {
 
-        case DRIVE8:
+            switch drive {
 
-            greenLED8.image = c64.drive8.greenLedImage
-            redLED8.image = c64.drive8.redLedImage
+            case DRIVE8:
 
-        case DRIVE9:
+                greenLED8.image = emu.drive8.greenLedImage
+                redLED8.image = emu.drive8.redLedImage
 
-            greenLED9.image = c64.drive9.greenLedImage
-            redLED9.image = c64.drive9.redLedImage
+            case DRIVE9:
 
-        default:
-            fatalError()
+                greenLED9.image = emu.drive9.greenLedImage
+                redLED9.image = emu.drive9.redLedImage
+
+            default:
+                fatalError()
+            }
         }
     }
     
     func refreshStatusBarTracks(drive: Int) {
         
-        switch drive {
+        if let emu = emu {
 
-        case DRIVE8:
-            
-            trackNumber8.integerValue = Int((c64.drive8.halftrack + 1) / 2)
-            trackNumber8.textColor = c64.drive8.writeMode ? .red : .secondaryLabelColor
+            switch drive {
 
-        case DRIVE9:
+            case DRIVE8:
 
-            trackNumber9.integerValue = Int((c64.drive9.halftrack + 1) / 2)
-            trackNumber9.textColor = c64.drive9.writeMode ? .red : .secondaryLabelColor
+                let info = emu.drive8.info
+                trackNumber8.integerValue = Int((info.halftrack + 1) / 2)
+                trackNumber8.textColor = info.writing ? .red : .secondaryLabelColor
 
-        default:
-            fatalError()
+            case DRIVE9:
+
+                let info = emu.drive9.info
+                trackNumber9.integerValue = Int((info.halftrack + 1) / 2)
+                trackNumber9.textColor = info.writing ? .red : .secondaryLabelColor
+
+            default:
+                fatalError()
+            }
         }
     }
 
     func refreshStatusBarDiskIcons(drive: Int) {
 
-        switch drive {
+        if let emu = emu {
 
-        case DRIVE8:
+            switch drive {
 
-            diskIcon8.image = c64.drive8.icon
-            diskIcon8.isHidden = !c64.drive8.isConnected || !c64.drive8.hasDisk || !statusBar
+            case DRIVE8:
 
-        case DRIVE9:
+                let info = emu.drive8.info
+                let config = emu.drive8.config
+                diskIcon8.image = emu.drive8.icon
+                diskIcon8.isHidden = !config.connected || !info.hasDisk || !statusBar
 
-            diskIcon9.image = c64.drive9.icon
-            diskIcon9.isHidden = !c64.drive9.isConnected || !c64.drive9.hasDisk || !statusBar
+            case DRIVE9:
 
-        default:
-            fatalError()
+                let info = emu.drive9.info
+                let config = emu.drive9.config
+                diskIcon9.image = emu.drive9.icon
+                diskIcon9.isHidden = !config.connected || !info.hasDisk || !statusBar
+
+            default:
+                fatalError()
+            }
         }
     }
 
@@ -175,47 +181,61 @@ extension MyController {
 
     func refreshStatusBarDriveActivity(drive: Int) {
 
-        switch drive {
+        if let emu = emu {
 
-        case DRIVE8:
+            switch drive {
 
-            // if c64.iec.transferring && c64.drive8.isRotating() {
-            if c64.drive8.isRotating {
-                spinning8.startAnimation(self)
-                spinning8.isHidden = !statusBar
-            } else {
-                spinning8.stopAnimation(self)
-                spinning8.isHidden = true
+            case DRIVE8:
+
+                if emu.drive8.info.spinning {
+                    spinning8.startAnimation(self)
+                    spinning8.isHidden = !statusBar
+                } else {
+                    spinning8.stopAnimation(self)
+                    spinning8.isHidden = true
+                }
+
+            case DRIVE9:
+
+                if emu.drive9.info.spinning {
+                    spinning9.startAnimation(self)
+                    spinning9.isHidden = !statusBar
+                } else {
+                    spinning9.stopAnimation(self)
+                    spinning9.isHidden = true
+                }
+
+            default:
+                fatalError()
             }
-
-        case DRIVE9:
-
-            // if c64.iec.transferring && c64.drive9.isRotating() {
-            if c64.drive9.isRotating {
-                spinning9.startAnimation(self)
-                spinning9.isHidden = !statusBar
-            } else {
-                spinning9.stopAnimation(self)
-                spinning9.isHidden = true
-            }
-
-        default:
-            fatalError()
         }
     }
 
     func refreshStatusBarDatasette() {
 
-        if c64.datasette.motor && c64.datasette.playKey {
-            tapeProgress.startAnimation(self)
-        } else {
-            tapeProgress.stopAnimation(self)
-        }
+        if let emu = emu {
 
-        let counter = c64.datasette.counter
-        let min = counter / 60
-        let sec = counter % 60
-        tapeCounter.stringValue = String(format: "%02d:%02d", min, sec)
+            let dsstate = emu.datasette.info
+
+            if dsstate.motor && dsstate.playKey {
+                tapeProgress.startAnimation(self)
+            } else {
+                tapeProgress.stopAnimation(self)
+            }
+
+            let counter = dsstate.counter
+            let min = counter / 60
+            let sec = counter % 60
+            tapeCounter.stringValue = String(format: "%02d:%02d", min, sec)
+        }
+    }
+
+    func refreshStatusBarServerIcon() {
+
+        if let emu = emu {
+
+            serverIcon.image = emu.remoteManager.icon
+        }
     }
 
     func refreshStatusBarWarpIcon() {
@@ -262,50 +282,55 @@ extension MyController {
             activityBar.fillColor = color[index]
         }
 
-        speedometer.updateWith(cycle: c64.cpu.clock,
-                               emuFrame: Int64(c64.frame),
-                               gpuFrame: renderer.frames)
+        if let emu = emu {
 
-        switch activityType.selectedTag() {
+            let state = emu.cpu.info
 
-        case 0:
-            let mhz = speedometer.mhz
-            activityBar.maxValue = 20
-            activityBar.doubleValue = 10 * mhz
-            activityInfo.stringValue = String(format: "%.2f MHz", mhz)
-            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+            speedometer.updateWith(cycle: state.cycle,
+                                   emuFrame: Int64(emu.c64.info.frame),
+                                   gpuFrame: renderer.frames)
 
-        case 1:
-            let fps = speedometer.emuFps
-            activityBar.maxValue = 120
-            activityBar.doubleValue = fps
-            activityInfo.stringValue = String(format: "%d Hz", Int(fps))
-            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+            switch activityType.selectedTag() {
 
-        case 2:
-            let cpu = c64.cpuLoad
-            activityBar.maxValue = 100
-            activityBar.integerValue = cpu
-            activityInfo.stringValue = String(format: "%d%% CPU", cpu)
-            setColor(color: [.systemGreen, .systemGreen, .systemGreen, .systemYellow, .systemRed])
+            case 0:
+                let mhz = speedometer.mhz
+                activityBar.maxValue = 20
+                activityBar.doubleValue = 10 * mhz
+                activityInfo.stringValue = String(format: "%.2f MHz", mhz)
+                setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
 
-        case 3:
-            let fps = speedometer.gpsFps
-            activityBar.maxValue = 120
-            activityBar.doubleValue = fps
-            activityInfo.stringValue = String(format: "%d FPS", Int(fps))
-            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+            case 1:
+                let fps = emu.stats.fps
+                activityBar.maxValue = 120
+                activityBar.doubleValue = fps
+                activityInfo.stringValue = String(format: "%d Hz", Int(fps))
+                setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
 
-        case 4:
-            let fill = c64.sid.getStats().fillLevel * 100.0
-            activityBar.maxValue = 100
-            activityBar.doubleValue = fill
-            activityInfo.stringValue = String(format: "Fill level %d%%", Int(fill))
-            setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+            case 2:
+                let cpu = Int(emu.stats.cpuLoad * 100)
+                activityBar.maxValue = 100
+                activityBar.integerValue = cpu
+                activityInfo.stringValue = String(format: "%d%% CPU", cpu)
+                setColor(color: [.systemGreen, .systemGreen, .systemGreen, .systemYellow, .systemRed])
 
-        default:
-            activityBar.integerValue = 0
-            activityInfo.stringValue = "???"
+            case 3:
+                let fps = speedometer.gpuFps
+                activityBar.maxValue = 120
+                activityBar.doubleValue = fps
+                activityInfo.stringValue = String(format: "%d FPS", Int(fps))
+                setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+
+            case 4:
+                let fill = emu.audioPort.stats.fillLevel * 100.0
+                activityBar.maxValue = 100
+                activityBar.doubleValue = fill
+                activityInfo.stringValue = String(format: "Fill level %d%%", Int(fill))
+                setColor(color: [.systemRed, .systemYellow, .systemGreen, .systemYellow, .systemRed])
+
+            default:
+                activityBar.integerValue = 0
+                activityInfo.stringValue = "???"
+            }
         }
     }
 
@@ -320,11 +345,11 @@ extension MyController {
 
     @IBAction func warpAction(_ sender: Any!) {
 
-        switch WarpMode(rawValue: config.warpMode) {
+        switch vc64.Warp(rawValue: config.warpMode) {
 
-        case .AUTO: config.warpMode = WarpMode.NEVER.rawValue
-        case .NEVER: config.warpMode = WarpMode.ALWAYS.rawValue
-        case .ALWAYS: config.warpMode = WarpMode.AUTO.rawValue
+        case .AUTO: config.warpMode = vc64.Warp.NEVER.rawValue
+        case .NEVER: config.warpMode = vc64.Warp.ALWAYS.rawValue
+        case .ALWAYS: config.warpMode = vc64.Warp.AUTO.rawValue
 
         default:
             fatalError()
@@ -333,44 +358,26 @@ extension MyController {
         refreshStatusBar()
         myAppDelegate.prefController?.refresh()
     }
-    
-    /*
-    @IBAction func warpAction(_ sender: Any!) {
-
-        switch pref.warpMode {
-
-        case .auto: pref.warpMode = .off
-        case .off: pref.warpMode = .on
-        case .on: pref.warpMode = .auto
-        }
-
-        refreshStatusBar()
-    }
-    */
 
     @IBAction func activityTypeAction(_ sender: NSPopUpButton!) {
 
-        /*
-        var min, max: Double
-
-        switch sender.selectedTag() {
-
-        case 0: min = 0; max = 20;
-        case 1: min = 0; max = 120;
-        case 2: min = 0; max = 100;
-        case 3: min = 0; max = 120;
-        case 4: min = 0; max = 100;
-
-        default:
-            fatalError()
-        }
-
-        activityBar.minValue = min
-        activityBar.maxValue = max
-        // activityBar.warningValue = warn
-        // activityBar.criticalValue = crit
-        */
-
         refreshStatusBar()
+    }
+
+    @IBAction func speedAction(_ sender: NSStepper!) {
+
+        // Round the value to the next number dividable by 5
+        var value = Int(round(sender.doubleValue / 5.0)) * 5
+
+        // Make sure the value is in the valid range
+        if value < 50 { value = 50 }
+        if value > 200 { value = 200 }
+
+        emu?.set(.C64_SPEED_BOOST, value: value)
+    }
+
+    @IBAction func speedResetAction(_ sender: Any!) {
+
+        emu?.set(.C64_SPEED_BOOST, value: 100)
     }
 }

@@ -11,13 +11,17 @@ extension MyController: NSWindowDelegate {
         
     public func windowDidBecomeMain(_ notification: Notification) {
 
+        debug(.lifetime)
+
         guard let window = notification.object as? NSWindow else { return }
+
+        inBackground = false
 
         // Inform the application delegate
         myAppDelegate.windowDidBecomeMain(window)
         
         // Restart the emulator if it was paused when the window lost focus
-        if pref.pauseInBackground && pauseInBackgroundSavedState { try? c64.run() }
+        if pref.pauseInBackground && pauseInBackgroundSavedState { try? emu?.run() }
 
         // Register to receive mouse movement events
         window.acceptsMouseMovedEvents = true
@@ -31,11 +35,14 @@ extension MyController: NSWindowDelegate {
     
     public func windowDidResignMain(_ notification: Notification) {
                 
+        inBackground = true
+
         // Stop the emulator if it is supposed to pause in background
-        if let c64 = c64 {
-            pauseInBackgroundSavedState = c64.running
-            if pref.pauseInBackground { c64.pause() }
-        }        
+        if let emu = emu {
+
+            pauseInBackgroundSavedState = emu.running
+            if pref.pauseInBackground { emu.pause() }
+        }
     }
     
     func windowDidResize(_ notification: Notification) {
@@ -56,36 +63,41 @@ extension MyController: NSWindowDelegate {
     public func windowWillClose(_ notification: Notification) {
         
         debug(.lifetime)
+
+        debug(.shutdown, "Pause emulation...")
+        emu?.pause()
+
+        debug(.shutdown, "Shut down the audio unit...")
+        macAudio.shutDown()
+
+        debug(.shutdown, "Close all inspectors...")
+        for inspector in inspectors {
+            inspector.close()
+            inspector.join()
+        }
+
+        debug(.shutdown, "Close all dashboards...")
+        for dashboard in dashboards {
+            dashboard.close()
+            dashboard.join()
+        }
         
-        debug(.shutdown, "Stopping renderer...")
+        debug(.shutdown, "Stop the renderer...")
         renderer.halt()
 
-        debug(.shutdown, "Stopping timers...")
-        snapshotTimer?.invalidate()
-        snapshotTimer = nil
-
-        debug(.shutdown, "Closing auxiliary windows...")
-        inspector?.c64 = nil
-        inspector?.close()
-        monitor?.c64 = nil
-        monitor?.close()
-                        
-        debug(.shutdown, "Shutting down the audio backend...")
-        macAudio.shutDown()
-        
-        debug(.shutdown, "Disconnecting gaming devices...")
+        debug(.shutdown, "Disconnect all gaming devices...")
         gamePadManager.shutDown()
-        
-        debug(.shutdown, "Shutting down the emulator...")
-        c64.halt()
+
+        debug(.shutdown, "Shut down the emulator...")
+        emu?.halt()
+
+        debug(.shutdown, "Done")
     }
-    
+
     func shutDown() {
         
-        debug(.shutdown, "Removing proxy...")
-        
-        c64.kill()
-        c64 = nil
+        debug(.shutdown)
+        mydocument.shutDown()
     }
     
     public func windowWillEnterFullScreen(_ notification: Notification) {

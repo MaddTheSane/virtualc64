@@ -7,11 +7,7 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
-extension NSPasteboard.PasteboardType {
-
-    static let compatibleFileURL =
-    NSPasteboard.PasteboardType(kUTTypeFileURL as String)
-}
+import UniformTypeIdentifiers
 
 public extension MetalView {
 
@@ -22,7 +18,7 @@ public extension MetalView {
 
     func acceptedTypes() -> [NSPasteboard.PasteboardType] {
         
-        return [.compatibleFileURL, .string, .fileContents]
+        return [.fileURL, .string, .fileContents]
     }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
@@ -44,15 +40,15 @@ public extension MetalView {
         case .fileContents:
             return NSDragOperation.copy
             
-        case .compatibleFileURL:
-            
+        case .fileURL:
+
             if let url = NSURL(from: pasteBoard) as URL? {
             
                 // Unpack the file if it is compressed
                 dropUrl = url.unpacked(maxSize: 2048 * 1024)
                 
                 // Analyze the file type
-                let type = AnyFileProxy.type(of: dropUrl)
+                let type = MediaFileProxy.type(of: dropUrl)
 
                 // Open the drop zone layer
                 parent.renderer.dropZone.open(type: type, delay: 0.25)
@@ -93,7 +89,7 @@ public extension MetalView {
             case .string:
                 return performStringDrag(sender)
 
-            case .compatibleFileURL:
+            case .fileURL:
                 return performUrlDrag(sender)
 
             default:
@@ -122,20 +118,19 @@ public extension MetalView {
         if dropUrl == nil { return false }
 
         // Only proceed if a file type can be derived
-        guard let type = FileType(url: dropUrl) else { return false }
+        guard let type = vc64.FileType(url: dropUrl) else { return false }
 
         // Only proceed if a draggable type is given
-        if !FileType.draggable.contains(type) { return false }
+        if !vc64.FileType.draggable.contains(type) { return false }
 
         // Check all drop zones
         var zone: Int?
-        for i in 0...4 {
-            if renderer.dropZone.isInside(sender, zone: i) {
-                if renderer.dropZone.enabled[i] {
-                    zone = i
-                } else {
-                    return false
-                }
+        for i in 0...4 where renderer.dropZone.isInside(sender, zone: i) {
+            
+            if renderer.dropZone.enabled[i] {
+                zone = i
+            } else {
+                return false
             }
         }
 

@@ -42,9 +42,9 @@ public func warn(_ msg: String = "",
 // Errors
 //
 
-class VC64Error: Error {
+class AppError: Error {
     
-    var errorCode: ErrorCode
+    var errorCode: vc64.Fault
     var what: String
     
     init(_ exception: ExceptionWrapper) {
@@ -53,7 +53,7 @@ class VC64Error: Error {
         self.what = exception.what
     }
     
-    init(_ errorCode: ErrorCode, _ what: String = "") {
+    init(_ errorCode: vc64.Fault, _ what: String = "") {
         
         self.errorCode = errorCode
         self.what = what
@@ -62,7 +62,7 @@ class VC64Error: Error {
 
 extension NSError {
 
-    convenience init(error: VC64Error) {
+    convenience init(error: AppError) {
 
         self.init(domain: "VirtualC64",
                   code: error.errorCode.rawValue,
@@ -108,7 +108,7 @@ enum Failure {
         switch self {
 
         case .cantRecord: return NSImage(named: "FFmpegIcon")!
-        case .cantRun: return NSImage(named: "pref_transparent")!
+        // case .cantRun: return NSImage(named: "pref_transparent")!
         case .noFFmpegFound: return NSImage(named: "FFmpegIcon")!
         case .noFFmpegInstalled: return NSImage(named: "FFmpegIcon")!
         case .noMetalSupport: return NSImage(named: "metal")!
@@ -257,7 +257,7 @@ extension MyDocument {
     func showAlert(_ failure: Failure, error: Error,
                    async: Bool = false, window: NSWindow? = nil) {
 
-        if let error = error as? VC64Error {
+        if let error = error as? AppError {
             showAlert(failure, what: error.what, async:
                         async, window: window)
         } else {
@@ -299,6 +299,27 @@ extension MyDocument {
         alert.runSheet(for: windowForSheet!)
     }
 
+    func showLaunchAlert(error: Error) {
+             
+        var reason: String
+        if let error = error as? AppError {
+            reason = error.what
+        } else {
+            reason = error.localizedDescription
+        }
+        
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.icon = NSImage(named: "biohazard")
+        alert.messageText = "The emulator failed to launch."
+        alert.informativeText = "An unexpected exception interrupted the startup procedure:\n\n\(reason)"
+        alert.addButton(withTitle: "Exit")
+        
+        if alert.runSheet(for: windowForSheet!) == .alertFirstButtonReturn {
+            NSApp.terminate(self)
+        }
+    }
+    
     func showIsUnsavedAlert(msg: String, icon: String) -> NSApplication.ModalResponse {
 
         let alert = NSAlert()
@@ -316,7 +337,7 @@ extension MyDocument {
 
         func name(drive: DriveProxy) -> String {
 
-            switch drive.id {
+            switch drive.info.id {
 
             case DRIVE8: return "Drive 8"
             case DRIVE9: return "Drive 9"
@@ -326,7 +347,7 @@ extension MyDocument {
             }
         }
 
-        let modified = drives.filter { $0.hasModifiedDisk }
+        let modified = drives.filter { $0.info.hasModifiedDisk }
 
         if modified.isEmpty || parent.pref.ejectWithoutAsking {
             return true
@@ -347,13 +368,15 @@ extension MyDocument {
 
     func proceedWithUnsavedFloppyDisks() -> Bool {
 
-        let drives = [c64.drive8!, c64.drive9!]
+        if emu == nil { return true }
+
+        let drives = [emu!.drive8!, emu!.drive9!]
         return proceedWithUnsavedFloppyDisks(drives: drives)
     }
 
     func askToPowerOff() -> Bool {
 
-        if c64.poweredOn {
+        if emu?.poweredOn == true {
 
             let alert = NSAlert()
 
@@ -365,7 +388,7 @@ extension MyDocument {
             alert.addButton(withTitle: "Cancel")
 
             if alert.runSheet(for: windowForSheet!) == .alertFirstButtonReturn {
-                c64.powerOff()
+                emu!.powerOff()
             } else {
                 return false
             }

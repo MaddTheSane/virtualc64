@@ -23,9 +23,9 @@ extension Canvas {
     // Returns the used texture area (including HBLANK and VBLANK)
     var entire: CGRect {
         
-        let w = c64.vic.hPixels
-        let h = c64.vic.vPixels
-        
+        let w = (emu?.vic.traits.cyclesPerLine ?? 0) * 8
+        let h = emu?.vic.traits.linesPerFrame ?? 0
+
         return CGRect(x: 0, y: 0, width: w, height: h)
     }
     
@@ -37,7 +37,7 @@ extension Canvas {
     // Returns the largest visibile texture area (excluding HBLANK and VBLANK)
     var largestVisible: CGRect {
         
-        if c64.vic.isPAL {
+        if emu?.vic.traits.pal == true {
             return CGRect(x: 104, y: 16, width: 487 - 104, height: 299 - 16)
         } else {
             return CGRect(x: 104, y: 16, width: 487 - 104, height: 249 - 16)
@@ -72,10 +72,14 @@ extension Canvas {
         
         let max = largestVisible
         
-        let width = (1 - CGFloat(renderer.config.hZoom)) * max.width
-        let bw = max.minX + CGFloat(renderer.config.hCenter) * (max.width - width)
-        let height = (1 - CGFloat(renderer.config.vZoom)) * max.height
-        let bh = max.minY + CGFloat(renderer.config.vCenter) * (max.height - height)
+        let hCenter = CGFloat(renderer.config.hCenter) / 1000.0
+        let vCenter = CGFloat(renderer.config.vCenter) / 1000.0
+        let hZoom = CGFloat(renderer.config.hZoom) / 1000.0
+        let vZoom = CGFloat(renderer.config.vZoom) / 1000.0
+        let width = (1 - hZoom) * max.width
+        let bw = max.minX + hCenter * (max.width - width)
+        let height = (1 - vZoom) * max.height
+        let bh = max.minY + vCenter * (max.height - height)
         
         return CGRect(x: bw, y: bh, width: width, height: height)
     }

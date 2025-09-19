@@ -9,12 +9,20 @@
 
 class MyToolbar: NSToolbar {
     
-    var c64: C64Proxy { parent.c64 }
+    var emu: EmulatorProxy? { controller.emu }
 
-    @IBOutlet weak var parent: MyController!
+    @IBOutlet weak var controller: MyController!
+
+    // References to toolbar items
+    @IBOutlet weak var controlPort1Item: NSToolbarItem!
+    @IBOutlet weak var controlPort2Item: NSToolbarItem!
+    @IBOutlet weak var keyboardItem: NSToolbarItem!
+    @IBOutlet weak var preferencesItem: NSToolbarItem!
+    @IBOutlet weak var controlsItem: NSToolbarItem!
+
+    // Reference to toolbar item objects
     @IBOutlet weak var controlPort1: NSPopUpButton!
     @IBOutlet weak var controlPort2: NSPopUpButton!
-    @IBOutlet weak var keyboardButton: NSToolbarItem!
     @IBOutlet weak var snapshotSegCtrl: NSSegmentedControl!
     @IBOutlet weak var screenshotSegCtrl: NSSegmentedControl!
     @IBOutlet weak var controlsSegCtrl: NSSegmentedControl!
@@ -22,44 +30,44 @@ class MyToolbar: NSToolbar {
     override func validateVisibleItems() {
                            
         // Disable the keyboard button if the virtual keyboard is open
-        let visible = parent.virtualKeyboard?.window?.isVisible ?? false
-        let view = keyboardButton.view as? NSButton
+        let visible = controller.virtualKeyboard?.window?.isVisible ?? false
+        let view = keyboardItem.view as? NSButton
         view?.isEnabled = !visible
         
+        // Disable the snapshot revert button if no snapshots have been taken
+        snapshotSegCtrl.setEnabled(controller.snapshotCount > 0, forSegment: 1)
+
         // Update input devices
-        parent.gamePadManager.refresh(popup: controlPort1)
-        parent.gamePadManager.refresh(popup: controlPort2)
-        controlPort1.selectItem(withTag: parent.config.gameDevice1)
-        controlPort2.selectItem(withTag: parent.config.gameDevice2)
+        controller.gamePadManager.refresh(popup: controlPort1)
+        controller.gamePadManager.refresh(popup: controlPort2)
+        controlPort1.selectItem(withTag: controller.config.gameDevice1)
+        controlPort2.selectItem(withTag: controller.config.gameDevice2)
+
+        controlPort1Item.menuFormRepresentation = nil
+        controlPort2Item.menuFormRepresentation = nil
+        keyboardItem.menuFormRepresentation = nil
+        preferencesItem.menuFormRepresentation = nil
+        controlsItem.menuFormRepresentation = nil
     }
     
     func updateToolbar() {
         
-        if c64.poweredOn {
-            controlsSegCtrl.setEnabled(true, forSegment: 0) // Pause
-            controlsSegCtrl.setEnabled(true, forSegment: 1) // Reset
-            controlsSegCtrl.setToolTip("Power off", forSegment: 2) // Power
-        } else {
-            controlsSegCtrl.setEnabled(false, forSegment: 0) // Pause
-            controlsSegCtrl.setEnabled(false, forSegment: 1) // Reset
-            controlsSegCtrl.setToolTip("Power on", forSegment: 2) // Power
-        }
-        if c64.running {
-            controlsSegCtrl.setToolTip("Pause", forSegment: 0)
-            if #available(macOS 11.0, *) {
-                controlsSegCtrl.setImage(NSImage(systemSymbolName: "pause.fill",
-                                                 accessibilityDescription: "Two parallel vertical lines enclosed by a circle."), forSegment: 0)
-                
-            } else {
-                controlsSegCtrl.setImage(NSImage(named: "pause.fill"), forSegment: 0)
-            }
+        if emu != nil {
 
-        } else {
-            controlsSegCtrl.setToolTip("Run", forSegment: 0)
-            if #available(macOS 11.0, *) {
-                controlsSegCtrl.setImage(NSImage(systemSymbolName: "arrowtriangle.right.circle",
-                                                accessibilityDescription: "An arrow pointing right enclosed by a circle."), forSegment: 0)
+            if emu!.poweredOn {
+                controlsSegCtrl.setEnabled(true, forSegment: 0) // Pause
+                controlsSegCtrl.setEnabled(true, forSegment: 1) // Reset
+                controlsSegCtrl.setToolTip("Power off", forSegment: 2) // Power
             } else {
+                controlsSegCtrl.setEnabled(false, forSegment: 0) // Pause
+                controlsSegCtrl.setEnabled(false, forSegment: 1) // Reset
+                controlsSegCtrl.setToolTip("Power on", forSegment: 2) // Power
+            }
+            if emu!.running {
+                controlsSegCtrl.setToolTip("Pause", forSegment: 0)
+                controlsSegCtrl.setImage(NSImage(named: "pauseTemplate"), forSegment: 0)
+            } else {
+                controlsSegCtrl.setToolTip("Run", forSegment: 0)
                 controlsSegCtrl.setImage(NSImage(named: "runTemplate"), forSegment: 0)
             }
         }
@@ -73,9 +81,9 @@ class MyToolbar: NSToolbar {
         
         switch sender.selectedSegment {
             
-        case 0: parent.inspectorAction(sender)
-        case 1: parent.monitorAction(sender)
-        case 2: parent.consoleAction(sender)
+        case 0: controller.inspectorAction(sender)
+        case 1: controller.dashboardAction(sender)
+        case 2: controller.consoleAction(sender)
             
         default: assert(false)
         }
@@ -85,9 +93,9 @@ class MyToolbar: NSToolbar {
         
         switch sender.selectedSegment {
         
-        case 0: parent.takeSnapshotAction(self)
-        case 1: parent.restoreSnapshotAction(self)
-        case 2: parent.browseSnapshotsAction(self)
+        case 0: controller.takeSnapshotAction(self)
+        case 1: controller.restoreSnapshotAction(self)
+        case 2: controller.browseSnapshotsAction(self)
             
         default: assert(false)
         }
@@ -97,54 +105,60 @@ class MyToolbar: NSToolbar {
                 
         switch sender.selectedSegment {
             
-        case 0: parent.takeScreenshotAction(self)
-        case 1: parent.browseScreenshotsAction(self)
+        case 0: controller.takeScreenshotAction(self)
+        case 1: controller.browseScreenshotsAction(self)
             
         default: assert(false)
         }
     }
     
-    @IBAction func port1Action(_ sender: NSPopUpButton) {
-        
-        parent.config.gameDevice1 = sender.selectedTag()
+    @IBAction func port1Action(_ sender: Any) {
+
+        if let obj = sender as? NSPopUpButton {
+            controller.config.gameDevice1 = obj.selectedTag()
+        }
     }
  
-    @IBAction func port2Action(_ sender: NSPopUpButton) {
-        
-        parent.config.gameDevice2 = sender.selectedTag()
+    @IBAction func port2Action(_ sender: Any) {
+
+        if let obj = sender as? NSPopUpButton {
+            controller.config.gameDevice2 = obj.selectedTag()
+        }
     }
 
     @IBAction func keyboardAction(_ sender: Any!) {
         
-        if parent.virtualKeyboard == nil {
-            parent.virtualKeyboard =
-            VirtualKeyboardController(with: parent, nibName: "VirtualKeyboard")
+        if controller.virtualKeyboard == nil {
+            controller.virtualKeyboard =
+            VirtualKeyboardController(with: controller, nibName: "VirtualKeyboard")
         }
-        if parent.virtualKeyboard?.window?.isVisible == false {
-            parent.virtualKeyboard?.showSheet()
-        }
-    }
-    
-    @IBAction func preferencesAction(_ sender: NSSegmentedControl) {
-        
-        switch sender.selectedSegment {
-
-        case 0: parent.preferencesAction(sender)
-        case 1: parent.configureAction(sender)
-
-        default: assert(false)
+        if controller.virtualKeyboard?.window?.isVisible == false {
+            controller.virtualKeyboard?.showSheet()
         }
     }
     
-    @IBAction func controlsAction(_ sender: NSSegmentedControl) {
+    @IBAction func preferencesAction(_ sender: Any) {
 
-        switch sender.selectedSegment {
+        if let obj = sender as? NSSegmentedControl {
 
-        case 0: parent.stopAndGoAction(self)
-        case 1: parent.resetAction(self)
-        case 2: parent.powerAction(self)
+            switch obj.selectedSegment {
+            case 0: controller.preferencesAction(obj)
+            case 1: controller.configureAction(obj)
+            default: assert(false)
+            }
+        }
+    }
+    
+    @IBAction func controlsAction(_ sender: Any) {
 
-        default: assert(false)
+        if let obj = sender as? NSSegmentedControl {
+
+            switch obj.selectedSegment {
+            case 0: controller.stopAndGoAction(self)
+            case 1: controller.resetAction(self)
+            case 2: controller.powerAction(self)
+            default: assert(false)
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ class RessourceManager {
     
     // Shader galleries
     var upscalerGallery = [ComputeKernel?](repeating: nil, count: 3)
-    var bloomFilterGallery = [ComputeKernel?](repeating: nil, count: 3)
+    var bloomFilterGallery = [ComputeKernel?](repeating: nil, count: 2)
     var scanlineFilterGallery = [ComputeKernel?](repeating: nil, count: 3)
     
     // The currently selected shaders
@@ -179,7 +179,7 @@ class RessourceManager {
     
     internal func buildKernels() {
         
-        let uc = (TextureSize.upscaled.width, TextureSize.upscaled.width)
+        let uc = (TextureSize.upscaled.width, TextureSize.upscaled.height)
 
         // Create shader library
         library = device.makeDefaultLibrary()
@@ -194,7 +194,6 @@ class RessourceManager {
         // Build bloom filters
         bloomFilterGallery[0] = BypassFilter(device: device, library: library, cutout: uc)
         bloomFilterGallery[1] = SplitFilter(device: device, library: library, cutout: uc)
-        bloomFilterGallery[2] = SplitFilter(device: device, library: library, cutout: uc)
         bloomFilter = bloomFilterGallery[0]
         
         // Build scanline filters
@@ -203,11 +202,12 @@ class RessourceManager {
         scanlineFilterGallery[2] = BypassFilter(device: device, library: library, cutout: uc)
         scanlineFilter = scanlineFilterGallery[0]
     }
-    
+
     //
     // Selecting dot masks
     //
     
+    @discardableResult
     func selectDotMask(_ nr: Int) -> Bool {
         
         if nr >= 0 && nr < dotMaskGallery.count && dotMaskGallery[nr] != nil {
@@ -221,6 +221,7 @@ class RessourceManager {
     // Selecting kernels
     //
     
+    @discardableResult
     func selectUpscaler(_ nr: Int) -> Bool {
         
         if nr >= 0 && nr < upscalerGallery.count && upscalerGallery[nr] != nil {
@@ -230,6 +231,7 @@ class RessourceManager {
         return false
     }
     
+    @discardableResult
     func selectBloomFilter(_ nr: Int) -> Bool {
         
         if nr >= 0 && nr < bloomFilterGallery.count && bloomFilterGallery[nr] != nil {
@@ -239,6 +241,7 @@ class RessourceManager {
         return false
     }
 
+    @discardableResult
     func selectScanlineFilter(_ nr: Int) -> Bool {
         
         if nr >= 0 && nr < scanlineFilterGallery.count && scanlineFilterGallery[nr] != nil {

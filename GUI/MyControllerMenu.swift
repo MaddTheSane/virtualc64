@@ -7,189 +7,187 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
+import UniformTypeIdentifiers
+
 extension MyController: NSMenuItemValidation {
     
     open func validateMenuItem(_ item: NSMenuItem) -> Bool {
 
-        let powered = c64.poweredOn
-        let running = c64.running
-        var recording: Bool { return c64.recorder.recording }
-        
-        var driveID: Int { return item.tag }
-        var drive: DriveProxy { return c64.drive(driveID) }
-        
-        func validateURLlist(_ list: [URL], image: NSImage) -> Bool {
-            
-            let slot = item.tag % 10
+        if let emu = emu {
 
-            if let url = MediaManager.getRecentlyUsedURL(slot, from: list) {
-                item.title = url.lastPathComponent
-                item.isHidden = false
-                item.image = image
-            } else {
-                item.title = ""
-                item.isHidden = true
-                item.image = nil
+            let info = emu.info
+            let powered = info.powered
+            let running = info.running
+            var recording: Bool { return emu.recorder.recording }
+
+            var driveID: Int { return item.tag }
+            var drive: DriveProxy { return emu.drive(driveID) }
+
+            func validateURLlist(_ list: [URL], image: NSImage) -> Bool {
+
+                let slot = item.tag % 10
+
+                if let url = MediaManager.getRecentlyUsedURL(slot, from: list) {
+                    item.title = url.lastPathComponent
+                    item.isHidden = false
+                    item.image = image
+                } else {
+                    item.title = ""
+                    item.isHidden = true
+                    item.image = nil
+                }
+
+                return true
             }
-            
-            return true
+
+            switch item.action {
+
+                // Machine menu
+            case #selector(MyController.captureScreenAction(_:)):
+                item.title = recording ? "Stop Recording" : "Record Screen"
+                return true
+
+                // Edit menu
+            case #selector(MyController.stopAndGoAction(_:)):
+                item.title = running ? "Pause" : "Continue"
+                return true
+
+            case #selector(MyController.powerAction(_:)):
+                item.title = powered ? "Power Off" : "Power On"
+                return true
+
+                // View menu
+            case #selector(MyController.toggleStatusBarAction(_:)):
+                item.title = statusBar ? "Hide Status Bar" : "Show Status Bar"
+                return true
+
+                // Keyboard menu
+            case #selector(MyController.mapLeftCmdKeyAction(_:)):
+                item.state = myAppDelegate.mapLeftCmdKey?.nr == item.tag ? .on : .off
+                return true
+            case #selector(MyController.mapRightCmdKeyAction(_:)):
+                print("item.tag = \(item.tag)")
+                item.state = myAppDelegate.mapRightCmdKey?.nr == item.tag ? .on : .off
+                return true
+            case #selector(MyController.mapCapsLockWarpAction(_:)):
+                item.state = myAppDelegate.mapCapsLockWarp ? .on : .off
+                return true
+            case #selector(MyController.shiftLockAction(_:)):
+                item.state = emu.keyboard.isPressed(.shiftLock) ? .on : .off
+                return true
+
+                // Drive menu
+            case #selector(MyController.insertRecentDiskAction(_:)):
+                return validateURLlist(MediaManager.insertedFloppyDisks, image: smallDisk)
+
+            case  #selector(MyController.ejectDiskAction(_:)),
+                #selector(MyController.exportDiskAction(_:)),
+                #selector(MyController.inspectDiskAction(_:)),
+                #selector(MyController.inspectVolumeAction(_:)):
+                return drive.info.hasDisk
+
+            case #selector(MyController.exportRecentDiskDummyAction8(_:)):
+                return emu.drive8.info.hasDisk
+
+            case #selector(MyController.exportRecentDiskDummyAction9(_:)):
+                return emu.drive9.info.hasDisk
+
+            case #selector(MyController.exportRecentDiskAction(_:)):
+                return validateURLlist(mm.exportedFloppyDisks[driveID], image: smallDisk)
+
+            case #selector(MyController.writeProtectAction(_:)):
+                item.state = drive.info.hasProtectedDisk ? .on : .off
+                return drive.info.hasDisk
+
+            case #selector(MyController.drivePowerAction(_:)):
+                item.title = drive.config.switchedOn ? "Switch off" : "Switch on"
+                return true
+
+                // Tape menu
+            case #selector(MyController.insertRecentTapeAction(_:)):
+                return validateURLlist(MediaManager.insertedTapes, image: smallTape)
+
+            case #selector(MyController.ejectTapeAction(_:)):
+                return emu.datasette.info.hasTape
+
+            case #selector(MyController.playOrStopAction(_:)):
+                item.title = emu.datasette.info.playKey ? "Press Stop Key" : "Press Play On Tape"
+                return emu.datasette.info.hasTape
+
+            case #selector(MyController.rewindAction(_:)):
+                return emu.datasette.info.hasTape
+
+                // Cartridge menu
+            case #selector(MyController.attachRecentCartridgeAction(_:)):
+                return validateURLlist(MediaManager.attachedCartridges, image: smallCart)
+
+            case #selector(MyController.attachReuDummyAction(_:)):
+                item.state = (emu.expansionport.traits.type == .REU) ? .on : .off
+
+            case #selector(MyController.attachReuAction(_:)):
+                item.state = (emu.expansionport.traits.type == .REU &&
+                              emu.expansionport.traits.memory == item.tag * 1024) ? .on : .off
+
+            case #selector(MyController.attachGeoRamDummyAction(_:)):
+                item.state = (emu.expansionport.traits.type == .GEO_RAM) ? .on : .off
+
+            case #selector(MyController.attachGeoRamAction(_:)):
+                item.state = (emu.expansionport.traits.type == .GEO_RAM &&
+                              emu.expansionport.traits.memory == item.tag * 1024) ? .on : .off
+
+            case #selector(MyController.attachIsepicAction(_:)):
+                item.state = (emu.expansionport.traits.type == .ISEPIC) ? .on : .off
+
+            case #selector(MyController.detachCartridgeAction(_:)):
+                return emu.expansionport.cartridgeAttached()
+
+            case #selector(MyController.inspectCartridgeAction(_:)):
+                return emu.expansionport.cartridgeAttached()
+
+            case #selector(MyController.pressButtonDummyAction(_:)):
+                return emu.expansionport.traits.buttons > 0
+
+            case #selector(MyController.pressCartridgeButton1Action(_:)):
+                let title = String(charptr: emu.expansionport.traits.button1)
+                item.title = title ?? ""
+                item.isHidden = title == nil
+                return title != nil
+
+            case #selector(MyController.pressCartridgeButton2Action(_:)):
+                let title = String(charptr: emu.expansionport.traits.button2)
+                item.title = title ?? ""
+                item.isHidden = title == nil
+                return title != nil
+
+            case #selector(MyController.setSwitchDummyAction(_:)):
+                return emu.expansionport.traits.switches > 0
+
+            case #selector(MyController.setSwitchNeutralAction(_:)):
+                let title = String(charptr: emu.expansionport.traits.switchNeutral)
+                item.title = title ?? ""
+                item.isHidden = title == nil
+                item.state = emu.expansionport.info.switchPos == 0 ? .on : .off
+                return title != nil
+
+            case #selector(MyController.setSwitchLeftAction(_:)):
+                let title = String(charptr: emu.expansionport.traits.switchLeft)
+                item.title = title ?? ""
+                item.isHidden = title == nil
+                item.state = emu.expansionport.info.switchPos < 0 ? .on : .off
+                return title != nil
+
+            case #selector(MyController.setSwitchRightAction(_:)):
+                let title = String(charptr: emu.expansionport.traits.switchRight)
+                item.title = title ?? ""
+                item.isHidden = title == nil
+                item.state = emu.expansionport.info.switchPos > 0 ? .on : .off
+                return title != nil
+
+            default:
+                return true
+            }
         }
-        
-        switch item.action {
-            
-        // Machine menu
-        case #selector(MyController.captureScreenAction(_:)):
-            item.title = recording ? "Stop Recording" : "Record Screen"
-            return true
-        
-        // Edit menu
-        case #selector(MyController.stopAndGoAction(_:)):
-            item.title = running ? "Pause" : "Continue"
-            return true
-            
-        case #selector(MyController.powerAction(_:)):
-            item.title = powered ? "Power Off" : "Power On"
-            return true
-            
-        // View menu
-        case #selector(MyController.toggleStatusBarAction(_:)):
-            item.title = statusBar ? "Hide Status Bar" : "Show Status Bar"
-            return true
 
-        // Keyboard menu
-        case #selector(MyController.mapLeftCmdKeyAction(_:)):
-            item.state = myAppDelegate.mapLeftCmdKey?.nr == item.tag ? .on : .off
-            return true
-        case #selector(MyController.mapRightCmdKeyAction(_:)):
-            print("item.tag = \(item.tag)")
-            item.state = myAppDelegate.mapRightCmdKey?.nr == item.tag ? .on : .off
-            return true
-        case #selector(MyController.mapCapsLockWarpAction(_:)):
-            item.state = myAppDelegate.mapCapsLockWarp ? .on : .off
-            return true
-        case #selector(MyController.shiftLockAction(_:)):
-            item.state = c64.keyboard.shiftLockIsPressed ? .on : .off
-            return true
-            
-        // Drive menu
-        case #selector(MyController.insertRecentDiskAction(_:)):
-            return validateURLlist(MediaManager.insertedFloppyDisks, image: smallDisk)
-
-        case  #selector(MyController.ejectDiskAction(_:)),
-            #selector(MyController.exportDiskAction(_:)),
-            #selector(MyController.inspectDiskAction(_:)),
-            #selector(MyController.inspectVolumeAction(_:)):
-            return drive.hasDisk
-            
-        case #selector(MyController.exportRecentDiskDummyAction8(_:)):
-            return c64.drive8.hasDisk
-            
-        case #selector(MyController.exportRecentDiskDummyAction9(_:)):
-            return c64.drive9.hasDisk
-                        
-        case #selector(MyController.exportRecentDiskAction(_:)):
-            return validateURLlist(mm.exportedFloppyDisks[driveID], image: smallDisk)
-            
-        case #selector(MyController.writeProtectAction(_:)):
-            item.state = drive.hasProtectedDisk ? .on : .off
-            return drive.hasDisk
-            
-        case #selector(MyController.drivePowerAction(_:)):
-            item.title = drive.isSwitchedOn ? "Switch off" : "Switch on"
-            return true
-            
-        // Tape menu
-        case #selector(MyController.insertRecentTapeAction(_:)):
-            return validateURLlist(MediaManager.insertedTapes, image: smallTape)
-            
-        case #selector(MyController.ejectTapeAction(_:)):
-            return c64.datasette.hasTape
-            
-        case #selector(MyController.playOrStopAction(_:)):
-            item.title = c64.datasette.playKey ? "Press Stop Key" : "Press Play On Tape"
-            return c64.datasette.hasTape
-            
-        case #selector(MyController.rewindAction(_:)):
-            return c64.datasette.hasTape
-            
-        // Cartridge menu
-        case #selector(MyController.attachRecentCartridgeAction(_:)):
-            return validateURLlist(MediaManager.attachedCartridges, image: smallCart)
-
-        case #selector(MyController.attachReuDummyAction(_:)):
-            item.state = (c64.expansionport.cartridgeType == .REU) ? .on : .off
-
-        case #selector(MyController.attachReuAction(_:)):
-            item.state = (c64.expansionport.cartridgeType == .REU &&
-                          c64.expansionport.ramCapacity == item.tag * 1024) ? .on : .off
-
-        case #selector(MyController.reuBatteryAction(_:)):
-            item.state = c64.expansionport.hasBattery ? .on : .off
-            return c64.expansionport.cartridgeType == .REU
-
-        case #selector(MyController.attachGeoRamDummyAction(_:)):
-            item.state = (c64.expansionport.cartridgeType == .GEO_RAM) ? .on : .off
-            
-        case #selector(MyController.attachGeoRamAction(_:)):
-            item.state = (c64.expansionport.cartridgeType == .GEO_RAM &&
-                            c64.expansionport.ramCapacity == item.tag * 1024) ? .on : .off
-            
-        case #selector(MyController.geoRamBatteryAction(_:)):
-            item.state = c64.expansionport.hasBattery ? .on : .off
-            return c64.expansionport.cartridgeType == .GEO_RAM
-
-        case #selector(MyController.attachIsepicAction(_:)):
-            item.state = (c64.expansionport.cartridgeType == .ISEPIC) ? .on : .off
-            
-        case #selector(MyController.detachCartridgeAction(_:)):
-            return c64.expansionport.cartridgeAttached
-
-        case #selector(MyController.inspectCartridgeAction(_:)):
-            return c64.expansionport.cartridgeAttached
-
-        case #selector(MyController.pressButtonDummyAction(_:)):
-            return c64.expansionport.numButtons > 0
-            
-        case #selector(MyController.pressCartridgeButton1Action(_:)):
-            let title = c64.expansionport.getButtonTitle(1)!
-            item.title = title
-            item.isHidden = title == ""
-            return title != ""
-            
-        case #selector(MyController.pressCartridgeButton2Action(_:)):
-            let title = c64.expansionport.getButtonTitle(2)!
-            item.title = title
-            item.isHidden = title == ""
-            return title != ""
-            
-        case #selector(MyController.setSwitchDummyAction(_:)):
-            return c64.expansionport.hasSwitch
-            
-        case #selector(MyController.setSwitchNeutralAction(_:)):
-            let title = c64.expansionport.switchDescription(0)
-            item.title = title ?? ""
-            item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsNeutral ? .on : .off
-            return title != nil
-            
-        case #selector(MyController.setSwitchLeftAction(_:)):
-            let title = c64.expansionport.switchDescription(-1)
-            item.title = title ?? ""
-            item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsLeft ? .on : .off
-            return title != nil
-            
-        case #selector(MyController.setSwitchRightAction(_:)):
-            let title = c64.expansionport.switchDescription(1)
-            item.title = title ?? ""
-            item.isHidden = title == nil
-            item.state = c64.expansionport.switchIsRight ? .on : .off
-            return title != nil
-
-        default:
-            return true
-        }
-        
         return true
     }
 
@@ -207,6 +205,7 @@ extension MyController: NSMenuItemValidation {
     @IBAction func preferencesAction(_ sender: Any!) {
         
         if myAppDelegate.prefController == nil {
+
             myAppDelegate.prefController =
             PreferencesController(with: self, nibName: "Preferences")
         }
@@ -215,7 +214,7 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func factorySettingsAction(_ sender: Any!) {
 
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         // Power off the emulator if the user doesn't object
         if !askToPowerOff() { return }
@@ -230,11 +229,76 @@ extension MyController: NSMenuItemValidation {
         pref.applyUserDefaults()
 
         // Relaunch the emulator
-        try? c64.run()
+        try? emu?.run()
+    }
+
+    @IBAction func importConfigAction(_ sender: Any!) {
+
+        // let openPanel = NSOpenPanel()
+
+        // Power off the emulator if the user doesn't object
+        if !askToPowerOff() { return }
+
+        myOpenPanel.configure(types: [ .retrosh ], prompt: "Import")
+        myOpenPanel.open(for: window, { result in
+            
+            if result == .OK, let url = self.myOpenPanel.url {
+
+                do {
+                    try self.mm.addMedia(url: url, allowedTypes: [.SCRIPT])
+                } catch {
+                    self.showAlert(.cantOpen(url: url), error: error, async: true)
+                }
+            }
+        })
+        
+        // Show file panel
+        /*
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseDirectories = true
+        openPanel.canCreateDirectories = false
+        openPanel.canChooseFiles = true
+        openPanel.prompt = "Import"
+        openPanel.allowedContentTypes = [.ini]
+        openPanel.beginSheetModal(for: window!, completionHandler: { result in
+
+            if result == .OK, let url = openPanel.url {
+
+                do {
+                    try self.mm.addMedia(url: url, allowedTypes: [.SCRIPT])
+                } catch {
+                    self.showAlert(.cantOpen(url: url), error: error, async: true)
+                }
+            }
+        })
+        */
+    }
+
+    @IBAction func exportConfigAction(_ sender: Any!) {
+
+        let savePanel = NSSavePanel()
+
+        // Show file panel
+        savePanel.prompt = "Export"
+        savePanel.title = "Export"
+        savePanel.nameFieldLabel = "Export As:"
+        savePanel.nameFieldStringValue = "virtualc64.ini"
+        savePanel.canCreateDirectories = true
+        savePanel.beginSheetModal(for: window!, completionHandler: { result in
+
+            if result == .OK, let url = savePanel.url {
+
+                do {
+                    try self.emu?.exportConfig(url: url)
+                } catch {
+                    self.showAlert(.cantExport(url: url), error: error, async: true)
+                }
+            }
+        })
     }
 
     //
-    // Action methods (File menu)
+    // Action methods (Machine menu)
     //
     
     func openConfigurator(tab: String = "") {
@@ -250,20 +314,60 @@ extension MyController: NSMenuItemValidation {
         openConfigurator()
     }
 
-    @IBAction func inspectorAction(_ sender: Any!) {
+    func addInspector() {
+    
+        let count = inspectors.count
         
-        if inspector == nil {
-            inspector = Inspector(with: self, nibName: "Inspector")
+        // Allow 8 inspectors at a time
+        if count < 8, let inspector = Inspector(with: self, nibName: "Inspector") {
+            
+            inspectors.append(inspector)
+            inspector.showAsWindow()
+
+        } else {
+         
+            NSSound.beep();
         }
-        inspector?.showWindow(self)
     }
     
-    @IBAction func monitorAction(_ sender: Any!) {
+    @IBAction func inspectorAction(_ sender: Any!) {
         
-        if monitor == nil {
-            monitor = Monitor(with: self, nibName: "Monitor")
+        if inspectors.isEmpty {
+            addInspector()
+        } else {
+            inspectors[0].showAsWindow()
         }
-        monitor?.showWindow(self)
+    }
+    
+    func addDashboard(type: PanelType = .Combined) {
+    
+        let count = dashboards.count
+        
+        // Allow 24 dashboards at a time
+        if count < 24 {
+            
+            let myStoryboard = NSStoryboard(name: "Dashboard", bundle: nil)
+            
+            if let newDashboard = myStoryboard.instantiateController(withIdentifier: "MyWindowController") as? Dashboard {
+                
+                dashboards.append(newDashboard)
+                newDashboard.setController(self)
+                newDashboard.showWindow(self)
+                newDashboard.viewController?.type = type
+                return
+            }
+        }
+
+        NSSound.beep();
+    }
+    
+    @IBAction func dashboardAction(_ sender: Any!) {
+        
+        if dashboards.isEmpty {
+            addDashboard()
+        } else {
+            dashboards[0].showWindow(self)
+        }
     }
     
     @IBAction func consoleAction(_ sender: Any!) {
@@ -276,8 +380,12 @@ extension MyController: NSMenuItemValidation {
     }
     
     @IBAction func takeSnapshotAction(_ sender: Any!) {
-        
-        c64.requestUserSnapshot()
+
+        if let snapshot = emu?.c64.takeSnapshot() {
+
+            mydocument.snapshots.append(snapshot, size: snapshot.size)
+            renderer.flash()
+        }
     }
     
     @IBAction func restoreSnapshotAction(_ sender: Any!) {
@@ -285,7 +393,7 @@ extension MyController: NSMenuItemValidation {
         do {
             try restoreLatestSnapshot()
         } catch {
-            NSSound.beep()
+            showAlert(.cantRestore, error: error)
         }
     }
     
@@ -294,7 +402,7 @@ extension MyController: NSMenuItemValidation {
         if snapshotBrowser == nil {
             snapshotBrowser = SnapshotViewer(with: self, nibName: "SnapshotViewer")
         }
-        snapshotBrowser?.showSheet()
+        snapshotBrowser?.showAsSheet()
     }
     
     @IBAction func takeScreenshotAction(_ sender: Any!) {
@@ -324,50 +432,50 @@ extension MyController: NSMenuItemValidation {
         if screenshotBrowser == nil {
             screenshotBrowser = ScreenshotViewer(with: self, nibName: "ScreenshotViewer")
         }
-        screenshotBrowser?.showSheet()
+        screenshotBrowser?.showAsSheet()
     }
 
     @IBAction func captureScreenAction(_ sender: Any!) {
 
-        if c64.recorder.recording {
-            
-            c64.recorder.stopRecording()
-            exportVideoAction(self)
-            return
-        }
+        if let emu = emu {
 
-        if !c64.recorder.hasFFmpeg {
+            if emu.recorder.recording {
 
-            if pref.ffmpegPath != "" {
-                showAlert(.noFFmpegFound(exec: pref.ffmpegPath))
-            } else {
-                showAlert(.noFFmpegInstalled)
+                emu.recorder.stopRecording()
+                exportVideoAction(self)
+                return
             }
-            return
-        }
 
-        var rect: CGRect
-        if pref.captureSource == 0 {
-            rect = renderer.canvas.visible
-        } else {
-            rect = renderer.canvas.entire
-        }
+            if !emu.recorder.hasFFmpeg {
 
-        do {
-            try c64.recorder.startRecording(rect: rect,
-                                            rate: pref.bitRate,
-                                            ax: pref.aspectX,
-                                            ay: pref.aspectY)
-        } catch {
+                if pref.ffmpegPath != "" {
+                    showAlert(.noFFmpegFound(exec: pref.ffmpegPath))
+                } else {
+                    showAlert(.noFFmpegInstalled)
+                }
+                return
+            }
 
-            showAlert(.cantRecord, error: error)
+            var rect: CGRect
+            if pref.captureSource == 0 {
+                rect = renderer.canvas.visible
+            } else {
+                rect = renderer.canvas.entire
+            }
+
+            do {
+                try emu.recorder.startRecording(rect: rect)
+            } catch {
+
+                showAlert(.cantRecord, error: error)
+            }
         }
     }
     
     @IBAction func exportVideoAction(_ sender: Any!) {
 
         let exporter = VideoExporter(with: self, nibName: "VideoExporter")
-        exporter?.showSheet()
+        exporter?.showAsSheet()
     }
     
     //
@@ -387,57 +495,82 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func pauseAction(_ sender: Any!) {
         
-        if c64.running { c64.pause() }
+        if let emu = emu {
+            if emu.running { emu.pause() }
+        }
     }
 
     @IBAction func continueAction(_ sender: Any!) {
         
-        if c64.paused { try? c64.run() }
+        if let emu = emu {
+            if emu.paused { try? emu.run() }
+        }
     }
 
     @IBAction func stopAndGoAction(_ sender: Any!) {
         
-        c64.stopAndGo()
+        if let emu = emu {
+            if emu.running { emu.pause() } else { try? emu.run() }
+        }
     }
     
     @IBAction func stepIntoAction(_ sender: Any!) {
 
-        c64.stepInto()
+        if let emu = emu {
+            emu.stepInto()
+        }
     }
     
     @IBAction func stepOverAction(_ sender: Any!) {
         
-        c64.stepOver()
+        if let emu = emu {
+            emu.stepOver()
+        }
     }
     
     @IBAction func resetAction(_ sender: Any!) {
 
-        renderer.rotateLeft()
-        c64.hardReset()
-        try? c64.run()
+        if let emu = emu {
+
+            renderer.rotateLeft()
+            emu.hardReset()
+            try? emu.run()
+        }
     }
 
     @IBAction func softResetAction(_ sender: Any!) {
 
-        c64.softReset()
+        if let emu = emu {
+            emu.softReset()
+        }
     }
 
     @IBAction func powerAction(_ sender: Any!) {
 
-        if c64.poweredOn {
+        if let emu = emu {
 
-            c64.powerOff()
+            if emu.poweredOn {
 
-        } else {
+                emu.powerOff()
 
-            do {
-                try c64.run()
-            } catch {
-                showAlert(.cantRun, error: error)
+            } else {
+
+                do {
+                    try emu.run()
+                } catch {
+                    showAlert(.cantRun, error: error)
+                }
             }
         }
     }
      
+    @IBAction func brkAction(_ sender: Any!) {
+
+        if let emu = emu {
+            emu.put(.CPU_BRK)
+        }
+    }
+
     //
     // Action methods (View menu)
     //
@@ -498,7 +631,9 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func clearKeyboardMatrixAction(_ sender: Any!) {
         
-        c64.keyboard.releaseAll()
+        if let emu = emu {
+            emu.keyboard.releaseAll()
+        }
     }
 
     // -----------------------------------------------------------------
@@ -566,7 +701,7 @@ extension MyController: NSMenuItemValidation {
         undoManager?.registerUndo(withTarget: self) { targetSelf in
             targetSelf.shiftLockAction(sender)
         }
-        c64.keyboard.toggleShiftLock()
+        keyboard.toggleKey(key: C64Key.shiftLock)
     }
 
     // -----------------------------------------------------------------
@@ -592,46 +727,47 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func newDiskAction(_ sender: NSMenuItem!) {
 
-        let drive = c64.drive(sender)
+        if let emu = emu {
 
-        // Ask the user if a modified hard drive should be detached
-        if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
+            let drive = emu.drive(sender)
 
-        let panel = DiskCreator(with: self, nibName: "DiskCreator")
-        panel?.showSheet(forDrive: drive.id)
+            // Ask the user if a modified hard drive should be detached
+            if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
 
-        mm.clearRecentlyExportedDiskURLs(drive: drive.id)
+            let panel = DiskCreator(with: self, nibName: "DiskCreator")
+            panel?.showSheet(forDrive: drive.info.id)
+
+            mm.clearRecentlyExportedDiskURLs(drive: drive.info.id)
+        }
     }
     
     @IBAction func insertDiskAction(_ sender: NSMenuItem!) {
         
-        let id = sender.tag
-        let drive = c64.drive(sender)
+        if let emu = emu {
 
-        // Ask user to continue if the current disk contains modified data
-        if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
-        
-        let openPanel = NSOpenPanel()
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseDirectories = false
-        openPanel.canCreateDirectories = false
-        openPanel.canChooseFiles = true
-        openPanel.prompt = "Insert"
-        openPanel.allowedFileTypes = ["t64", "prg", "p00", "d64", "g64", "zip", "gz"]
-        openPanel.beginSheetModal(for: window!, completionHandler: { result in
+            let id = sender.tag
+            let drive = emu.drive(sender)
 
-            if result == .OK, let url = openPanel.url {
+            // Ask user to continue if the current disk contains modified data
+            if !proceedWithUnsavedFloppyDisk(drive: drive) { return }
 
-                do {
-                    try self.mm.addMedia(url: url,
-                                         allowedTypes: [ .D64, .T64, .PRG, .P00, .G64 ],
-                                         drive: id,
-                                         options: [.force])
-                } catch {
-                    self.showAlert(.cantInsert, error: error, async: true)
+            myOpenPanel.configure(types: [ .t64, .prg, .p00, .d64, .g64, .zip, .gzip ], prompt: "Insert")
+            myOpenPanel.open(for: window, { result in
+
+                if result == .OK, let url = self.myOpenPanel.url {
+
+                    do {
+                        try self.mm.addMedia(url: url,
+                                             allowedTypes: [ .D64, .T64, .PRG, .P00, .G64 ],
+                                             drive: id,
+                                             options: [.force, .remember])
+
+                    } catch {
+                        self.showAlert(.cantInsert, error: error, async: true)
+                    }
                 }
-            }
-        })
+            })
+        }
     }
     
     @IBAction func insertRecentDiskAction(_ sender: NSMenuItem!) {
@@ -644,7 +780,7 @@ extension MyController: NSMenuItemValidation {
 
     func insertRecentDiskAction(drive: Int, slot: Int) {
 
-        let types: [FileType] = [ .D64, .T64, .PRG, .P00, .G64 ]
+        let types: [vc64.FileType] = [ .D64, .T64, .PRG, .P00, .G64 ]
 
         if let url = MediaManager.getRecentlyInsertedDiskURL(slot) {
 
@@ -704,12 +840,15 @@ extension MyController: NSMenuItemValidation {
 
     func ejectDiskAction(drive nr: Int) {
 
-        let drive = c64.drive(nr)
+        if let emu = emu {
 
-        if proceedWithUnsavedFloppyDisk(drive: drive) {
+            let drive = emu.drive(nr)
 
-            drive.ejectDisk()
-            mm.clearRecentlyExportedDiskURLs(drive: nr)
+            if proceedWithUnsavedFloppyDisk(drive: drive) {
+
+                drive.ejectDisk()
+                mm.clearRecentlyExportedDiskURLs(drive: nr)
+            }
         }
     }
 
@@ -768,13 +907,10 @@ extension MyController: NSMenuItemValidation {
 
     func writeProtectAction(drive nr: Int) {
 
-        switch nr {
+        if let emu = emu {
 
-        case DRIVE8: c64.drive8.disk.toggleWriteProtection()
-        case DRIVE9: c64.drive9.disk.toggleWriteProtection()
-
-        default:
-            fatalError()
+            precondition(nr == DRIVE8 || nr == DRIVE9)
+            emu.put(.DSK_TOGGLE_WP, value: nr)
         }
     }
 
@@ -801,15 +937,10 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func insertTapeAction(_ sender: Any!) {
         
-        let openPanel = NSOpenPanel()
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseDirectories = false
-        openPanel.canCreateDirectories = false
-        openPanel.canChooseFiles = true
-        openPanel.prompt = "Insert"
-        openPanel.allowedFileTypes = ["tap", "zip", "gz"]
-        openPanel.beginSheetModal(for: window!, completionHandler: { result in
-            if result == .OK, let url = openPanel.url {
+        myOpenPanel.configure(types: [ .tap, .zip, .gzip ], prompt: "Insert")
+        myOpenPanel.open(for: window, { result in
+
+            if result == .OK, let url = self.myOpenPanel.url {
                 self.insertTapeAction(from: url)
             }
         })
@@ -835,21 +966,29 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func ejectTapeAction(_ sender: Any!) {
 
-        c64.datasette.ejectTape()
+        if let emu = emu {
+
+            emu.datasette.ejectTape()
+        }
     }
     
     @IBAction func playOrStopAction(_ sender: Any!) {
 
-        if c64.datasette.playKey {
-            c64.datasette.pressStop()
-        } else {
-            c64.datasette.pressPlay()
+        if let emu = emu {
+
+            if emu.datasette.info.playKey {
+                emu.datasette.pressStop()
+            } else {
+                emu.datasette.pressPlay()
+            }
         }
     }
     
     @IBAction func rewindAction(_ sender: Any!) {
 
-        c64.datasette.rewind()
+        if let emu = emu {
+            emu.datasette.rewind()
+        }
     }
 
     //
@@ -858,23 +997,18 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func attachCartridgeAction(_ sender: Any!) {
         
-        let openPanel = NSOpenPanel()
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseDirectories = false
-        openPanel.canCreateDirectories = false
-        openPanel.canChooseFiles = true
-        openPanel.prompt = "Attach"
-        openPanel.allowedFileTypes = ["crt", "zip", "gz"]
-        openPanel.beginSheetModal(for: window!, completionHandler: { result in
-            if result == .OK, let url = openPanel.url {
+        myOpenPanel.configure(types: [ .crt, .zip, .gzip ], prompt: "Insert")
+        myOpenPanel.open(for: window, { result in
 
+            if result == .OK, let url = self.myOpenPanel.url {
+                
                 do {
                     try self.mm.addMedia(url: url, allowedTypes: [ .CRT ])
                 } catch {
                     self.showAlert(.cantAttach, error: error, async: true)
                 }
             }
-        })
+        })        
     }
     
     @IBAction func attachRecentCartridgeAction(_ sender: NSMenuItem!) {
@@ -892,7 +1026,12 @@ extension MyController: NSMenuItemValidation {
     }
 
     @IBAction func detachCartridgeAction(_ sender: Any!) {
-        c64.expansionport.detachCartridgeAndReset()
+
+        if let emu = emu {
+
+            emu.expansionport.detachCartridge()
+            emu.hardReset()
+        }
     }
 
     @IBAction func attachReuDummyAction(_ sender: Any!) {
@@ -901,12 +1040,11 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func attachReuAction(_ sender: NSMenuItem!) {
 
-        let capacity = sender.tag
-        c64.expansionport.attachReuCartridge(capacity)
-    }
+        if let emu {
 
-    @IBAction func reuBatteryAction(_ sender: Any!) {
-        c64.expansionport.setBattery(!c64.expansionport.hasBattery)
+            let capacity = sender.tag
+            emu.expansionport.attachReuCartridge(capacity)
+        }
     }
 
     @IBAction func attachGeoRamDummyAction(_ sender: Any!) {
@@ -915,33 +1053,41 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func attachGeoRamAction(_ sender: NSMenuItem!) {
 
-        let capacity = sender.tag
-        c64.expansionport.attachGeoRamCartridge(capacity)
-    }
+        if let emu {
 
-    @IBAction func geoRamBatteryAction(_ sender: Any!) {
-        c64.expansionport.setBattery(!c64.expansionport.hasBattery)
+            let capacity = sender.tag
+            emu.expansionport.attachGeoRamCartridge(capacity)
+        }
     }
 
     @IBAction func attachIsepicAction(_ sender: Any!) {
-        c64.expansionport.attachIsepicCartridge()
+
+        if let emu {
+            emu.expansionport.attachIsepicCartridge()
+        }
     }
 
     @IBAction func pressCartridgeButton1Action(_ sender: NSButton!) {
         
-        c64.expansionport.pressButton(1)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.c64.expansionport.releaseButton(1)
+        if let emu {
+
+            emu.put(.CRT_BUTTON_PRESS, value: 1)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.emu!.put(.CRT_BUTTON_RELEASE, value: 1)
+            }
         }
     }
 
     @IBAction func pressCartridgeButton2Action(_ sender: NSButton!) {
         
-        c64.expansionport.pressButton(2)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.c64.expansionport.releaseButton(2)
+        if let emu {
+
+            emu.put(.CRT_BUTTON_PRESS, value: 2)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.emu!.put(.CRT_BUTTON_RELEASE, value: 2)
+            }
         }
     }
     
@@ -951,17 +1097,23 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func setSwitchNeutralAction(_ sender: Any!) {
         
-        c64.expansionport.switchPosition = 0
+        if let emu {
+            emu.put(.CRT_SWITCH_NEUTRAL)
+        }
     }
 
     @IBAction func setSwitchLeftAction(_ sender: Any!) {
         
-        c64.expansionport.switchPosition = -1
+        if let emu {
+            emu.put(.CRT_SWITCH_LEFT)
+        }
     }
 
     @IBAction func setSwitchRightAction(_ sender: Any!) {
         
-        c64.expansionport.switchPosition = 1
+        if let emu {
+            emu.put(.CRT_SWITCH_RIGHT)
+        }
     }
 
     @IBAction func setSwitchDummyAction(_ sender: Any!) {
@@ -970,8 +1122,11 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction  func inspectCartridgeAction(_ sender: Any!) {
 
-        let panel = CartridgeInspector(with: self, nibName: "CartridgeInspector")
-        panel?.show(expansionPort: c64.expansionport)
+        if let emu {
+
+            let panel = CartridgeInspector(with: self, nibName: "CartridgeInspector")
+            panel?.show(expansionPort: emu.expansionport)
+        }
     }
 
     //

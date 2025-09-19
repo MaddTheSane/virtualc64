@@ -82,6 +82,9 @@ class MyApplication: NSApplication {
     // Information provider for connected HID devices
     var database = DeviceDatabase()
 
+    // Command line arguments
+    var argv: [String] = []
+
     // User activity token obtained in applicationDidFinishLaunching()
     var token: NSObjectProtocol!
 
@@ -97,12 +100,22 @@ class MyApplication: NSApplication {
 
         token = ProcessInfo.processInfo.beginActivity(options: [ .userInitiated ],
                                                       reason: "Running VirtualC64")
+
+        argv = Array(CommandLine.arguments.dropFirst())
     }
-    
+
+    public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+
+        debug(.shutdown, "Delay a bit to let audio fade out...")
+        usleep(250000)
+        debug(.shutdown, "OK...")
+
+        return .terminateNow
+    }
+
     public func applicationWillTerminate(_ aNotification: Notification) {
         
         debug(.lifetime)
-
         ProcessInfo.processInfo.endActivity(token)
     }
 }
@@ -122,8 +135,8 @@ extension MyAppDelegate {
     var controllers: [MyController] {
         return documents.compactMap({ $0.windowForSheet?.windowController as? MyController })
     }
-    var proxies: [C64Proxy] {
-        return documents.map({ $0.c64 })
+    var proxies: [EmulatorProxy?] {
+        return documents.map({ $0.emu })
     }
     
     func windowDidBecomeMain(_ window: NSWindow) {
@@ -132,22 +145,12 @@ extension MyAppDelegate {
             
             if c.window == window {
                 
-                // Start playback
-                if !c.macAudio!.isRunning {
-                    c.macAudio!.startPlayback()
-                    if !c.c64.warpMode { c.c64.sid.rampUpFromZero() }
-                }
-                
-                // Update the visibility of all drive menus
+                c.emu?.put(.FOCUS, value: 1)
                 c.hideOrShowDriveMenus()
                 
             } else {
                 
-                // Stop playback
-                if c.macAudio!.isRunning {
-                    c.macAudio!.stopPlayback()
-                    c.c64.sid.rampDown()
-                }
+                c.emu?.put(.FOCUS, value: 0)
             }
         }
     }
@@ -163,7 +166,7 @@ extension MyAppDelegate {
     }
 
     /// Callen when a HID device has been pulled
-    func devicePulled(events: [GamePadAction]) {
+    func devicePulled(events: [vc64.GamePadAction]) {
         prefController?.refreshDeviceEvents(events: events)
     }
 }

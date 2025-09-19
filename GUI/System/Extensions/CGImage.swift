@@ -11,12 +11,45 @@ public extension CGImage {
     
     private static func bitmapInfo() -> CGBitmapInfo {
         
-        // let noAlpha = CGImageAlphaInfo.noneSkipLast.rawValue
         let alpha = CGImageAlphaInfo.premultipliedLast.rawValue
         let bigEn32 = CGBitmapInfo.byteOrder32Big.rawValue
     
         // return CGBitmapInfo(rawValue: noAlpha | bigEn32)
         return CGBitmapInfo(rawValue: alpha | bigEn32)
+    }
+    
+    static func dataProvider(data: UnsafeMutableRawPointer, size: CGSize) -> CGDataProvider? {
+        
+        let dealloc: CGDataProviderReleaseDataCallback = {
+            
+            (info: UnsafeMutableRawPointer?, data: UnsafeRawPointer, size: Int) in
+            
+            // Core Foundation objects are memory managed, aren't they?
+            return
+        }
+        
+        return CGDataProvider(dataInfo: nil,
+                              data: data,
+                              size: 4 * Int(size.width) * Int(size.height),
+                              releaseData: dealloc)
+    }
+    
+    // Creates a CGImage from a raw data stream in 32 bit big endian format
+    static func make(data: UnsafeMutableRawPointer, size: CGSize) -> CGImage? {
+        
+        let w = Int(size.width)
+        let h = Int(size.height)
+        
+        return CGImage(width: w, height: h,
+                       bitsPerComponent: 8,
+                       bitsPerPixel: 32,
+                       bytesPerRow: 4 * w,
+                       space: CGColorSpaceCreateDeviceRGB(),
+                       bitmapInfo: bitmapInfo(),
+                       provider: dataProvider(data: data, size: size)!,
+                       decode: nil,
+                       shouldInterpolate: false,
+                       intent: CGColorRenderingIntent.defaultIntent)
     }
     
     /// Creates a CGImage from a Swift `Data` struct in 32 bit big endian format

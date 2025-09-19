@@ -25,7 +25,7 @@ class Renderer: NSObject, MTKViewDelegate {
     
     var prefs: Preferences { return parent.pref }
     var config: Configuration { return parent.config }
-    var c64: C64Proxy { return parent.c64 }
+    var emu: EmulatorProxy? { return parent.emu }
 
     // Number of drawn frames since power up
     var frames: Int64 = 0
@@ -194,7 +194,7 @@ class Renderer: NSObject, MTKViewDelegate {
 
     func measureFps(frames: Int64) {
 
-        let interval = Int64(10)
+        let interval = Int64(32)
 
         if frames % interval == 0 {
 
@@ -205,20 +205,46 @@ class Renderer: NSObject, MTKViewDelegate {
             let newfps = Int(round(Double(interval) / elapsed))
             if newfps != fps {
 
-                fps = newfps
-                c64.host.refreshRate = Int(fps)
-                debug(.vsync, "New GPU frame rate: \(fps)")
+                debug(.vsync, "Measured GPU frame rate: \(newfps)")
+
+                if [50, 60, 100, 120, 200, 240].contains(newfps) {
+
+                    fps = newfps
+                    emu?.set(.HOST_REFRESH_RATE, value: Int(fps))
+                    debug(.vsync, "New GPU frame rate: \(fps)")
+                }
             }
         }
     }
 
+    func processMessage(_ msg: Message) {
+        
+        let option = Opt(rawValue: Int(msg.value))!
+
+        switch msg.type {
+            
+        case .MON_SETTING:
+            
+            switch option {
+                
+            case .MON_HCENTER, .MON_VCENTER, .MON_HZOOM, .MON_VZOOM:
+                canvas.updateTextureRect()
+
+            default:
+                updateShaderOption(option, value: msg.value2)
+            }
+            
+        default:
+            break
+        }
+    }
+    
     //
     // Methods from MTKViewDelegate
     //
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
 
-        c64.host.frameBufferSize = size
         reshape(withSize: size)
     }
     

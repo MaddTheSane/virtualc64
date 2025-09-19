@@ -31,9 +31,7 @@ struct ShaderOptions: Codable {
     var blurRadius: Float
     
     var bloom: Int32
-    var bloomRadiusR: Float
-    var bloomRadiusG: Float
-    var bloomRadiusB: Float
+    var bloomRadius: Float
     var bloomBrightness: Float
     var bloomWeight: Float
     
@@ -162,8 +160,8 @@ class ComputeKernel: NSObject {
         let groupH = kernel.maxTotalThreadsPerThreadgroup / groupW
         let threadsPerGroup = MTLSizeMake(groupW, groupH, 1)
         
-        let countW = (cutout.0) / groupW
-        let countH = (cutout.1) / groupH
+        let countW = (cutout.0 + groupW - 1) / groupW
+        let countH = (cutout.1 + groupH - 1) / groupH
         let threadgroupCount = MTLSizeMake(countW, countH, 1)
 
         // Finally, we're ready to dispatch

@@ -7,6 +7,22 @@
 // See https://www.gnu.org for license information
 // -----------------------------------------------------------------------------
 
+import UniformTypeIdentifiers
+
+extension UTType {
+
+    // static let workspace = UTType("de.dirkwhoffmann.retro.vc64")!
+    static let snapshot = UTType("de.dirkwhoffmann.retro.vcsnap")!
+    static let retrosh = UTType("de.dirkwhoffmann.retro.retrosh")!
+    static let d64 = UTType("public.retro.d64")!
+    static let g64 = UTType("public.retro.g64")!
+    static let t64 = UTType("public.retro.t64")!
+    static let prg = UTType("public.retro.prg")!
+    static let p00 = UTType("public.retro.p00")!
+    static let crt = UTType("public.retro.crt")!
+    static let tap = UTType("public.retro.tap")!
+}
+
 class MyDocument: NSDocument {
 
     var pref: Preferences { return myAppDelegate.pref }
@@ -21,10 +37,10 @@ class MyDocument: NSDocument {
     var mm: MediaManager!
 
     // Gateway to the core emulator
-    var c64: C64Proxy!
+    var emu: EmulatorProxy?
 
     // Snapshot storage
-    private(set) var snapshots = ManagedArray<SnapshotProxy>(capacity: 32)
+    private(set) var snapshots = ManagedArray<MediaFileProxy>(maxSize: 512 * 1024 * 1024)
 
     //
     // Initializing
@@ -35,7 +51,7 @@ class MyDocument: NSDocument {
         debug(.lifetime)
 
         super.init()
-
+        
         // Check for Metal support
         if MTLCreateSystemDefaultDevice() == nil {
 
@@ -48,13 +64,13 @@ class MyDocument: NSDocument {
         mm = MediaManager(with: self)
 
         // Register all GUI related user defaults
-        C64Proxy.defaults.registerUserDefaults()
+        EmulatorProxy.defaults.registerUserDefaults()
 
         // Load the user default settings
-        C64Proxy.defaults.load()
+        EmulatorProxy.defaults.load()
 
         // Create an emulator instance
-        c64 = C64Proxy()
+        emu = EmulatorProxy()
     }
 
     override open func makeWindowControllers() {
@@ -63,8 +79,17 @@ class MyDocument: NSDocument {
 
         // Create the window controller
         let controller = MyController(windowNibName: "MyDocument")
-        controller.c64 = c64
         self.addWindowController(controller)
+    }
+
+    func shutDown() {
+
+        debug(.shutdown, "Remove proxy...")
+
+        emu?.kill()
+        emu = nil
+
+        debug(.shutdown, "Done")
     }
 
     //
@@ -75,14 +100,16 @@ class MyDocument: NSDocument {
 
         debug(.media)
 
+        launchUrl = url
+        /*
         do {
+            try mm.addMedia(url: url, allowedTypes: vc64.FileType.draggable)
 
-            try mm.addMedia(url: url, allowedTypes: FileType.draggable)
-
-        } catch let error as VC64Error {
+        } catch let error as AppError {
 
             throw NSError(error: error)
         }
+        */
     }
 
     override open func revert(toContentsOf url: URL, ofType typeName: String) throws {
@@ -92,7 +119,7 @@ class MyDocument: NSDocument {
         do {
             try mm.addMedia(url: url, allowedTypes: [.SNAPSHOT])
 
-        } catch let error as VC64Error {
+        } catch let error as AppError {
 
             throw NSError(error: error)
         }
@@ -106,14 +133,14 @@ class MyDocument: NSDocument {
 
         debug(.media)
 
-        if typeName == "VC64" {
+        if typeName == UTType.snapshot.identifier {
 
-            if let snapshot = SnapshotProxy.make(withC64: c64) {
+            if let snapshot = MediaFileProxy.make(withC64: emu) {
 
                 do {
                     try snapshot.writeTo(url)
 
-                } catch let error as VC64Error {
+                } catch let error as AppError {
 
                     throw NSError(error: error)
                 }

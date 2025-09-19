@@ -29,7 +29,7 @@ extension DefaultsProxy {
 
         let exception = ExceptionWrapper()
         load(url, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        if exception.errorCode != .OK { throw AppError(exception) }
     }
 
     func load() {
@@ -56,7 +56,7 @@ extension DefaultsProxy {
 
         let exception = ExceptionWrapper()
         save(url, exception: exception)
-        if exception.errorCode != .OK { throw VC64Error(exception) }
+        if exception.errorCode != .OK { throw AppError(exception) }
     }
 
     func save() {
@@ -97,10 +97,10 @@ extension DefaultsProxy {
     func register(_ key: String, _ val: Double) {
         register(key, value: "\(val)")
     }
-    func remove(_ option: Option, _ nr: Int) {
+    func remove(_ option: vc64.Opt, _ nr: Int) {
         remove(option, nr: nr)
     }
-    func remove(_ option: Option, _ nr: [Int]) {
+    func remove(_ option: vc64.Opt, _ nr: [Int]) {
         for n in nr { remove(option, nr: n) }
     }
     func set(_ key: String, _ val: String) {
@@ -121,28 +121,28 @@ extension DefaultsProxy {
     func set(_ key: String, _ val: Double) {
         setKey(key, value: "\(val)")
     }
-    func set(_ option: Option, _ val: Int) {
+    func set(_ option: vc64.Opt, _ val: Int) {
         setOpt(option, value: val)
     }
-    func set(_ option: Option, _ val: Bool) {
+    func set(_ option: vc64.Opt, _ val: Bool) {
         setOpt(option, value: val ? 1 : 0)
     }
-    func set(_ option: Option, _ nr: Int, _ val: Int) {
+    func set(_ option: vc64.Opt, _ nr: Int, _ val: Int) {
         setOpt(option, nr: nr, value: val)
     }
-    func set(_ option: Option, _ nr: Int, _ val: Bool) {
+    func set(_ option: vc64.Opt, _ nr: Int, _ val: Bool) {
         setOpt(option, nr: nr, value: val ? 1 : 0)
     }
-    func set(_ option: Option, _ nr: [Int], _ val: Int) {
+    func set(_ option: vc64.Opt, _ nr: [Int], _ val: Int) {
         for n in nr { setOpt(option, nr: n, value: val) }
     }
-    func set(_ option: Option, _ nr: [Int], _ val: Bool) {
+    func set(_ option: vc64.Opt, _ nr: [Int], _ val: Bool) {
         for n in nr { setOpt(option, nr: n, value: val ? 1 : 0) }
     }
-    func get(_ option: Option) -> Int {
+    func get(_ option: vc64.Opt) -> Int {
         return getOpt(option)
     }
-    func get(_ option: Option, _ nr: Int) -> Int {
+    func get(_ option: vc64.Opt, _ nr: Int) -> Int {
         return getOpt(option, nr: nr)
     }
     func string(_ key: String) -> String {
@@ -291,9 +291,6 @@ struct Keys {
         // Screen captures
         static let ffmpegPath             = "General.ffmpegPath"
         static let captureSource          = "General.Source"
-        static let bitRate                = "General.BitRate"
-        static let aspectX                = "General.AspectX"
-        static let aspectY                = "General.AspectY"
 
         // Fullscreen
         static let keepAspectRatio        = "General.FullscreenKeepAspectRatio"
@@ -323,9 +320,6 @@ extension DefaultsProxy {
         // Captures
         register(Keys.Gen.ffmpegPath, "")
         register(Keys.Gen.captureSource, 0)
-        register(Keys.Gen.bitRate, 2048)
-        register(Keys.Gen.aspectX, 768)
-        register(Keys.Gen.aspectY, 702)
 
         // Fullscreen
         register(Keys.Gen.keepAspectRatio, false)
@@ -349,9 +343,6 @@ extension DefaultsProxy {
 
                      Keys.Gen.ffmpegPath,
                      Keys.Gen.captureSource,
-                     Keys.Gen.bitRate,
-                     Keys.Gen.aspectX,
-                     Keys.Gen.aspectY,
 
                      Keys.Gen.keepAspectRatio,
                      Keys.Gen.exitOnEsc,
@@ -370,7 +361,7 @@ extension Preferences {
     func saveGeneralUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.set(Keys.Gen.autoSnapshots, autoSnapshots)
         defaults.set(Keys.Gen.autoSnapshotInterval, snapshotInterval)
@@ -380,9 +371,6 @@ extension Preferences {
 
         defaults.set(Keys.Gen.ffmpegPath, ffmpegPath)
         defaults.set(Keys.Gen.captureSource, captureSource)
-        defaults.set(Keys.Gen.bitRate, bitRate)
-        defaults.set(Keys.Gen.aspectX, aspectX)
-        defaults.set(Keys.Gen.aspectY, aspectY)
 
         defaults.set(Keys.Gen.keepAspectRatio, keepAspectRatio)
         defaults.set(Keys.Gen.exitOnEsc, exitOnEsc)
@@ -397,7 +385,7 @@ extension Preferences {
     func applyGeneralUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         autoSnapshots = defaults.bool(Keys.Gen.autoSnapshots)
         snapshotInterval = defaults.int(Keys.Gen.autoSnapshotInterval)
@@ -407,9 +395,6 @@ extension Preferences {
 
         ffmpegPath = defaults.string(Keys.Gen.ffmpegPath)
         captureSource = defaults.int(Keys.Gen.captureSource)
-        bitRate = defaults.int(Keys.Gen.bitRate)
-        aspectX = defaults.int(Keys.Gen.aspectX)
-        aspectY = defaults.int(Keys.Gen.aspectY)
 
         keepAspectRatio = defaults.bool(Keys.Gen.keepAspectRatio)
         exitOnEsc = defaults.bool(Keys.Gen.exitOnEsc)
@@ -434,11 +419,6 @@ extension Keys {
         static let joyKeyMap2            = "Controls.JoyKeyMap2"
         static let disconnectJoyKeys     = "Controls.DisconnectKeys"
         
-        // Joysticks
-        static let autofire              = "Controls.Autofire"
-        static let autofireBullets       = "Controls.AutofireBullets"
-        static let autofireFrequency     = "Controls.AutofireFrequency"
-        
         // Mouse
         static let retainMouseKeyComb    = "Controls.RetainMouseKeyComb"
         static let retainMouseWithKeys   = "Controls.RetainMouseWithKeys"
@@ -460,20 +440,20 @@ extension DefaultsProxy {
 
         let stdKeyMap1: [MacKey: Int] = [
 
-            MacKey(keyCode: kVK_LeftArrow): GamePadAction.PULL_LEFT.rawValue,
-            MacKey(keyCode: kVK_RightArrow): GamePadAction.PULL_RIGHT.rawValue,
-            MacKey(keyCode: kVK_UpArrow): GamePadAction.PULL_UP.rawValue,
-            MacKey(keyCode: kVK_DownArrow): GamePadAction.PULL_DOWN.rawValue,
-            MacKey(keyCode: kVK_Space): GamePadAction.PRESS_FIRE.rawValue
+            MacKey(keyCode: kVK_LeftArrow): vc64.GamePadAction.PULL_LEFT.rawValue,
+            MacKey(keyCode: kVK_RightArrow): vc64.GamePadAction.PULL_RIGHT.rawValue,
+            MacKey(keyCode: kVK_UpArrow): vc64.GamePadAction.PULL_UP.rawValue,
+            MacKey(keyCode: kVK_DownArrow): vc64.GamePadAction.PULL_DOWN.rawValue,
+            MacKey(keyCode: kVK_Space): vc64.GamePadAction.PRESS_FIRE.rawValue
         ]
 
         let stdKeyMap2 = [
 
-            MacKey(keyCode: kVK_ANSI_S): GamePadAction.PULL_LEFT.rawValue,
-            MacKey(keyCode: kVK_ANSI_D): GamePadAction.PULL_RIGHT.rawValue,
-            MacKey(keyCode: kVK_ANSI_E): GamePadAction.PULL_UP.rawValue,
-            MacKey(keyCode: kVK_ANSI_X): GamePadAction.PULL_DOWN.rawValue,
-            MacKey(keyCode: kVK_ANSI_C): GamePadAction.PRESS_FIRE.rawValue
+            MacKey(keyCode: kVK_ANSI_S): vc64.GamePadAction.PULL_LEFT.rawValue,
+            MacKey(keyCode: kVK_ANSI_D): vc64.GamePadAction.PULL_RIGHT.rawValue,
+            MacKey(keyCode: kVK_ANSI_E): vc64.GamePadAction.PULL_UP.rawValue,
+            MacKey(keyCode: kVK_ANSI_X): vc64.GamePadAction.PULL_DOWN.rawValue,
+            MacKey(keyCode: kVK_ANSI_C): vc64.GamePadAction.PRESS_FIRE.rawValue
         ]
 
         // Emulation keys
@@ -481,11 +461,6 @@ extension DefaultsProxy {
         register(Keys.Con.joyKeyMap1, encodable: stdKeyMap1)
         register(Keys.Con.joyKeyMap2, encodable: stdKeyMap2)
         register(Keys.Con.disconnectJoyKeys, true)
-
-        // Joysticks
-        register(Keys.Con.autofire, false)
-        register(Keys.Con.autofireBullets, -3)
-        register(Keys.Con.autofireFrequency, 2.5)
 
         // Mouse
         register(Keys.Con.retainMouseKeyComb, 0)
@@ -506,10 +481,6 @@ extension DefaultsProxy {
                      Keys.Con.joyKeyMap2,
                      Keys.Con.disconnectJoyKeys,
 
-                     Keys.Con.autofire,
-                     Keys.Con.autofireBullets,
-                     Keys.Con.autofireFrequency,
-
                      Keys.Con.retainMouseKeyComb,
                      Keys.Con.retainMouseWithKeys,
                      Keys.Con.retainMouseByClick,
@@ -527,16 +498,12 @@ extension Preferences {
     func saveControlsUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.encode(Keys.Con.mouseKeyMap, keyMaps[0])
         defaults.encode(Keys.Con.joyKeyMap1, keyMaps[1])
         defaults.encode(Keys.Con.joyKeyMap2, keyMaps[2])
         defaults.set(Keys.Con.disconnectJoyKeys, disconnectJoyKeys)
-
-        defaults.set(Keys.Con.autofire, autofire)
-        defaults.set(Keys.Con.autofireBullets, autofireBullets)
-        defaults.set(Keys.Con.autofireFrequency, autofireFrequency)
 
         defaults.set(Keys.Con.retainMouseKeyComb, retainMouseKeyComb)
         defaults.set(Keys.Con.retainMouseWithKeys, retainMouseWithKeys)
@@ -552,16 +519,12 @@ extension Preferences {
     func applyControlsUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.decode(Keys.Con.mouseKeyMap, &keyMaps[0])
         defaults.decode(Keys.Con.joyKeyMap1, &keyMaps[1])
         defaults.decode(Keys.Con.joyKeyMap2, &keyMaps[2])
         disconnectJoyKeys = defaults.bool(Keys.Con.disconnectJoyKeys)
-
-        autofire = defaults.bool(Keys.Con.autofire)
-        autofireBullets = defaults.int(Keys.Con.autofireBullets)
-        autofireFrequency = defaults.double(Keys.Con.autofireFrequency)
 
         retainMouseKeyComb = defaults.int(Keys.Con.retainMouseKeyComb)
         retainMouseWithKeys = defaults.bool(Keys.Con.retainMouseWithKeys)
@@ -601,7 +564,7 @@ extension Preferences {
     func saveDevicesUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.save()
     }
@@ -653,7 +616,7 @@ extension Preferences {
     func saveKeyboardUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.encode(Keys.Kbd.keyMap, keyMap)
         defaults.set(Keys.Kbd.mapKeysByPosition, mapKeysByPosition)
@@ -664,7 +627,7 @@ extension Preferences {
     func applyKeyboardUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
+        let defaults = EmulatorProxy.defaults!
 
         defaults.decode(Keys.Kbd.keyMap, &keyMap)
         mapKeysByPosition = defaults.bool(Keys.Kbd.mapKeysByPosition)
@@ -677,56 +640,6 @@ extension Preferences {
 
 extension Configuration {
 
-    func loadRomUserDefaultss() {
-
-        func load(_ url: URL?, type: VirtualC64.FileType) {
-
-            if url != nil {
-                if let file = try? RomFileProxy.make(with: url!) {
-                    if file.type == type { c64.loadRom(file) }
-                }
-            }
-        }
-
-        debug(.defaults)
-
-        c64.suspend()
-        load(UserDefaults.basicRomUrl, type: .BASIC_ROM)
-        load(UserDefaults.charRomUrl, type: .CHAR_ROM)
-        load(UserDefaults.kernalRomUrl, type: .KERNAL_ROM)
-        load(UserDefaults.vc1541RomUrl, type: .VC1541_ROM)
-        c64.resume()
-    }
-
-    func saveRomUserDefaultss() throws {
-
-        debug(.defaults)
-
-        var url: URL?
-
-        func save(_ type: RomType) throws {
-
-            if url == nil { throw VC64Error(ErrorCode.FILE_CANT_WRITE) }
-            try? FileManager.default.removeItem(at: url!)
-            try c64.saveRom(type, url: url!)
-        }
-
-        c64.suspend()
-
-        do {
-            url = UserDefaults.basicRomUrl;  try save(.BASIC)
-            url = UserDefaults.charRomUrl;   try save(.CHAR)
-            url = UserDefaults.kernalRomUrl; try save(.KERNAL)
-            url = UserDefaults.vc1541RomUrl; try save(.VC1541)
-
-        } catch {
-
-            c64.resume()
-            throw error
-        }
-
-        c64.resume()
-    }
 }
 
 //
@@ -745,13 +658,13 @@ extension DefaultsProxy {
 
         debug(.defaults)
 
-        remove(.VIC_REVISION)
-        remove(.VIC_POWER_SAVE)
+        remove(.VICII_REVISION)
+        remove(.VICII_POWER_SAVE)
 
         remove(.CIA_REVISION)
-        remove(.TIMER_B_BUG)
+        remove(.CIA_TIMER_B_BUG)
 
-        remove(.SID_REVISION)
+        remove(.SID_REV)
         remove(.SID_FILTER)
         remove(.SID_ENABLE, [0, 1, 2, 3])
         remove(.SID_ADDRESS, [0, 1, 2, 3])
@@ -759,7 +672,7 @@ extension DefaultsProxy {
         remove(.GLUE_LOGIC)
         remove(.POWER_GRID)
 
-        remove(.RAM_PATTERN)
+        remove(.MEM_INIT_PATTERN)
     }
 }
 
@@ -768,63 +681,71 @@ extension Configuration {
     func saveHardwareUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(.VIC_REVISION, vicRevision)
-        defaults.set(.GRAY_DOT_BUG, vicGrayDotBug)
+            emu.suspend()
 
-        defaults.set(.CIA_REVISION, ciaRevision)
-        defaults.set(.TIMER_B_BUG, ciaTimerBBug)
+            let defaults = EmulatorProxy.defaults!
 
-        defaults.set(.SID_REVISION, sidRevision)
-        defaults.set(.SID_FILTER, sidFilter)
-        defaults.set(.SID_ENABLE, 1, sidEnable1)
-        defaults.set(.SID_ENABLE, 2, sidEnable2)
-        defaults.set(.SID_ENABLE, 3, sidEnable3)
-        defaults.set(.SID_ADDRESS, 1, sidAddress1)
-        defaults.set(.SID_ADDRESS, 2, sidAddress2)
-        defaults.set(.SID_ADDRESS, 3, sidAddress3)
+            defaults.set(.VICII_REVISION, vicRevision)
+            defaults.set(.VICII_GRAY_DOT_BUG, vicGrayDotBug)
 
-        defaults.set(.GLUE_LOGIC, glueLogic)
-        defaults.set(.POWER_GRID, powerGrid)
+            defaults.set(.CIA_REVISION, ciaRevision)
+            defaults.set(.CIA_TIMER_B_BUG, ciaTimerBBug)
 
-        defaults.set(.RAM_PATTERN, ramPattern)
+            defaults.set(.SID_REV, [0, 1, 2, 3], sidRevision)
+            defaults.set(.SID_FILTER, [0, 1, 2, 3], sidFilter)
+            defaults.set(.SID_ENABLE, 1, sidEnable1)
+            defaults.set(.SID_ENABLE, 2, sidEnable2)
+            defaults.set(.SID_ENABLE, 3, sidEnable3)
+            defaults.set(.SID_ADDRESS, 1, sidAddress1)
+            defaults.set(.SID_ADDRESS, 2, sidAddress2)
+            defaults.set(.SID_ADDRESS, 3, sidAddress3)
 
-        defaults.save()
+            defaults.set(.GLUE_LOGIC, glueLogic)
+            defaults.set(.POWER_GRID, powerGrid)
 
-        c64.resume()
+            defaults.set(.MEM_INIT_PATTERN, ramPattern)
+
+            defaults.save()
+
+            emu.resume()
+        }
     }
 
     func applyHardwareUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        vicRevision = defaults.get(.VIC_REVISION)
-        vicGrayDotBug = defaults.get(.GRAY_DOT_BUG) != 0
+            emu.suspend()
 
-        ciaRevision = defaults.get(.CIA_REVISION)
-        ciaTimerBBug = defaults.get(.TIMER_B_BUG) != 0
+            let defaults = EmulatorProxy.defaults!
 
-        sidRevision = defaults.get(.SID_REVISION)
-        sidFilter = defaults.get(.SID_FILTER) != 0
-        sidEnable1 = defaults.get(.SID_ENABLE, 1) != 0
-        sidEnable2 = defaults.get(.SID_ENABLE, 2) != 0
-        sidEnable3 = defaults.get(.SID_ENABLE, 3) != 0
-        sidAddress1 = defaults.get(.SID_ADDRESS, 1)
-        sidAddress2 = defaults.get(.SID_ADDRESS, 2)
-        sidAddress3 = defaults.get(.SID_ADDRESS, 3)
+            vicRevision = defaults.get(.VICII_REVISION)
+            vicGrayDotBug = defaults.get(.VICII_GRAY_DOT_BUG) != 0
 
-        glueLogic = defaults.get(.GLUE_LOGIC)
-        powerGrid = defaults.get(.POWER_GRID)
+            ciaRevision = defaults.get(.CIA_REVISION)
+            ciaTimerBBug = defaults.get(.CIA_TIMER_B_BUG) != 0
 
-        ramPattern = defaults.get(.RAM_PATTERN)
+            sidRevision = defaults.get(.SID_REV, 0)
+            sidFilter = defaults.get(.SID_FILTER, 0) != 0
+            sidEnable1 = defaults.get(.SID_ENABLE, 1) != 0
+            sidEnable2 = defaults.get(.SID_ENABLE, 2) != 0
+            sidEnable3 = defaults.get(.SID_ENABLE, 3) != 0
+            sidAddress1 = defaults.get(.SID_ADDRESS, 1)
+            sidAddress2 = defaults.get(.SID_ADDRESS, 2)
+            sidAddress3 = defaults.get(.SID_ADDRESS, 3)
 
-        c64.resume()
+            glueLogic = defaults.get(.GLUE_LOGIC)
+            powerGrid = defaults.get(.POWER_GRID)
+
+            ramPattern = defaults.get(.MEM_INIT_PATTERN)
+
+            emu.resume()
+        }
     }
 }
 
@@ -857,11 +778,11 @@ extension DefaultsProxy {
 
         debug(.defaults)
 
-        remove(.DRV_CONNECT, [DRIVE8, DRIVE9])
-        remove(.DRV_TYPE, [DRIVE8, DRIVE9])
-        remove(.DRV_RAM, [DRIVE8, DRIVE9])
-        remove(.DRV_PARCABLE, [DRIVE8, DRIVE9])
-        remove(.DRV_AUTO_CONFIG, [DRIVE8, DRIVE9])
+        remove(.DRV_CONNECT, [0, 1])
+        remove(.DRV_TYPE, [0, 1])
+        remove(.DRV_RAM, [0, 1])
+        remove(.DRV_PARCABLE, [0, 1])
+        remove(.DRV_AUTO_CONFIG, [0, 1])
         removeKey(Keys.Per.gameDevice1)
         removeKey(Keys.Per.gameDevice2)
     }
@@ -872,57 +793,67 @@ extension Configuration {
     func savePeripheralsUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(.DRV_CONNECT, DRIVE8, drive8Connected)
-        defaults.set(.DRV_TYPE, DRIVE8, drive8Type)
-        defaults.set(.DRV_RAM, DRIVE8, drive8Ram)
-        defaults.set(.DRV_PARCABLE, DRIVE8, drive8ParCable)
-        defaults.set(.DRV_AUTO_CONFIG, DRIVE8, drive8AutoConf)
+            emu.suspend()
 
-        defaults.set(.DRV_CONNECT, DRIVE9, drive9Connected)
-        defaults.set(.DRV_TYPE, DRIVE9, drive8Type)
-        defaults.set(.DRV_RAM, DRIVE9, drive8Ram)
-        defaults.set(.DRV_PARCABLE, DRIVE9, drive8ParCable)
-        defaults.set(.DRV_AUTO_CONFIG, DRIVE9, drive8AutoConf)
+            let defaults = EmulatorProxy.defaults!
 
-        defaults.set(Keys.Per.gameDevice1, gameDevice1)
-        defaults.set(Keys.Per.gameDevice2, gameDevice2)
+            defaults.set(.DRV_CONNECT, 0, drive8Connected)
+            defaults.set(.DRV_TYPE, 0, drive8Type)
+            defaults.set(.DRV_RAM, 0, drive8Ram)
+            defaults.set(.DRV_PARCABLE, 0, drive8ParCable)
+            defaults.set(.DRV_AUTO_CONFIG, 0, drive8AutoConf)
 
-        defaults.set(.MOUSE_MODEL, mouseModel)
+            defaults.set(.DRV_CONNECT, 1, drive9Connected)
+            defaults.set(.DRV_TYPE, 1, drive8Type)
+            defaults.set(.DRV_RAM, 1, drive8Ram)
+            defaults.set(.DRV_PARCABLE, 1, drive8ParCable)
+            defaults.set(.DRV_AUTO_CONFIG, 1, drive8AutoConf)
 
-        defaults.save()
+            defaults.set(Keys.Per.gameDevice1, gameDevice1)
+            defaults.set(Keys.Per.gameDevice2, gameDevice2)
 
-        c64.resume()
+            defaults.set(.MOUSE_MODEL, mouseModel)
+            defaults.set(.PADDLE_ORIENTATION, paddleOrientation)
+
+            defaults.save()
+
+            emu.resume()
+        }
     }
 
     func applyPeripheralsUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        drive8Connected = defaults.get(.DRV_CONNECT, DRIVE8) != 0
-        drive8Type = defaults.get(.DRV_TYPE, DRIVE8)
-        drive8Ram = defaults.get(.DRV_RAM, DRIVE8)
-        drive8ParCable = defaults.get(.DRV_PARCABLE, DRIVE8)
-        drive8AutoConf = defaults.get(.DRV_AUTO_CONFIG, DRIVE8) != 0
+            emu.suspend()
 
-        drive9Connected = defaults.get(.DRV_CONNECT, DRIVE9) != 0
-        drive9Type = defaults.get(.DRV_TYPE, DRIVE9)
-        drive9Ram = defaults.get(.DRV_RAM, DRIVE9)
-        drive9ParCable = defaults.get(.DRV_PARCABLE, DRIVE9)
-        drive9AutoConf = defaults.get(.DRV_AUTO_CONFIG, DRIVE9) != 0
+            let defaults = EmulatorProxy.defaults!
 
-        gameDevice1 = defaults.int(Keys.Per.gameDevice1)
-        gameDevice2 = defaults.int(Keys.Per.gameDevice2)
+            drive8Connected = defaults.get(.DRV_CONNECT, 0) != 0
+            drive8Type = defaults.get(.DRV_TYPE, 0)
+            drive8Ram = defaults.get(.DRV_RAM, 0)
+            drive8ParCable = defaults.get(.DRV_PARCABLE, 0)
+            drive8AutoConf = defaults.get(.DRV_AUTO_CONFIG, 0) != 0
 
-        mouseModel = defaults.get(.MOUSE_MODEL)
+            drive9Connected = defaults.get(.DRV_CONNECT, 1) != 0
+            drive9Type = defaults.get(.DRV_TYPE, 1)
+            drive9Ram = defaults.get(.DRV_RAM, 1)
+            drive9ParCable = defaults.get(.DRV_PARCABLE, 1)
+            drive9AutoConf = defaults.get(.DRV_AUTO_CONFIG, 1) != 0
 
-        c64.resume()
+            gameDevice1 = defaults.int(Keys.Per.gameDevice1)
+            gameDevice2 = defaults.int(Keys.Per.gameDevice2)
+
+            mouseModel = defaults.get(.MOUSE_MODEL)
+            paddleOrientation = defaults.get(.PADDLE_ORIENTATION)
+
+            emu.resume()
+        }
     }
 }
 
@@ -942,14 +873,16 @@ extension DefaultsProxy {
 
         debug(.defaults)
 
-        remove(.DRV_POWER_SAVE, DRIVE8)
-        remove(.DRV_POWER_SAVE, DRIVE9)
-        remove(.VIC_POWER_SAVE)
-        remove(.SID_POWER_SAVE)
-        remove(.SS_COLLISIONS)
-        remove(.SB_COLLISIONS)
-        remove(.WARP_MODE)
-        remove(.WARP_BOOT)
+        remove(.DRV_POWER_SAVE, [0, 1])
+        remove(.VICII_POWER_SAVE)
+        remove(.VICII_SS_COLLISIONS)
+        remove(.VICII_SB_COLLISIONS)
+        remove(.SID_POWER_SAVE, [0, 1, 2, 3])
+        remove(.C64_WARP_MODE)
+        remove(.C64_WARP_BOOT)
+        remove(.C64_SPEED_BOOST)
+        remove(.C64_VSYNC)
+        remove(.C64_RUN_AHEAD)
     }
 }
 
@@ -958,40 +891,55 @@ extension Configuration {
     func savePerformanceUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(.DRV_POWER_SAVE, DRIVE8, drive8PowerSave)
-        defaults.set(.DRV_POWER_SAVE, DRIVE9, drive9PowerSave)
-        defaults.set(.VIC_POWER_SAVE, viciiPowerSave)
-        defaults.set(.SID_POWER_SAVE, sidPowerSave)
-        defaults.set(.SS_COLLISIONS, ssCollisions)
-        defaults.set(.SB_COLLISIONS, sbCollisions)
-        defaults.set(.WARP_MODE, warpMode)
-        defaults.set(.WARP_BOOT, warpBoot)
-        defaults.save()
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+
+            defaults.set(.DRV_POWER_SAVE, 0, drive8PowerSave)
+            defaults.set(.DRV_POWER_SAVE, 1, drive9PowerSave)
+            defaults.set(.SID_POWER_SAVE, [0, 1, 2, 3], sidPowerSave)
+            defaults.set(.VICII_POWER_SAVE, viciiPowerSave)
+            defaults.set(.VICII_SS_COLLISIONS, ssCollisions)
+            defaults.set(.VICII_SB_COLLISIONS, sbCollisions)
+            defaults.set(.C64_WARP_MODE, warpMode)
+            defaults.set(.C64_WARP_BOOT, warpBoot)
+            defaults.set(.C64_SPEED_BOOST, speedBoost)
+            defaults.set(.C64_VSYNC, vsync)
+            defaults.set(.C64_RUN_AHEAD, runAhead)
+
+            defaults.save()
+
+            emu.resume()
+        }
     }
 
     func applyPerformanceUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        drive8PowerSave = defaults.get(.DRV_POWER_SAVE, DRIVE8) != 0
-        drive9PowerSave = defaults.get(.DRV_POWER_SAVE, DRIVE9) != 0
-        viciiPowerSave = defaults.get(.VIC_POWER_SAVE) != 0
-        sidPowerSave = defaults.get(.SID_POWER_SAVE) != 0
-        ssCollisions = defaults.get(.SS_COLLISIONS) != 0
-        sbCollisions = defaults.get(.SB_COLLISIONS) != 0
-        warpMode = defaults.get(.WARP_MODE)
-        warpBoot = defaults.get(.WARP_BOOT)
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+
+            drive8PowerSave = defaults.get(.DRV_POWER_SAVE, 0) != 0
+            drive9PowerSave = defaults.get(.DRV_POWER_SAVE, 1) != 0
+            sidPowerSave = defaults.get(.SID_POWER_SAVE, 0) != 0
+            viciiPowerSave = defaults.get(.VICII_POWER_SAVE) != 0
+            ssCollisions = defaults.get(.VICII_SS_COLLISIONS) != 0
+            sbCollisions = defaults.get(.VICII_SB_COLLISIONS) != 0
+            warpMode = defaults.get(.C64_WARP_MODE)
+            warpBoot = defaults.get(.C64_WARP_BOOT)
+            speedBoost = defaults.get(.C64_SPEED_BOOST)
+            vsync = defaults.get(.C64_VSYNC) != 0
+            runAhead = defaults.get(.C64_RUN_AHEAD)
+
+            emu.resume()
+        }
     }
 }
 
@@ -1011,17 +959,23 @@ extension DefaultsProxy {
 
         debug(.defaults)
 
-        remove(.SID_ENGINE)
-        remove(.SID_SAMPLING)
-        remove(.SID_FILTER)
-        remove(.AUDVOL, [0, 1, 2, 3])
-        remove(.AUDPAN, [0, 1, 2, 3])
-        remove(.AUDVOLL)
-        remove(.AUDVOLR)
-        remove(.DRV_STEP_VOL, [DRIVE8, DRIVE9])
-        remove(.DRV_INSERT_VOL, [DRIVE8, DRIVE9])
-        remove(.DRV_EJECT_VOL, [DRIVE8, DRIVE9])
-        remove(.DRV_PAN, [DRIVE8, DRIVE9])
+        remove(.SID_ENGINE, [0, 1, 2, 3])
+        remove(.SID_SAMPLING, [0, 1, 2, 3])
+        remove(.SID_FILTER, [0, 1, 2, 3])
+        remove(.AUD_VOL0)
+        remove(.AUD_VOL1)
+        remove(.AUD_VOL2)
+        remove(.AUD_VOL3)
+        remove(.AUD_PAN0)
+        remove(.AUD_PAN1)
+        remove(.AUD_PAN2)
+        remove(.AUD_PAN3)
+        remove(.AUD_VOL_L)
+        remove(.AUD_VOL_R)
+        remove(.DRV_STEP_VOL, [0, 1])
+        remove(.DRV_INSERT_VOL, [0, 1])
+        remove(.DRV_EJECT_VOL, [0, 1])
+        remove(.DRV_PAN, [0, 1])
     }
 }
 
@@ -1030,61 +984,69 @@ extension Configuration {
     func saveAudioUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(.AUDVOL, 0, vol0)
-        defaults.set(.AUDVOL, 1, vol1)
-        defaults.set(.AUDVOL, 2, vol2)
-        defaults.set(.AUDVOL, 3, vol3)
-        defaults.set(.AUDPAN, 0, pan0)
-        defaults.set(.AUDPAN, 1, pan1)
-        defaults.set(.AUDPAN, 2, pan2)
-        defaults.set(.AUDPAN, 3, pan3)
-        defaults.set(.AUDVOLL, volL)
-        defaults.set(.AUDVOLR, volR)
-        defaults.set(.SID_SAMPLING, sidSampling)
-        defaults.set(.DRV_PAN, DRIVE8, drive8Pan)
-        defaults.set(.DRV_PAN, DRIVE9, drive9Pan)
-        defaults.set(.DRV_STEP_VOL, [DRIVE8, DRIVE9], stepVolume)
-        defaults.set(.DRV_INSERT_VOL, [DRIVE8, DRIVE9], insertVolume)
-        defaults.set(.DRV_EJECT_VOL, [DRIVE8, DRIVE9], ejectVolume)
-        defaults.set(.SID_FILTER, sidFilter)
-        defaults.save()
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+
+            defaults.set(.AUD_VOL0, vol0)
+            defaults.set(.AUD_VOL1, vol1)
+            defaults.set(.AUD_VOL2, vol2)
+            defaults.set(.AUD_VOL3, vol3)
+            defaults.set(.AUD_PAN0, pan0)
+            defaults.set(.AUD_PAN1, pan1)
+            defaults.set(.AUD_PAN2, pan2)
+            defaults.set(.AUD_PAN3, pan3)
+            defaults.set(.AUD_VOL_L, volL)
+            defaults.set(.AUD_VOL_R, volR)
+            defaults.set(.SID_SAMPLING, [0, 1, 2, 3], sidSampling)
+            defaults.set(.DRV_PAN, 0, drive8Pan)
+            defaults.set(.DRV_PAN, 1, drive9Pan)
+            defaults.set(.DRV_STEP_VOL, [0, 1], stepVolume)
+            defaults.set(.DRV_INSERT_VOL, [0, 1], insertVolume)
+            defaults.set(.DRV_EJECT_VOL, [0, 1], ejectVolume)
+            defaults.set(.SID_FILTER, [0, 1, 2, 3], sidFilter)
+            defaults.save()
+
+            emu.resume()
+        }
     }
 
     func applyAudioUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        vol0 = defaults.get(.AUDVOL, 0)
-        vol1 = defaults.get(.AUDVOL, 1)
-        vol2 = defaults.get(.AUDVOL, 2)
-        vol3 = defaults.get(.AUDVOL, 3)
+            emu.suspend()
 
-        pan0 = defaults.get(.AUDPAN, 0)
-        pan1 = defaults.get(.AUDPAN, 1)
-        pan2 = defaults.get(.AUDPAN, 2)
-        pan3 = defaults.get(.AUDPAN, 3)
+            let defaults = EmulatorProxy.defaults!
 
-        drive8Pan = defaults.get(.DRV_PAN, DRIVE8)
-        drive9Pan = defaults.get(.DRV_PAN, DRIVE9)
+            vol0 = defaults.get(.AUD_VOL0)
+            vol1 = defaults.get(.AUD_VOL1)
+            vol2 = defaults.get(.AUD_VOL2)
+            vol3 = defaults.get(.AUD_VOL3)
 
-        volL = defaults.get(.AUDVOLL)
-        volR = defaults.get(.AUDVOLR)
-        sidSampling = defaults.get(.SID_SAMPLING)
-        stepVolume = defaults.get(.DRV_STEP_VOL, DRIVE8)
-        insertVolume = defaults.get(.DRV_INSERT_VOL, DRIVE8)
-        ejectVolume = defaults.get(.DRV_EJECT_VOL, DRIVE8)
-        sidFilter = defaults.get(.SID_FILTER) != 0
+            pan0 = defaults.get(.AUD_PAN0)
+            pan1 = defaults.get(.AUD_PAN1)
+            pan2 = defaults.get(.AUD_PAN2)
+            pan3 = defaults.get(.AUD_PAN3)
 
-        c64.resume()
+            drive8Pan = defaults.get(.DRV_PAN, 0)
+            drive9Pan = defaults.get(.DRV_PAN, 1)
+
+            volL = defaults.get(.AUD_VOL_L)
+            volR = defaults.get(.AUD_VOL_R)
+            sidSampling = defaults.get(.SID_SAMPLING, 0)
+            stepVolume = defaults.get(.DRV_STEP_VOL, 0)
+            insertVolume = defaults.get(.DRV_INSERT_VOL, 0)
+            ejectVolume = defaults.get(.DRV_EJECT_VOL, 0)
+            sidFilter = defaults.get(.SID_FILTER, 0) != 0
+
+            emu.resume()
+        }
     }
 }
 
@@ -1092,87 +1054,12 @@ extension Configuration {
 // User defaults (Video)
 //
 
-extension Keys {
-    
-    struct Vid {
-
-        // Geometry
-        static let hCenter            = "Geometry.HCenter"
-        static let vCenter            = "Geometry.VCenter"
-        static let hZoom              = "Geometry.HZoom"
-        static let vZoom              = "Geometry.VZoom"
-
-        // Shaders
-        static let upscaler           = "Shaders.Upscaler"
-        static let blur               = "Shaders.Blur"
-        static let blurRadius         = "Shaders.BlurRadius"
-        static let bloom              = "Shaders.Bloom"
-        static let bloomRadiusR       = "Shaders.BloonRadiusR"
-        static let bloomRadiusG       = "Shaders.BloonRadiusG"
-        static let bloomRadiusB       = "Shaders.BloonRadiusB"
-        static let bloomBrightness    = "Shaders.BloomBrightness"
-        static let bloomWeight        = "Shaders.BloomWeight"
-        static let flicker            = "Shaders.Flicker"
-        static let flickerWeight      = "Shaders.FlickerWeight"
-        static let dotMask            = "Shaders.DotMask"
-        static let dotMaskBrightness  = "Shaders.DotMaskBrightness"
-        static let scanlines          = "Shaders.Scanlines"
-        static let scanlineBrightness = "Shaders.ScanlineBrightness"
-        static let scanlineWeight     = "Shaders.ScanlineWeight"
-        static let disalignment       = "Shaders.Disalignment"
-        static let disalignmentH      = "Shaders.DisalignmentH"
-        static let disalignmentV      = "Shaders.DisalignmentV"
-    }
-}
-
 extension DefaultsProxy {
 
     func registerVideoUserDefaults() {
 
         debug(.defaults)
-
-        registerColorUserDefaults()
-        registerGeometryUserDefaults()
-        registerShaderUserDefaults()
-    }
-
-    func registerColorUserDefaults() {
-
-        debug(.defaults)
         // No GUI related keys in this category
-    }
-
-    func registerGeometryUserDefaults() {
-
-        debug(.defaults)
-
-        register(Keys.Vid.hCenter, 0)
-        register(Keys.Vid.vCenter, 0)
-        register(Keys.Vid.hZoom, 0)
-        register(Keys.Vid.vZoom, 0.046)
-    }
-
-    func registerShaderUserDefaults() {
-
-        debug(.defaults)
-
-        register(Keys.Vid.upscaler, 0)
-        register(Keys.Vid.blur, 1)
-        register(Keys.Vid.blurRadius, 0)
-        register(Keys.Vid.bloom, 0)
-        register(Keys.Vid.bloomRadiusR, 1.0)
-        register(Keys.Vid.bloomRadiusG, 1.0)
-        register(Keys.Vid.bloomRadiusB, 1.0)
-        register(Keys.Vid.bloomBrightness, 0.4)
-        register(Keys.Vid.bloomWeight, 1.21)
-        register(Keys.Vid.dotMask, 0)
-        register(Keys.Vid.dotMaskBrightness, 0.7)
-        register(Keys.Vid.scanlines, 0)
-        register(Keys.Vid.scanlineBrightness, 0.55)
-        register(Keys.Vid.scanlineWeight, 0.11)
-        register(Keys.Vid.disalignment, 0)
-        register(Keys.Vid.disalignmentH, 0.001)
-        register(Keys.Vid.disalignmentV, 0.001)
     }
 
     func removeVideoUserDefaults() {
@@ -1188,47 +1075,41 @@ extension DefaultsProxy {
 
         debug(.defaults)
 
-        remove(.PALETTE)
-        remove(.BRIGHTNESS)
-        remove(.CONTRAST)
-        remove(.SATURATION)
+        remove(.MON_PALETTE)
+        remove(.MON_BRIGHTNESS)
+        remove(.MON_CONTRAST)
+        remove(.MON_SATURATION)
     }
 
     func removeGeometryUserDefaults() {
 
         debug(.defaults)
 
-        let keys = [ Keys.Vid.hCenter,
-                     Keys.Vid.vCenter,
-                     Keys.Vid.hZoom,
-                     Keys.Vid.vZoom ]
-
-        for key in keys { removeKey(key) }
+        remove(.MON_HCENTER)
+        remove(.MON_VCENTER)
+        remove(.MON_HZOOM)
+        remove(.MON_VZOOM)
     }
 
     func removeShaderUserDefaults() {
 
         debug(.defaults)
 
-        let keys = [ Keys.Vid.upscaler,
-                     Keys.Vid.blur,
-                     Keys.Vid.blurRadius,
-                     Keys.Vid.bloom,
-                     Keys.Vid.bloomRadiusR,
-                     Keys.Vid.bloomRadiusG,
-                     Keys.Vid.bloomRadiusB,
-                     Keys.Vid.bloomBrightness,
-                     Keys.Vid.bloomWeight,
-                     Keys.Vid.dotMask,
-                     Keys.Vid.dotMaskBrightness,
-                     Keys.Vid.scanlines,
-                     Keys.Vid.scanlineBrightness,
-                     Keys.Vid.scanlineWeight,
-                     Keys.Vid.disalignment,
-                     Keys.Vid.disalignmentH,
-                     Keys.Vid.disalignmentV ]
-
-        for key in keys { removeKey(key) }
+        remove(.MON_UPSCALER)
+        remove(.MON_BLUR)
+        remove(.MON_BLUR_RADIUS)
+        remove(.MON_BLOOM)
+        remove(.MON_BLOOM_RADIUS)
+        remove(.MON_BLOOM_BRIGHTNESS)
+        remove(.MON_BLOOM_WEIGHT)
+        remove(.MON_DOTMASK)
+        remove(.MON_DOTMASK_BRIGHTNESS)
+        remove(.MON_SCANLINES)
+        remove(.MON_SCANLINE_BRIGHTNESS)
+        remove(.MON_SCANLINE_WEIGHT)
+        remove(.MON_DISALIGNMENT)
+        remove(.MON_DISALIGNMENT_H)
+        remove(.MON_DISALIGNMENT_V)
     }
 }
 
@@ -1246,65 +1127,69 @@ extension Configuration {
     func saveColorUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(.PALETTE, palette)
-        defaults.set(.BRIGHTNESS, brightness)
-        defaults.set(.CONTRAST, contrast)
-        defaults.set(.SATURATION, saturation)
+            emu.suspend()
 
-        defaults.save()
+            let defaults = EmulatorProxy.defaults!
+            defaults.set(.MON_PALETTE, palette)
+            defaults.set(.MON_BRIGHTNESS, brightness)
+            defaults.set(.MON_CONTRAST, contrast)
+            defaults.set(.MON_SATURATION, saturation)
+            defaults.save()
 
-        c64.resume()
+            emu.resume()
+        }
     }
 
     func saveGeometryUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(Keys.Vid.hCenter, hCenter)
-        defaults.set(Keys.Vid.vCenter, vCenter)
-        defaults.set(Keys.Vid.hZoom, hZoom)
-        defaults.set(Keys.Vid.vZoom, vZoom)
+            emu.suspend()
 
-        defaults.save()
+            let defaults = EmulatorProxy.defaults!
+            defaults.set(.MON_HCENTER, hCenter)
+            defaults.set(.MON_VCENTER, vCenter)
+            defaults.set(.MON_HZOOM, hZoom)
+            defaults.set(.MON_VZOOM, vZoom)
+            defaults.save()
 
-        c64.resume()
+            emu.resume()
+        }
     }
 
     func saveShaderUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        defaults.set(Keys.Vid.upscaler, upscaler)
-        defaults.set(Keys.Vid.blur, blur)
-        defaults.set(Keys.Vid.blurRadius, blurRadius)
-        defaults.set(Keys.Vid.bloom, bloom)
-        defaults.set(Keys.Vid.bloomRadiusR, bloomRadiusR)
-        defaults.set(Keys.Vid.bloomRadiusG, bloomRadiusG)
-        defaults.set(Keys.Vid.bloomRadiusB, bloomRadiusB)
-        defaults.set(Keys.Vid.bloomBrightness, bloomBrightness)
-        defaults.set(Keys.Vid.bloomWeight, bloomWeight)
-        defaults.set(Keys.Vid.dotMask, dotMask)
-        defaults.set(Keys.Vid.dotMaskBrightness, dotMaskBrightness)
-        defaults.set(Keys.Vid.scanlines, scanlines)
-        defaults.set(Keys.Vid.scanlineBrightness, scanlineBrightness)
-        defaults.set(Keys.Vid.scanlineWeight, scanlineWeight)
-        defaults.set(Keys.Vid.disalignment, disalignment)
-        defaults.set(Keys.Vid.disalignmentH, disalignmentH)
-        defaults.set(Keys.Vid.disalignmentV, disalignmentV)
+            emu.suspend()
 
-        defaults.save()
+            let defaults = EmulatorProxy.defaults!
+            defaults.set(.MON_UPSCALER, upscaler)
+            defaults.set(.MON_BLUR, blur)
+            defaults.set(.MON_BLUR_RADIUS, blurRadius)
+            defaults.set(.MON_BLOOM, bloom)
+            defaults.set(.MON_BLOOM_RADIUS, bloomRadius)
+            defaults.set(.MON_BLOOM_BRIGHTNESS, bloomBrightness)
+            defaults.set(.MON_BLOOM_WEIGHT, bloomWeight)
+            defaults.set(.MON_DOTMASK, dotMask)
+            defaults.set(.MON_DOTMASK_BRIGHTNESS, dotMaskBrightness)
+            defaults.set(.MON_SCANLINES, scanlines)
+            defaults.set(.MON_SCANLINE_BRIGHTNESS, scanlineBrightness)
+            defaults.set(.MON_SCANLINE_WEIGHT, scanlineWeight)
+            defaults.set(.MON_DISALIGNMENT, disalignment)
+            defaults.set(.MON_DISALIGNMENT_H, disalignmentH)
+            defaults.set(.MON_DISALIGNMENT_V, disalignmentV)
+            defaults.save()
 
-        c64.resume()
+            emu.resume()
+        }
     }
 
     func applyVideoUserDefaults() {
@@ -1319,58 +1204,67 @@ extension Configuration {
     func applyColorUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        palette = defaults.get(.PALETTE)
-        brightness = defaults.get(.BRIGHTNESS)
-        contrast = defaults.get(.CONTRAST)
-        saturation = defaults.get(.SATURATION)
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+            palette = defaults.get(.MON_PALETTE)
+            brightness = defaults.get(.MON_BRIGHTNESS)
+            contrast = defaults.get(.MON_CONTRAST)
+            saturation = defaults.get(.MON_SATURATION)
+
+            emu.resume()
+        }
     }
 
     func applyGeometryUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        hCenter = defaults.float(Keys.Vid.hCenter)
-        vCenter = defaults.float(Keys.Vid.vCenter)
-        hZoom = defaults.float(Keys.Vid.hZoom)
-        vZoom = defaults.float(Keys.Vid.vZoom)
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+
+            hCenter = defaults.get(.MON_HCENTER)
+            vCenter = defaults.get(.MON_VCENTER)
+            hZoom = defaults.get(.MON_HZOOM)
+            vZoom = defaults.get(.MON_VZOOM)
+
+            emu.resume()
+        }
     }
 
     func applyShaderUserDefaults() {
 
         debug(.defaults)
-        let defaults = C64Proxy.defaults!
 
-        c64.suspend()
+        if let emu = emu {
 
-        upscaler = defaults.int(Keys.Vid.upscaler)
-        blur = defaults.int(Keys.Vid.blur)
-        blurRadius = defaults.float(Keys.Vid.blurRadius)
-        bloom = defaults.int(Keys.Vid.bloom)
-        bloomRadiusR = defaults.float(Keys.Vid.bloomRadiusR)
-        bloomRadiusG = defaults.float(Keys.Vid.bloomRadiusG)
-        bloomRadiusB = defaults.float(Keys.Vid.bloomRadiusB)
-        bloomBrightness = defaults.float(Keys.Vid.bloomBrightness)
-        bloomWeight = defaults.float(Keys.Vid.bloomWeight)
-        dotMask = defaults.int(Keys.Vid.dotMask)
-        dotMaskBrightness = defaults.float(Keys.Vid.dotMaskBrightness)
-        scanlines = defaults.int(Keys.Vid.scanlines)
-        scanlineBrightness = defaults.float(Keys.Vid.scanlineBrightness)
-        scanlineWeight = defaults.float(Keys.Vid.scanlineWeight)
-        disalignment = defaults.int(Keys.Vid.disalignment)
-        disalignmentH = defaults.float(Keys.Vid.disalignmentH)
-        disalignmentV = defaults.float(Keys.Vid.disalignmentV)
+            emu.suspend()
 
-        c64.resume()
+            let defaults = EmulatorProxy.defaults!
+
+            upscaler = defaults.get(.MON_UPSCALER)
+            blur = defaults.get(.MON_BLUR)
+            blurRadius = defaults.get(.MON_BLUR_RADIUS)
+            bloom = defaults.get(.MON_BLOOM)
+            bloomRadius = defaults.get(.MON_BLOOM_RADIUS)
+            bloomBrightness = defaults.get(.MON_BLOOM_BRIGHTNESS)
+            bloomWeight = defaults.get(.MON_BLOOM_WEIGHT)
+            dotMask = defaults.get(.MON_DOTMASK)
+            dotMaskBrightness = defaults.get(.MON_DOTMASK_BRIGHTNESS)
+            scanlines = defaults.get(.MON_SCANLINES)
+            scanlineBrightness = defaults.get(.MON_SCANLINE_BRIGHTNESS)
+            scanlineWeight = defaults.get(.MON_SCANLINE_WEIGHT)
+            disalignment = defaults.get(.MON_DISALIGNMENT)
+            disalignmentH = defaults.get(.MON_DISALIGNMENT_H)
+            disalignmentV = defaults.get(.MON_DISALIGNMENT_V)
+
+            emu.resume()
+        }
     }
 }
