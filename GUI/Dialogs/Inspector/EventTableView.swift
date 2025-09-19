@@ -24,7 +24,7 @@ class EventTableView: NSTableView {
 
     private func cache() {
 
-        if let emu = emu {
+        if let emu {
 
             for row in 0 ..< EventSlotEnum.count() {
                 slotInfo[row] = emu.c64.cachedSlotInfo(row)
@@ -50,7 +50,7 @@ extension EventTableView: NSTableViewDataSource {
 
         guard let info = slotInfo[row] else { return nil }
 
-        let willTrigger = (info.trigger != INT64_MAX)
+        let willTrigger = (info.trigger != .max)
 
         switch tableColumn?.identifier.rawValue {
 

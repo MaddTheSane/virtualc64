@@ -14,7 +14,7 @@ extension Inspector {
     
     private func cacheCIA() {
 
-        if let emu = emu {
+        if let emu {
 
             let cia = cia1 ? emu.cia1! : emu.cia2!
 

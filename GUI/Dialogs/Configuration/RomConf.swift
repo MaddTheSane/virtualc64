@@ -11,7 +11,7 @@ extension ConfigurationController {
 
     func refreshRomTab() {
 
-        if let emu = emu {
+        if let emu {
 
             let basicRom = emu.c64.basicRom
             let charRom = emu.c64.charRom
@@ -133,7 +133,7 @@ extension ConfigurationController {
     
     @IBAction func romDeleteBasicAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.powerOff()
             emu.delete(.BASIC)
@@ -143,7 +143,7 @@ extension ConfigurationController {
     
     @IBAction func romDeleteCharAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.powerOff()
             emu.delete(.CHAR)
@@ -153,7 +153,7 @@ extension ConfigurationController {
     
     @IBAction func romDeleteKernalAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.powerOff()
             emu.delete(.KERNAL)
@@ -163,7 +163,7 @@ extension ConfigurationController {
     
     @IBAction func romDeleteVC1541Action(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.powerOff()
             emu.delete(.VC1541)

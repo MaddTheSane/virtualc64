@@ -13,7 +13,7 @@ extension Inspector {
 
     private func cacheVIC() {
 
-        if let emu = emu {
+        if let emu {
 
             vicInfo = emu.paused ? emu.vic.info : emu.vic.cachedInfo
             sprInfo = emu.vic.getSpriteInfo(selectedSprite)
@@ -22,7 +22,7 @@ extension Inspector {
     
     func refreshVIC(count: Int = 0, full: Bool = false) {
 
-        if let emu = emu {
+        if let emu {
             
             cacheVIC()
 

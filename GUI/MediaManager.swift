@@ -210,7 +210,7 @@ class MediaManager {
 
         debug(.media, "url = \(url) types = \(types)")
 
-        if let emu = emu {
+        if let emu {
 
             // Read file
             let file = try createFileProxy(from: url, allowedTypes: types)
@@ -254,7 +254,7 @@ class MediaManager {
             return options.contains(.force) || proceedWithUnsavedFloppyDisk(drive: drive!)
         }
 
-        if let emu = emu {
+        if let emu {
 
             switch proxy.type {
 
@@ -299,7 +299,7 @@ class MediaManager {
 
     func flashMedia(proxy: MediaFileProxy, options: [Option] = []) throws {
 
-        if let emu = emu {
+        if let emu {
 
             switch proxy.type {
 
@@ -352,7 +352,7 @@ class MediaManager {
 
         debug(.media, "drive: \(id) to: \(url)")
 
-        if let emu = emu {
+        if let emu {
             
             let drive = emu.drive(id)
             try export(disk: drive, to: url)

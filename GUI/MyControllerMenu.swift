@@ -13,7 +13,7 @@ extension MyController: NSMenuItemValidation {
     
     open func validateMenuItem(_ item: NSMenuItem) -> Bool {
 
-        if let emu = emu {
+        if let emu {
 
             let info = emu.info
             let powered = info.powered
@@ -437,7 +437,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func captureScreenAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             if emu.recorder.recording {
 
@@ -495,42 +495,42 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func pauseAction(_ sender: Any!) {
         
-        if let emu = emu {
+        if let emu {
             if emu.running { emu.pause() }
         }
     }
 
     @IBAction func continueAction(_ sender: Any!) {
         
-        if let emu = emu {
+        if let emu {
             if emu.paused { try? emu.run() }
         }
     }
 
     @IBAction func stopAndGoAction(_ sender: Any!) {
         
-        if let emu = emu {
+        if let emu {
             if emu.running { emu.pause() } else { try? emu.run() }
         }
     }
     
     @IBAction func stepIntoAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
             emu.stepInto()
         }
     }
     
     @IBAction func stepOverAction(_ sender: Any!) {
         
-        if let emu = emu {
+        if let emu {
             emu.stepOver()
         }
     }
     
     @IBAction func resetAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             renderer.rotateLeft()
             emu.hardReset()
@@ -540,14 +540,14 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func softResetAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
             emu.softReset()
         }
     }
 
     @IBAction func powerAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             if emu.poweredOn {
 
@@ -566,7 +566,7 @@ extension MyController: NSMenuItemValidation {
      
     @IBAction func brkAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
             emu.put(.CPU_BRK)
         }
     }
@@ -631,7 +631,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func clearKeyboardMatrixAction(_ sender: Any!) {
         
-        if let emu = emu {
+        if let emu {
             emu.keyboard.releaseAll()
         }
     }
@@ -727,7 +727,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func newDiskAction(_ sender: NSMenuItem!) {
 
-        if let emu = emu {
+        if let emu {
 
             let drive = emu.drive(sender)
 
@@ -743,7 +743,7 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func insertDiskAction(_ sender: NSMenuItem!) {
         
-        if let emu = emu {
+        if let emu {
 
             let id = sender.tag
             let drive = emu.drive(sender)
@@ -840,7 +840,7 @@ extension MyController: NSMenuItemValidation {
 
     func ejectDiskAction(drive nr: Int) {
 
-        if let emu = emu {
+        if let emu {
 
             let drive = emu.drive(nr)
 
@@ -907,7 +907,7 @@ extension MyController: NSMenuItemValidation {
 
     func writeProtectAction(drive nr: Int) {
 
-        if let emu = emu {
+        if let emu {
 
             precondition(nr == DRIVE8 || nr == DRIVE9)
             emu.put(.DSK_TOGGLE_WP, value: nr)
@@ -966,7 +966,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func ejectTapeAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.datasette.ejectTape()
         }
@@ -974,7 +974,7 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func playOrStopAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             if emu.datasette.info.playKey {
                 emu.datasette.pressStop()
@@ -986,7 +986,7 @@ extension MyController: NSMenuItemValidation {
     
     @IBAction func rewindAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
             emu.datasette.rewind()
         }
     }
@@ -1027,7 +1027,7 @@ extension MyController: NSMenuItemValidation {
 
     @IBAction func detachCartridgeAction(_ sender: Any!) {
 
-        if let emu = emu {
+        if let emu {
 
             emu.expansionport.detachCartridge()
             emu.hardReset()

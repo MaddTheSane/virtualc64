@@ -38,7 +38,7 @@ class DiskCreator: DialogController {
 
         super.awakeFromNib()
 
-        if let emu = emu {
+        if let emu {
 
             let type = emu.get(.DRV_TYPE, drive: nr)
             switch vc64.DriveType(rawValue: type) {

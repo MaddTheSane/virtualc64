@@ -11,7 +11,7 @@ extension PreferencesController {
     
     func refreshGeneralTab() {
 
-        if let emu = emu {
+        if let emu {
             
             // Initialize combo boxes
             if genFFmpegPath.tag == 0 {

@@ -134,7 +134,7 @@ extension ConfigurationController {
     
     @IBAction func audPresetAction(_ sender: NSPopUpButton!) {
               
-        if let emu = emu {
+        if let emu {
             
             emu.suspend()
 

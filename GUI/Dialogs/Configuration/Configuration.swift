@@ -636,7 +636,7 @@ class Configuration {
 
         debug(.defaults)
         
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
             load(UserDefaults.basicRomUrl, type: .BASIC_ROM)
@@ -660,7 +660,7 @@ class Configuration {
             try emu?.saveRom(type, url: url!)
         }
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 

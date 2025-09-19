@@ -23,7 +23,7 @@ extension MyController {
 
     public func refreshStatusBar() {
 
-        if let emu = emu {
+        if let emu {
 
             let dsstate = emu.datasette.info
 
@@ -103,7 +103,7 @@ extension MyController {
     
     func refreshStatusBarLEDs(drive: Int) {
         
-        if let emu = emu {
+        if let emu {
 
             switch drive {
 
@@ -125,7 +125,7 @@ extension MyController {
     
     func refreshStatusBarTracks(drive: Int) {
         
-        if let emu = emu {
+        if let emu {
 
             switch drive {
 
@@ -149,7 +149,7 @@ extension MyController {
 
     func refreshStatusBarDiskIcons(drive: Int) {
 
-        if let emu = emu {
+        if let emu {
 
             switch drive {
 
@@ -181,7 +181,7 @@ extension MyController {
 
     func refreshStatusBarDriveActivity(drive: Int) {
 
-        if let emu = emu {
+        if let emu {
 
             switch drive {
 
@@ -213,7 +213,7 @@ extension MyController {
 
     func refreshStatusBarDatasette() {
 
-        if let emu = emu {
+        if let emu {
 
             let dsstate = emu.datasette.info
 
@@ -232,7 +232,7 @@ extension MyController {
 
     func refreshStatusBarServerIcon() {
 
-        if let emu = emu {
+        if let emu {
 
             serverIcon.image = emu.remoteManager.icon
         }
@@ -282,7 +282,7 @@ extension MyController {
             activityBar.fillColor = color[index]
         }
 
-        if let emu = emu {
+        if let emu {
 
             let state = emu.cpu.info
 

@@ -682,7 +682,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -718,7 +718,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -794,7 +794,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -828,7 +828,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -892,7 +892,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -920,7 +920,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -985,7 +985,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1018,7 +1018,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1128,7 +1128,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1147,7 +1147,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1166,7 +1166,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1205,7 +1205,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1223,7 +1223,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 
@@ -1242,7 +1242,7 @@ extension Configuration {
 
         debug(.defaults)
 
-        if let emu = emu {
+        if let emu {
 
             emu.suspend()
 

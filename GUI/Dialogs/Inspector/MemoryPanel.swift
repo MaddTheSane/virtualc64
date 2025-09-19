@@ -91,7 +91,7 @@ extension Inspector {
     
     private func cacheMemory() {
         
-        if let emu = emu {
+        if let emu {
             
             let oldBankMap = memInfo?.bankMap
             memInfo = emu.paused ? emu.mem.info : emu.mem.cachedInfo

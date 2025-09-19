@@ -44,7 +44,7 @@ class DiskExporter: DialogController {
 
     func showSheet(diskDrive nr: Int) {
 
-        if let emu = emu {
+        if let emu {
 
             drive = emu.drive(nr)
 

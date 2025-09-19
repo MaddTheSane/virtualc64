@@ -38,7 +38,7 @@ extension MyController: NSWindowDelegate {
         inBackground = true
 
         // Stop the emulator if it is supposed to pause in background
-        if let emu = emu {
+        if let emu {
 
             pauseInBackgroundSavedState = emu.running
             if pref.pauseInBackground { emu.pause() }

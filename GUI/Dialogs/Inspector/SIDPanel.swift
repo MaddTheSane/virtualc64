@@ -13,7 +13,7 @@ extension Inspector {
 
     func refreshSID(count: Int = 0, full: Bool = false) {
         
-        if let emu = emu {
+        if let emu {
             
             let info = emu.sid.getInfo(selectedSID)
 

@@ -111,7 +111,7 @@ class Console: Layer {
     
     func keyDown(with event: NSEvent) {
         
-        if let emu = emu {
+        if let emu {
 
             let macKey = MacKey(event: event)
             let shift  = macKey.modifierFlags.contains(.shift)

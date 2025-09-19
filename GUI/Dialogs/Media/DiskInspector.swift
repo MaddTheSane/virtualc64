@@ -69,7 +69,7 @@ class DiskInspector: DialogController {
 
     func show(diskDrive nr: Int) throws {
 
-        if let emu = emu {
+        if let emu {
             
             debug(.lifetime)
 
